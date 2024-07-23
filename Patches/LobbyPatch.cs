@@ -7,15 +7,15 @@ namespace TOHE.Patches;
 [HarmonyPatch(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Start))]
 public class LobbyStartPatch
 {
-    private static GameObject LobbyPaintObject;
+    // private static GameObject LobbyPaintObject;
     private static GameObject DropshipDecorationsObject;
-    private static Sprite LobbyPaintSprite;
+    // private static Sprite LobbyPaintSprite;
     private static Sprite DropshipDecorationsSprite;
 
-    private static bool FirstDecorationsLoad = true;
+    private static bool FirstDecorationsLoad = false;
     public static void Prefix()
     {
-        LobbyPaintSprite = Utils.LoadSprite("TOHE.Resources.Images.LobbyPaint.png", 290f);
+        // LobbyPaintSprite = Utils.LoadSprite("TOHE.Resources.Images.LobbyPaint.png", 290f);
         DropshipDecorationsSprite = Utils.LoadSprite("TOHE.Resources.Images.Dropship-Decorations.png", 60f);
     }
     public static void Postfix(LobbyBehaviour __instance)
@@ -33,15 +33,15 @@ public class LobbyStartPatch
 
         static System.Collections.IEnumerator CoLoadDecorations()
         {
-            var LeftBox = GameObject.Find("Leftbox");
-            if (LeftBox != null)
-            {
-                LobbyPaintObject = Object.Instantiate(LeftBox, LeftBox.transform.parent.transform);
-                LobbyPaintObject.name = "Lobby Paint";
-                LobbyPaintObject.transform.localPosition = new Vector3(0.042f, -2.59f, -10.5f);
-                SpriteRenderer renderer = LobbyPaintObject.GetComponent<SpriteRenderer>();
-                renderer.sprite = LobbyPaintSprite;
-            }
+            // var LeftBox = GameObject.Find("Leftbox");
+            // if (LeftBox != null)
+            // {
+                // LobbyPaintObject = Object.Instantiate(LeftBox, LeftBox.transform.parent.transform);
+                // LobbyPaintObject.name = "Lobby Paint";
+                // LobbyPaintObject.transform.localPosition = new Vector3(0.042f, -2.59f, -10.5f);
+                // SpriteRenderer renderer = LobbyPaintObject.GetComponent<SpriteRenderer>();
+                // renderer.sprite = LobbyPaintSprite;
+            // }
 
             yield return null;
 
