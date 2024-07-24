@@ -44,24 +44,24 @@ public class Main : BasePlugin
     public const string SupportedVersionAU = "2024.6.18";
 
     /******************* Change one of the three variables to true before making a release. *******************/
-    public static readonly bool Canary = false; // ACTIVE - Latest: V2.0.0 11 Hotfix 1
+    public static readonly bool Canary = false; // ACTIVE - Latest: V2.0.0 12
     public static readonly bool fullRelease = true; // INACTIVE - Latest: V2.0.0
     public static readonly bool devRelease = false; // INACTIVE - Latest: V2.0.0 Dev 25
 
     public static bool hasAccess = true;
 
-    public static readonly bool ShowUpdateButton = true;
+    public static readonly bool ShowUpdateButton = false;
 
-    public static readonly bool ShowGitHubButton = true;
+    public static readonly bool ShowGitHubButton = false;
     public static readonly string GitHubInviteUrl = "https://github.com/0xDrMoe/TownofHost-Enhanced";
 
-    public static readonly bool ShowDiscordButton = true;
+    public static readonly bool ShowDiscordButton = false;
     public static readonly string DiscordInviteUrl = "https://discord.gg/tohe";
 
-    public static readonly bool ShowWebsiteButton = true;
+    public static readonly bool ShowWebsiteButton = false;
     public static readonly string WebsiteInviteUrl = "https://tohre.dev";
     
-    public static readonly bool ShowKofiButton = true;
+    public static readonly bool ShowKofiButton = false;
     public static readonly string kofiInviteUrl = "https://ko-fi.com/TOHE";
 
     public Harmony Harmony { get; } = new Harmony(PluginGuid);
