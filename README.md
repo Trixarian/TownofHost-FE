@@ -30,7 +30,7 @@
 <br>
 
 **Credit to these mods and their developers for the code and help:**
-### :star: [TOHRE](https://github.com/0xDrMoe/TownofHost-Enhanced) 
+### :star: [TOHE](https://github.com/0xDrMoe/TownofHost-Enhanced) 
 > 
 > - Town of Host: Friens Edition was forked from Town of Host: Enhanced.
 >
