@@ -1,5 +1,5 @@
 
-<h1 align="center">Town of Host: Frens Edition (TOHFE)</h1>
+<h1 align="center">Town of Host: Frens Edition (TOH-FE)</h1>
 <br>
 
 <img align="left" alt="Cover" src="Resources/Background/TOHE-Background-Old.jpg" width="50%" height="300" /> 
