@@ -1,6 +1,5 @@
 
-<h1 align="center">Town of Host: Enhanced (TOHE)</h1>
-
+<h1 align="center">Town of Host: Frens Edition (TOHFE)</h1>
 <br>
 
 <img align="left" alt="Cover" src="Resources/Background/TOHE-Background-Old.jpg" width="50%" height="300" /> 
@@ -11,9 +10,11 @@
 >
 > This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are the property of Innersloth LLC.
 <br>
-
+<br>
+<br>
+<br>
 </p>
-<p align="center">
+<!-- <p align="center">
 
 <center>
 <a href="https://tohre.dev/" target="_blank"><img src="https://img.shields.io/badge/Website%20-%231DA1F2.svg?&style=for-the-badge&logo=vuedotjs&logoColor=white&color=3aa675"/></a>
@@ -23,13 +24,16 @@
 
 
 
-</p>
+</p> -->
 
 ---
-
 <br>
 
 **Credit to these mods and their developers for the code and help:**
+### :star: [TOHRE](https://github.com/0xDrMoe/TownofHost-Enhanced) 
+> 
+> - Town of Host: Friens Edition was forked from Town of Host: Enhanced.
+>
 ### :star: [TOHRE](https://github.com/Loonie-Toons/) 
 > 
 > - Town of Host: Enhanced was forked from Town of Host: Re-Edited.
@@ -108,27 +112,6 @@
 > - Reference: Disable the 5s timeout on custom servers
 ---
 
-# Legal License Notice
-
-This project utilizes a third-party API, custom-coded by The Enhanced Network. founded by Moe Wehbeh, which is not subject to the GPL 3.0 license. However, please be aware that the project itself, including any modifications, additions, or integrations made to interact with the API, is governed by the terms of the GNU General Public License version 3.0 (GPL-3.0).
-
 ## Licensing Information
 
-This project is licensed under the GNU General Public License version 3.0. For more details, please refer to the [LICENSE](https://github.com/0xDrMoe/TownofHost-Enhanced/blob/main/LICENSE) file.
-
-### Third-Party API Access
-
-To obtain an API token for this project, you must join our Discord server and open a ticket. Follow the steps below:
-
-1. **Join our Discord Server:**
-   https://discord.gg/tohe
-
-2. **Open a Ticket:**
-   Once you've joined the server, open a ticket and request an API token for TOHE API. Provide any necessary information as instructed in the ticket system.
-
-3. **Token Usage:**
-   Upon receiving the API token, follow the instructions in the documentation to configure and use the token with the project.
-
-**Note:** Access to the API is subject to our terms and conditions. Failure to comply with these terms may result in revocation of API access.
-
----
+This project is licensed under the GNU General Public License version 3.0. For more details, please refer to the [LICENSE](https://github.com/Trixarian/TownofHost-Enhanced/blob/main/LICENSE) file.
