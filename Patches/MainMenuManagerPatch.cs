@@ -234,7 +234,7 @@ public static class MainMenuManagerPatch
                 () => Application.OpenURL(Main.kofiInviteUrl),
                 GetString("kofi")); //"Kofi"
         }
-        kofiButton.gameObject.SetActive(Main.ShowDonationButton);
+        kofiButton.gameObject.SetActive(Main.ShowKofiButton);
 
         // GitHub Button
         if (gitHubButton == null)
