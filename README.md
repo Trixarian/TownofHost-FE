@@ -37,7 +37,7 @@
 > 
 > - Town of Host: Enhanced was forked from Town of Host: Re-Edited.
 >
-### :star: [TOHFE](https://github.com/KARPED1EM/TownOfHostEdited) :
+### :star: [TOHE](https://github.com/KARPED1EM/TownOfHostEdited) :
 > 
 > - Town of Host: Re-Edited was forked from Town of Host: Edited. (TONX)
 > 
@@ -82,7 +82,7 @@
 >
 > - Ideas for some roles (such as Crusader)
 > 
-### :star: [EHR (Formerly TOHFE+)](https://github.com/Gurge44/EndlessHostRoles)
+### :star: [EHR (Formerly TOHE+)](https://github.com/Gurge44/EndlessHostRoles)
 >
 > - Provided roles: Pyromaniac, Necromancer, Head Hunter (Huntsman), Alchemist, and others
 > - Game Mode: FFA
@@ -90,7 +90,7 @@
 > - Dark Theme
 > - Improved Role Spawns
 > - Some ideas to improve performance
-### :star: [TONEX (Formerly TOHFEX)](https://github.com/XtremeWave/TownOfNewEpic_Xtreme)
+### :star: [TONEX (Formerly TOHEX)](https://github.com/XtremeWave/TownOfNewEpic_Xtreme)
 >
 > - Provided roles: Swapper, Berserker, Randomizer and Blackmailer
 > - Improve chat spam system (ChatManager.cs)
