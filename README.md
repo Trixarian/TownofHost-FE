@@ -2,7 +2,7 @@
 <h1 align="center">Town of Host: Frens Edition (TOHFE)</h1>
 <br>
 
-<img align="left" alt="Cover" src="Resources/Background/TOHE-Background-Old.jpg" width="50%" height="300" /> 
+<img align="left" alt="Cover" src="Resources/Background/TOHFE-Background.jpg" width="540" height="300" /> 
 
 <p align="right">
   
