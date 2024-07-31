@@ -1,8 +1,8 @@
 ﻿using Hazel;
 using InnerNet;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Collector : RoleBase
 {

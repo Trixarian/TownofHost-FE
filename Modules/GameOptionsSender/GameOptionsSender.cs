@@ -4,7 +4,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppSystem;
 using InnerNet;
 
-namespace TOHE.Modules;
+namespace TOHFE.Modules;
 
 public abstract class GameOptionsSender
 {

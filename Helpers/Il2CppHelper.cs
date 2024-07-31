@@ -1,6 +1,6 @@
 ﻿using Il2CppInterop.Runtime.InteropTypes;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class Il2CppHelper
 {

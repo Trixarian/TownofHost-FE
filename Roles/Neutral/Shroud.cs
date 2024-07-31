@@ -1,14 +1,14 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHE.Roles.Core;
-using TOHE.Roles.Double;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Shroud : RoleBase
 {

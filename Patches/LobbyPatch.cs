@@ -2,7 +2,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(LobbyBehaviour), nameof(LobbyBehaviour.Start))]
 public class LobbyStartPatch
@@ -15,8 +15,8 @@ public class LobbyStartPatch
     private static bool FirstDecorationsLoad = false;
     public static void Prefix()
     {
-        // LobbyPaintSprite = Utils.LoadSprite("TOHE.Resources.Images.LobbyPaint.png", 290f);
-        DropshipDecorationsSprite = Utils.LoadSprite("TOHE.Resources.Images.Dropship-Decorations.png", 60f);
+        // LobbyPaintSprite = Utils.LoadSprite("TOHFE.Resources.Images.LobbyPaint.png", 290f);
+        DropshipDecorationsSprite = Utils.LoadSprite("TOHFE.Resources.Images.Dropship-Decorations.png", 60f);
     }
     public static void Postfix(LobbyBehaviour __instance)
     {

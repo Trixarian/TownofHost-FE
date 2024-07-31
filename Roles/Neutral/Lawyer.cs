@@ -1,11 +1,11 @@
 using Hazel;
 using InnerNet;
-using TOHE.Roles.Core;
-using static TOHE.Options;
-using static TOHE.Translator;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Lawyer : RoleBase
 {
@@ -39,7 +39,7 @@ internal class Lawyer : RoleBase
     }
     public static readonly CustomRoles[] CRoleChangeRoles =
     [
-        CustomRoles.CrewmateTOHE,
+        CustomRoles.CrewmateTOHFE,
         CustomRoles.Jester,
         CustomRoles.Opportunist,
         CustomRoles.Celebrity,

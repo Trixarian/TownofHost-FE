@@ -1,13 +1,13 @@
 ﻿using AmongUs.GameOptions;
 using UnityEngine;
 using Hazel;
-using TOHE.Modules;
-using TOHE.Roles.AddOns.Common;
-using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using TOHFE.Modules;
+using TOHFE.Roles.AddOns.Common;
+using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Arsonist : RoleBase
 {

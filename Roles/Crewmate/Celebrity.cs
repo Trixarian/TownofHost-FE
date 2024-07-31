@@ -1,9 +1,9 @@
-﻿using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
-using static TOHE.MeetingHudStartPatch;
+﻿using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
+using static TOHFE.MeetingHudStartPatch;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Celebrity : RoleBase
 {

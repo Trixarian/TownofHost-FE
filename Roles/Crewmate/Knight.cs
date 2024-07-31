@@ -1,8 +1,8 @@
 ﻿using AmongUs.GameOptions;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Knight : RoleBase
 {

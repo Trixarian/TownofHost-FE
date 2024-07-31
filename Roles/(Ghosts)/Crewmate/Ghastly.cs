@@ -1,12 +1,12 @@
 ﻿using AmongUs.GameOptions;
-using TOHE.Roles.Core;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 using UnityEngine;
-using TOHE.Roles.Double;
+using TOHFE.Roles.Double;
 
-namespace TOHE.Roles._Ghosts_.Crewmate
+namespace TOHFE.Roles._Ghosts_.Crewmate
 {
     internal class Ghastly : RoleBase
     {

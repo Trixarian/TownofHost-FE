@@ -1,9 +1,9 @@
 using AmongUs.GameOptions;
 using Hazel;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Fireworker : RoleBase
 {

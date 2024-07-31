@@ -1,8 +1,8 @@
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using UnityEngine;
-using static TOHE.Options;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.AddOns.Crewmate;
+namespace TOHFE.Roles.AddOns.Crewmate;
 
 public static class Workhorse
 {

@@ -6,19 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using TOHE.Modules;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.Core.AssignManager;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Double;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
-using TOHE.Roles.Core;
-using static TOHE.Translator;
+using TOHFE.Modules;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.Core.AssignManager;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Double;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
+using TOHFE.Roles.Core;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CheckProtect))]
 class CheckProtectPatch
@@ -1944,14 +1944,14 @@ class PlayerControlLocalSetRolePatch
         {
             var modRole = role switch
             {
-                RoleTypes.Crewmate => CustomRoles.CrewmateTOHE,
-                RoleTypes.Impostor => CustomRoles.ImpostorTOHE,
-                RoleTypes.Scientist => CustomRoles.ScientistTOHE,
-                RoleTypes.Engineer => CustomRoles.EngineerTOHE,
-                RoleTypes.Shapeshifter => CustomRoles.ShapeshifterTOHE,
-                RoleTypes.Noisemaker => CustomRoles.NoisemakerTOHE,
-                RoleTypes.Phantom => CustomRoles.PhantomTOHE,
-                RoleTypes.Tracker => CustomRoles.TrackerTOHE,
+                RoleTypes.Crewmate => CustomRoles.CrewmateTOHFE,
+                RoleTypes.Impostor => CustomRoles.ImpostorTOHFE,
+                RoleTypes.Scientist => CustomRoles.ScientistTOHFE,
+                RoleTypes.Engineer => CustomRoles.EngineerTOHFE,
+                RoleTypes.Shapeshifter => CustomRoles.ShapeshifterTOHFE,
+                RoleTypes.Noisemaker => CustomRoles.NoisemakerTOHFE,
+                RoleTypes.Phantom => CustomRoles.PhantomTOHFE,
+                RoleTypes.Tracker => CustomRoles.TrackerTOHFE,
                 _ => CustomRoles.NotAssigned,
             };
             if (modRole != CustomRoles.NotAssigned)

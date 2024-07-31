@@ -1,8 +1,8 @@
 using TMPro;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(EndGameManager), nameof(EndGameManager.ShowButtons))]
 public class EndGameManagerPatch

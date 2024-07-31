@@ -1,13 +1,13 @@
 ﻿using Hazel;
 using AmongUs.GameOptions;
 using UnityEngine;
-using TOHE.Roles.Core;
-using TOHE.Roles.AddOns.Common;
-using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.AddOns.Common;
+using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Revolutionist : RoleBase
 {

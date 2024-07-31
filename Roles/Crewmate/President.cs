@@ -1,9 +1,9 @@
 ﻿using Hazel;
-using TOHE.Modules.ChatManager;
+using TOHFE.Modules.ChatManager;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class President : RoleBase
 {

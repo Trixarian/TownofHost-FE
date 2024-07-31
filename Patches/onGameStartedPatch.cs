@@ -1,16 +1,16 @@
 using AmongUs.GameOptions;
 using Hazel;
 using System;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Core;
-using TOHE.Roles.Core.AssignManager;
-using static TOHE.Translator;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Core.AssignManager;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.CoStartGame))]
 internal class ChangeRoleSettings
@@ -630,7 +630,7 @@ internal class SelectRolesPatch
                     try
                     {
                         // Change Scientist to Noisemaker when role is desync and target have Noisemaker role
-                        if (roleType is RoleTypes.Scientist && RoleAssign.RoleResult.Any(x => x.Key.PlayerId == seer.PlayerId && x.Value is CustomRoles.NoisemakerTOHE or CustomRoles.Noisemaker))
+                        if (roleType is RoleTypes.Scientist && RoleAssign.RoleResult.Any(x => x.Key.PlayerId == seer.PlayerId && x.Value is CustomRoles.NoisemakerTOHFE or CustomRoles.Noisemaker))
                         {
                             Logger.Info($"seer: {seer.PlayerId}, target: {target.PlayerId}, {roleType} => {RoleTypes.Noisemaker}", "OverrideRoleForDesync");
                             roleType = RoleTypes.Noisemaker;

@@ -1,11 +1,11 @@
-﻿using TOHE.Roles.Core;
+﻿using TOHFE.Roles.Core;
 using UnityEngine;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class CustomButton
 {
-    public static Sprite Get(string name) => Utils.LoadSprite($"TOHE.Resources.Images.Skills.{name}.png", 115f);
+    public static Sprite Get(string name) => Utils.LoadSprite($"TOHFE.Resources.Images.Skills.{name}.png", 115f);
 }
 
 [HarmonyPriority(520)]

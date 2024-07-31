@@ -1,11 +1,11 @@
 using Hazel;
 using UnityEngine;
-using static TOHE.Translator;
-using static TOHE.Options;
-using static TOHE.Roles.Core.CustomRoleManager;
+using static TOHFE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Roles.Core.CustomRoleManager;
 using AmongUs.GameOptions;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Amnesiac : RoleBase
 {
@@ -161,7 +161,7 @@ internal class Amnesiac : RoleBase
                 }
                 else
                 {
-                    tempRole = CustomRoles.EngineerTOHE;
+                    tempRole = CustomRoles.EngineerTOHFE;
                 }
                 Main.TasklessCrewmate.Add(__instance.PlayerId);
             }

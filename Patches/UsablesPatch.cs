@@ -1,7 +1,7 @@
 using AmongUs.GameOptions;
 using UnityEngine;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(Console), nameof(Console.CanUse))]
 class CanUsePatch

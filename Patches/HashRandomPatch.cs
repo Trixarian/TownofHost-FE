@@ -1,6 +1,6 @@
 using System;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(HashRandom))]
 class HashRandomPatch

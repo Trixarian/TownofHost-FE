@@ -1,8 +1,8 @@
 using System;
-using TOHE.Modules;
+using TOHFE.Modules;
 using UnityEngine;
 
-namespace TOHE;
+namespace TOHFE;
 
 public abstract class OptionItem
 {
@@ -130,7 +130,7 @@ public abstract class OptionItem
     public OptionItem SetHidden(bool value) => Do(i => i.IsHidden = value);
     public OptionItem SetText(bool value) => Do(i => i.IsText = value);
     public OptionItem HideInFFA(CustomGameMode value = CustomGameMode.FFA) => Do(i => i.HideOptionInFFA = value);
-    public OptionItem HideInHnS(CustomGameMode value = CustomGameMode.HidenSeekTOHE) => Do(i => i.HideOptionInHnS = value);
+    public OptionItem HideInHnS(CustomGameMode value = CustomGameMode.HidenSeekTOHFE) => Do(i => i.HideOptionInHnS = value);
 
     public OptionItem SetParent(OptionItem parent) => Do(i =>
     {
@@ -238,7 +238,7 @@ public abstract class OptionItem
     {
         AllValues = values;
     }
-    // This Code For Reset All TOHE Setting To Default
+    // This Code For Reset All TOHFE Setting To Default
     public virtual void SetValueNoRpc(int value)
     {
         int beforeValue = CurrentValue;

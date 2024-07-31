@@ -1,5 +1,5 @@
 ﻿
-namespace TOHE.Roles.AddOns.Crewmate;
+namespace TOHFE.Roles.AddOns.Crewmate;
 
 public static class Hurried
 {

@@ -1,14 +1,14 @@
 using Hazel;
 using System.Text;
 using System;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 using InnerNet;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Oracle : RoleBase
 {

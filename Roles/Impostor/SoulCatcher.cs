@@ -1,8 +1,8 @@
 ﻿using AmongUs.GameOptions;
-using TOHE.Modules;
+using TOHFE.Modules;
 using UnityEngine;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class SoulCatcher : RoleBase
 {

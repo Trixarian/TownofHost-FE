@@ -3,14 +3,14 @@ using AmongUs.GameOptions;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Hazel;
 using UnityEngine;
-using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.Neutral;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
-using static TOHE.Translator;
-using static TOHE.CustomWinnerHolder;
+using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.Neutral;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using static TOHFE.Translator;
+using static TOHFE.CustomWinnerHolder;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(GameManager), nameof(GameManager.CheckEndGameViaTasks))]
 class CheckEndGameViaTasksForNormalPatch

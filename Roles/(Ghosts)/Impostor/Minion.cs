@@ -1,9 +1,9 @@
 ﻿using AmongUs.GameOptions;
-using static TOHE.Options;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Utils;
 
 
-namespace TOHE.Roles._Ghosts_.Impostor;
+namespace TOHFE.Roles._Ghosts_.Impostor;
 
 internal class Minion : RoleBase
 {

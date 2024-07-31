@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 using AmongUs.GameOptions;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Chronomancer : RoleBase
 {

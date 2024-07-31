@@ -1,11 +1,11 @@
 ﻿using Hazel;
-using TOHE.Modules;
-using TOHE.Roles.Neutral;
+using TOHFE.Modules;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Options;
+using static TOHFE.Options;
 
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Lightning : RoleBase
 {

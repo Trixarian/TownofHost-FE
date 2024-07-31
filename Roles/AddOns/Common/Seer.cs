@@ -1,5 +1,5 @@
 ﻿
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public static class Seer
 {

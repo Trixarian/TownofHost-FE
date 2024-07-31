@@ -1,12 +1,12 @@
 ﻿using Hazel;
 using InnerNet;
 using System.Text;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Swooper : RoleBase
 {

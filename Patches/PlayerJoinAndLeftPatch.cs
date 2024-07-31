@@ -4,15 +4,15 @@ using Hazel;
 using InnerNet;
 using System;
 using System.Text.RegularExpressions;
-using TOHE.Modules;
-using TOHE.Patches;
-using TOHE.Roles.Core;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Core.AssignManager;
-using static TOHE.Translator;
-using static TOHE.SelectRolesPatch;
+using TOHFE.Modules;
+using TOHFE.Patches;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Core.AssignManager;
+using static TOHFE.Translator;
+using static TOHFE.SelectRolesPatch;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
 class OnGameJoinedPatch
@@ -73,8 +73,8 @@ class OnGameJoinedPatch
                     if (AURoleOptions.ShapeshifterCooldown == 0f)
                         AURoleOptions.ShapeshifterCooldown = Main.LastShapeshifterCooldown.Value;
 
-                    // if custom game mode is HideNSeekTOHE in normal game, set standart
-                    if (Options.CurrentGameMode == CustomGameMode.HidenSeekTOHE)
+                    // if custom game mode is HideNSeekTOHFE in normal game, set standart
+                    if (Options.CurrentGameMode == CustomGameMode.HidenSeekTOHFE)
                     {
                         // Select standart
                         Options.GameMode.SetValue(0);
@@ -85,10 +85,10 @@ class OnGameJoinedPatch
                 case GameModes.HideNSeek:
                     Logger.Info(" Is Hide & Seek", "Game Mode");
 
-                    // if custom game mode is Standard/FFA in H&S game, set HideNSeekTOHE
+                    // if custom game mode is Standard/FFA in H&S game, set HideNSeekTOHFE
                     if (Options.CurrentGameMode is CustomGameMode.Standard or CustomGameMode.FFA)
                     {
-                        // Select HideNSeekTOHE
+                        // Select HideNSeekTOHFE
                         Options.GameMode.SetValue(2);
                     }
                     break;

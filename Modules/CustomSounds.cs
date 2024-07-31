@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace TOHE.Modules;
+namespace TOHFE.Modules;
 
 public static class CustomSoundsManager
 {
@@ -42,7 +42,7 @@ public static class CustomSoundsManager
             folder.Attributes = FileAttributes.Hidden;
         if (!File.Exists(path))
         {
-            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOHE.Resources.Sounds." + sound + ".wav");
+            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOHFE.Resources.Sounds." + sound + ".wav");
             if (stream == null)
             {
                 Logger.Warn($"Sound file missing：{sound}", "CustomSounds");

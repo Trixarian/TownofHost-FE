@@ -3,11 +3,11 @@ using Hazel;
 using InnerNet;
 using System;
 using System.Text;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 // https://github.com/tukasa0001/TownOfHost/blob/main/Roles/Neutral/PlagueDoctor.cs
 internal class PlagueDoctor : RoleBase

@@ -1,8 +1,8 @@
 ﻿using AmongUs.GameOptions;
 
-namespace TOHE.Roles.Vanilla;
+namespace TOHFE.Roles.Vanilla;
 
-internal class ShapeshifterTOHE : RoleBase
+internal class ShapeshifterTOHFE : RoleBase
 {
     //===========================SETUP================================\\
     private const int Id = 400;
@@ -19,15 +19,15 @@ internal class ShapeshifterTOHE : RoleBase
 
     public override void SetupCustomOption()
     {
-        Options.SetupRoleOptions(Id, TabGroup.ImpostorRoles, CustomRoles.ShapeshifterTOHE);
+        Options.SetupRoleOptions(Id, TabGroup.ImpostorRoles, CustomRoles.ShapeshifterTOHFE);
         ShapeshiftCooldown = IntegerOptionItem.Create(Id + 2, GeneralOption.ShapeshifterBase_ShapeshiftCooldown, new(1, 180, 1), 15, TabGroup.ImpostorRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ShapeshifterTOHE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ShapeshifterTOHFE])
             .SetValueFormat(OptionFormat.Seconds);
         ShapeshiftDuration = IntegerOptionItem.Create(Id + 3, GeneralOption.ShapeshifterBase_ShapeshiftDuration, new(1, 180, 1), 30, TabGroup.ImpostorRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ShapeshifterTOHE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ShapeshifterTOHFE])
             .SetValueFormat(OptionFormat.Seconds);
         LeaveShapeshiftingEvidence = BooleanOptionItem.Create(Id + 4, GeneralOption.ShapeshifterBase_LeaveShapeshiftingEvidence, false, TabGroup.ImpostorRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ShapeshifterTOHE]);
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ShapeshifterTOHFE]);
     }
 
     public override void Init()

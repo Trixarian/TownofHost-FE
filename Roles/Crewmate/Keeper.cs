@@ -2,11 +2,11 @@
 using System;
 using System.Text;
 using UnityEngine;
-using TOHE.Roles.Core;
-using static TOHE.Translator;
-using static TOHE.Options;
+using TOHFE.Roles.Core;
+using static TOHFE.Translator;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Keeper : RoleBase
 {

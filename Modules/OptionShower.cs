@@ -1,8 +1,8 @@
 using System.Text;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class OptionShower
 {

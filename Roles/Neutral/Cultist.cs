@@ -1,11 +1,11 @@
-﻿using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.Core;
-using TOHE.Roles.Double;
+﻿using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Cultist : RoleBase
 {

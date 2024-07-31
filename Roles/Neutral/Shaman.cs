@@ -1,8 +1,8 @@
-﻿using static TOHE.Translator;
-using static TOHE.Options;
-using TOHE.Roles.Core;
+﻿using static TOHFE.Translator;
+using static TOHFE.Options;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Shaman : RoleBase
 {

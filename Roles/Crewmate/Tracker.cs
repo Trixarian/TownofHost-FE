@@ -3,12 +3,12 @@ using Hazel;
 using System;
 using UnityEngine;
 using System.Text;
-using static TOHE.Utils;
-using static TOHE.Options;
-using static TOHE.Translator;
-using TOHE.Roles.Core;
+using static TOHFE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Tracker : RoleBase
 {

@@ -1,4 +1,4 @@
-﻿namespace TOHE.Patches;
+﻿namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(VoteBanSystem), nameof(VoteBanSystem.AddVote))]
 internal class VoteBanSystemPatch

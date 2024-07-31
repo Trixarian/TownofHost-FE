@@ -1,5 +1,5 @@
 
-<h1 align="center">Town of Host: Frens Edition (TOH-FE)</h1>
+<h1 align="center">Town of Host: Frens Edition (TOHFE)</h1>
 <br>
 
 <img align="left" alt="Cover" src="Resources/Background/TOHE-Background-Old.jpg" width="50%" height="300" /> 
@@ -37,7 +37,7 @@
 > 
 > - Town of Host: Enhanced was forked from Town of Host: Re-Edited.
 >
-### :star: [TOHE](https://github.com/KARPED1EM/TownOfHostEdited) :
+### :star: [TOHFE](https://github.com/KARPED1EM/TownOfHostEdited) :
 > 
 > - Town of Host: Re-Edited was forked from Town of Host: Edited. (TONX)
 > 
@@ -82,7 +82,7 @@
 >
 > - Ideas for some roles (such as Crusader)
 > 
-### :star: [EHR (Formerly TOHE+)](https://github.com/Gurge44/EndlessHostRoles)
+### :star: [EHR (Formerly TOHFE+)](https://github.com/Gurge44/EndlessHostRoles)
 >
 > - Provided roles: Pyromaniac, Necromancer, Head Hunter (Huntsman), Alchemist, and others
 > - Game Mode: FFA
@@ -90,7 +90,7 @@
 > - Dark Theme
 > - Improved Role Spawns
 > - Some ideas to improve performance
-### :star: [TONEX (Formerly TOHEX)](https://github.com/XtremeWave/TownOfNewEpic_Xtreme)
+### :star: [TONEX (Formerly TOHFEX)](https://github.com/XtremeWave/TownOfNewEpic_Xtreme)
 >
 > - Provided roles: Swapper, Berserker, Randomizer and Blackmailer
 > - Improve chat spam system (ChatManager.cs)
@@ -113,4 +113,4 @@
 
 ## Licensing Information
 
-This project is licensed under the GNU General Public License version 3.0. For more details, please refer to the [LICENSE](https://github.com/Trixarian/TownofHost-Enhanced/blob/main/LICENSE) file.
+This project is licensed under the GNU General Public License version 3.0. For more details, please refer to the [LICENSE](https://github.com/Trixarian/TOHFE/blob/main/LICENSE) file.

@@ -3,17 +3,17 @@ using Hazel;
 using InnerNet;
 using System;
 using System.Threading.Tasks;
-using TOHE.Modules;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Core;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
-using static TOHE.Translator;
+using TOHFE.Modules;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 enum CustomRPC : byte // 197/255 USED
 {
@@ -27,7 +27,7 @@ enum CustomRPC : byte // 197/255 USED
     PlaySound,
     SetCustomRole,
 
-    // TOHE
+    // TOHFE
     AntiBlackout,
     SetRealKiller,
     PlayCustomSound,

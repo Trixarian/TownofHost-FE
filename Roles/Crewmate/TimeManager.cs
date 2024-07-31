@@ -1,4 +1,4 @@
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class TimeManager : RoleBase
 {

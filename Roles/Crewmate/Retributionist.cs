@@ -1,14 +1,14 @@
 ﻿using Hazel;
 using System;
-using TOHE.Modules;
-using TOHE.Roles.Double;
+using TOHFE.Modules;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
-using static TOHE.MeetingHudStartPatch;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
+using static TOHFE.MeetingHudStartPatch;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Retributionist : RoleBase
 {

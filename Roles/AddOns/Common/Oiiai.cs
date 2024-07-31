@@ -1,10 +1,10 @@
-﻿using TOHE.Modules;
-using TOHE.Roles.Core;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Impostor;
-using static TOHE.Translator;
+﻿using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Impostor;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public static class Oiiai
 {

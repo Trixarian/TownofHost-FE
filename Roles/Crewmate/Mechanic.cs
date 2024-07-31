@@ -2,10 +2,10 @@ using System;
 using System.Text;
 using UnityEngine;
 using AmongUs.GameOptions;
-using static TOHE.Utils;
-using TOHE.Roles.Core;
+using static TOHFE.Utils;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Mechanic : RoleBase
 {

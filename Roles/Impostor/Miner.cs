@@ -1,7 +1,7 @@
 ﻿using AmongUs.GameOptions;
-using TOHE.Modules;
+using TOHFE.Modules;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Miner : RoleBase
 {

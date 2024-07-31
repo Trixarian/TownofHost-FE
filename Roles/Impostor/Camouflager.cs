@@ -1,11 +1,11 @@
 ﻿using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Common;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Camouflager : RoleBase
 {

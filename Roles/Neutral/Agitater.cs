@@ -1,11 +1,11 @@
 ﻿using AmongUs.GameOptions;
 using Hazel;
 using UnityEngine;
-using static TOHE.Translator;
-using TOHE.Roles.Core;
+using static TOHFE.Translator;
+using TOHFE.Roles.Core;
 using InnerNet;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 internal class Agitater : RoleBase
 {
     //===========================SETUP================================\\

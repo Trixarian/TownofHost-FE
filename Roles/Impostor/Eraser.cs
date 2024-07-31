@@ -1,11 +1,11 @@
 ﻿using AmongUs.GameOptions;
-using TOHE.Modules;
-using TOHE.Roles.Core;
-using TOHE.Roles.Crewmate;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Crewmate;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Eraser : RoleBase
 {
@@ -139,11 +139,11 @@ internal class Eraser : RoleBase
             ? role
             : roleType switch
             {
-                RoleTypes.Crewmate => CustomRoles.CrewmateTOHE,
-                RoleTypes.Scientist => CustomRoles.ScientistTOHE,
-                RoleTypes.Engineer => CustomRoles.EngineerTOHE,
-                RoleTypes.Impostor => CustomRoles.ImpostorTOHE,
-                RoleTypes.Shapeshifter => CustomRoles.ShapeshifterTOHE,
+                RoleTypes.Crewmate => CustomRoles.CrewmateTOHFE,
+                RoleTypes.Scientist => CustomRoles.ScientistTOHFE,
+                RoleTypes.Engineer => CustomRoles.EngineerTOHFE,
+                RoleTypes.Impostor => CustomRoles.ImpostorTOHFE,
+                RoleTypes.Shapeshifter => CustomRoles.ShapeshifterTOHFE,
                 _ => role,
             };
     }

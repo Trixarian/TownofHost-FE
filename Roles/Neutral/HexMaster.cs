@@ -2,12 +2,12 @@ using AmongUs.GameOptions;
 using Hazel;
 using UnityEngine;
 using System.Text;
-using TOHE.Roles.Crewmate;
-using static TOHE.Options;
-using static TOHE.Translator;
+using TOHFE.Roles.Crewmate;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class HexMaster : RoleBase
 {

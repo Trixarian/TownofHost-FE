@@ -1,14 +1,14 @@
 ﻿using AmongUs.GameOptions;
 using Hazel;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.MeetingHudStartPatch;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.MeetingHudStartPatch;
 using InnerNet;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Solsticer : RoleBase
 {

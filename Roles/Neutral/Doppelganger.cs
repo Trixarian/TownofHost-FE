@@ -1,9 +1,9 @@
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
 using UnityEngine;
-using static TOHE.Options;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Doppelganger : RoleBase
 {

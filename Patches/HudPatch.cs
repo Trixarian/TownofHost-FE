@@ -1,11 +1,11 @@
 using System.Text;
 using System;
 using TMPro;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
 class HudManagerPatch

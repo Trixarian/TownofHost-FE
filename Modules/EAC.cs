@@ -1,10 +1,10 @@
 ﻿using Hazel;
 using System;
 using InnerNet;
-using TOHE.Modules;
-using static TOHE.Translator;
+using TOHFE.Modules;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 internal class EAC
 {

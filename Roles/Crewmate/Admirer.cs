@@ -1,14 +1,14 @@
 using Hazel;
-using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Core;
-using TOHE.Roles.Double;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Double;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Admirer : RoleBase
 {

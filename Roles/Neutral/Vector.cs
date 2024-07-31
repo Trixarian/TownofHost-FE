@@ -1,12 +1,12 @@
-﻿using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
+﻿using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 using UnityEngine;
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Vector : RoleBase
 {

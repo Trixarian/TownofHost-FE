@@ -1,10 +1,10 @@
 ﻿using AmongUs.GameOptions;
 using UnityEngine;
-using TOHE.Modules;
-using static TOHE.Translator;
-using TOHE.Roles.Core;
+using TOHFE.Modules;
+using static TOHFE.Translator;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Pursuer : RoleBase
 {

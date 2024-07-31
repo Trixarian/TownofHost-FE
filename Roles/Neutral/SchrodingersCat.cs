@@ -1,9 +1,9 @@
 ﻿using Hazel;
 using InnerNet;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class SchrodingersCat : RoleBase
 {
@@ -84,7 +84,7 @@ internal class SchrodingersCat : RoleBase
     {
         if (teammate.TryGetValue(seer.PlayerId, out var temmate) && target.PlayerId == temmate)
         {
-            if (target.GetCustomRole().IsCrewmate()) return Main.roleColors[CustomRoles.CrewmateTOHE];
+            if (target.GetCustomRole().IsCrewmate()) return Main.roleColors[CustomRoles.CrewmateTOHFE];
             else return Main.roleColors[target.GetCustomRole()];
         }
         return string.Empty;

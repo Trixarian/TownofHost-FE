@@ -1,15 +1,15 @@
 using Hazel;
 using System;
 using System.Text;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 internal class Inspector : RoleBase
 {
     //===========================SETUP================================\\

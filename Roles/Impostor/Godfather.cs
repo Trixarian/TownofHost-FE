@@ -1,6 +1,6 @@
-﻿using TOHE.Roles.Core;
+﻿using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Godfather : RoleBase
 {

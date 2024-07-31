@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace TOHE;
+namespace TOHFE;
 
 // 来源：https://github.com/tugaru1975/TownOfPlus/TOPmods/Zoom.cs 
 // 参考：https://github.com/Yumenopai/TownOfHost_Y

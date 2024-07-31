@@ -2,9 +2,9 @@
 using AmongUs.GameOptions;
 using TMPro;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Modules
+namespace TOHFE.Modules
 {
     public static class RehostManager
     {

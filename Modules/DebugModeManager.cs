@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class DebugModeManager
 {

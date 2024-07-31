@@ -1,12 +1,12 @@
 using AmongUs.GameOptions;
 using System.Text;
-using static TOHE.Translator;
-using static TOHE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Options;
 using Hazel;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using InnerNet;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Glitch : RoleBase
 {

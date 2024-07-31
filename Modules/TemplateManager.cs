@@ -5,13 +5,13 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class TemplateManager
 {
-    private static readonly string TEMPLATE_FILE_PATH = "./TOHE-DATA/template.txt";
+    private static readonly string TEMPLATE_FILE_PATH = "./TOHFE-DATA/template.txt";
     private static readonly Dictionary<string, Func<string>> _replaceDictionaryNormalOptions = new()
     {
         ["RoomCode"] = () => InnerNet.GameCode.IntToGameName(AmongUsClient.Instance.GameId),
@@ -106,14 +106,14 @@ public static class TemplateManager
                     _ => "English"
                 };
             else fileName = "English";
-            if (!Directory.Exists(@"TOHE-DATA")) Directory.CreateDirectory(@"TOHE-DATA");
-            var defaultTemplateMsg = GetResourcesTxt($"TOHE.Resources.Config.template.{fileName}.txt");
-            if (!File.Exists(@"./TOHE-DATA/Default_Teamplate.txt")) //default template
+            if (!Directory.Exists(@"TOHFE-DATA")) Directory.CreateDirectory(@"TOHFE-DATA");
+            var defaultTemplateMsg = GetResourcesTxt($"TOHFE.Resources.Config.template.{fileName}.txt");
+            if (!File.Exists(@"./TOHFE-DATA/Default_Teamplate.txt")) //default template
             {
                 Logger.Warn("Creating Default_Template.txt", "TemplateManager");
-                using FileStream fs = File.Create(@"./TOHE-DATA/Default_Teamplate.txt");
+                using FileStream fs = File.Create(@"./TOHFE-DATA/Default_Teamplate.txt");
             }
-            File.WriteAllText(@"./TOHE-DATA/Default_Teamplate.txt", defaultTemplateMsg); //overwriting default template
+            File.WriteAllText(@"./TOHFE-DATA/Default_Teamplate.txt", defaultTemplateMsg); //overwriting default template
             if (!File.Exists(TEMPLATE_FILE_PATH))
             {
                 if (File.Exists(@"./template.txt")) File.Move(@"./template.txt", TEMPLATE_FILE_PATH);

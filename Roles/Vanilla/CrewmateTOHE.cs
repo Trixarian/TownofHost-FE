@@ -1,7 +1,7 @@
 ﻿
-namespace TOHE.Roles.Vanilla;
+namespace TOHFE.Roles.Vanilla;
 
-internal class CrewmateTOHE : RoleBase
+internal class CrewmateTOHFE : RoleBase
 {
     //===========================SETUP================================\\
     private const int Id = 6000;
@@ -14,7 +14,7 @@ internal class CrewmateTOHE : RoleBase
 
     public override void SetupCustomOption()
     {
-        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.CrewmateTOHE);
+        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.CrewmateTOHFE);
     }
 
     public override void Init()

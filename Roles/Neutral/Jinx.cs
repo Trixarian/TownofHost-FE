@@ -1,9 +1,9 @@
 using AmongUs.GameOptions;
 using UnityEngine;
-using static TOHE.Options;
-using TOHE.Roles.Core;
+using static TOHFE.Options;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Jinx : RoleBase
 {

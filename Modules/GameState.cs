@@ -2,14 +2,14 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using AmongUs.GameOptions;
 using System;
 using UnityEngine;
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.AddOns.Impostor;
-using static TOHE.Utils;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Impostor;
+using static TOHFE.Utils;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class PlayerState(byte playerId)
 {
@@ -260,7 +260,7 @@ public class PlayerState(byte playerId)
         Execution,
         Fall,
 
-        // TOHE
+        // TOHFE
         Gambled,
         Eaten,
         Sacrifice,

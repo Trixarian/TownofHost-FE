@@ -1,4 +1,4 @@
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(ChatController), nameof(ChatController.Toggle))]
 class CancelBanMenuStuckPatch

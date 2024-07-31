@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
-using TOHE.Modules;
-using TOHE.Roles.Core;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Twister : RoleBase
 {

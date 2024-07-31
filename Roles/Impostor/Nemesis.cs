@@ -1,14 +1,14 @@
 ﻿using AmongUs.GameOptions;
 using Hazel;
 using System;
-using TOHE.Modules;
-using TOHE.Roles.Double;
+using TOHFE.Modules;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.MeetingHudStartPatch;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.MeetingHudStartPatch;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Nemesis : RoleBase
 {

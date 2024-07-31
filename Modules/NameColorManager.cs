@@ -1,11 +1,11 @@
 using Hazel;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class NameColorManager
 {
@@ -55,7 +55,7 @@ public static class NameColorManager
         // Amnesiac
         if (seer.GetCustomRole() == target.GetCustomRole() && seer.GetCustomRole().IsNK()) color = Main.roleColors[seer.GetCustomRole()];
 
-        if (seer.Is(CustomRoles.Refugee) && (target.Is(Custom_Team.Impostor))) color = Main.roleColors[CustomRoles.ImpostorTOHE];
+        if (seer.Is(CustomRoles.Refugee) && (target.Is(Custom_Team.Impostor))) color = Main.roleColors[CustomRoles.ImpostorTOHFE];
         if (seer.Is(Custom_Team.Impostor) && (target.Is(CustomRoles.Refugee))) color = Main.roleColors[CustomRoles.Refugee];
 
         // Infectious

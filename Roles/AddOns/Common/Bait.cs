@@ -1,9 +1,9 @@
 ﻿using System;
-using TOHE.Modules;
-using static TOHE.Translator;
-using static TOHE.Options;
+using TOHFE.Modules;
+using static TOHFE.Translator;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public static class Bait
 {

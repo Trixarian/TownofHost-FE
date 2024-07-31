@@ -1,7 +1,7 @@
-﻿using static TOHE.Options;
-using static TOHE.Translator;
+﻿using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public static class Burst
 {

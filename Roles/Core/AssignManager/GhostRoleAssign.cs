@@ -1,4 +1,4 @@
-﻿namespace TOHE.Roles.Core.AssignManager;
+﻿namespace TOHFE.Roles.Core.AssignManager;
 
 public static class GhostRoleAssign
 {

@@ -2,7 +2,7 @@ using AmongUs.Data;
 using Discord;
 using System;
 
-namespace TOHE.Patches
+namespace TOHFE.Patches
 {
     // Originally from Town of Us Rewritten, by Det
     [HarmonyPatch(typeof(ActivityManager), nameof(ActivityManager.UpdateActivity))]
@@ -14,7 +14,7 @@ namespace TOHE.Patches
         {
             if (activity == null) return;
 
-            var details = $"TOHE v{Main.PluginDisplayVersion}";
+            var details = $"TOHFE v{Main.PluginDisplayVersion}";
             activity.Details = details;
 
             try
@@ -33,10 +33,10 @@ namespace TOHE.Patches
                         if (lobbycode != "" && region != "")
                         {
                             if (GameStates.IsNormalGame)
-                                details = $"TOHE - {lobbycode} ({region})";
+                                details = $"TOHFE - {lobbycode} ({region})";
 
                             else if (GameStates.IsHideNSeek)
-                                details = $"TOHE Hide & Seek - {lobbycode} ({region})";
+                                details = $"TOHFE Hide & Seek - {lobbycode} ({region})";
                         }
 
                         activity.Details = details;
@@ -44,12 +44,12 @@ namespace TOHE.Patches
                     else
                     {
                         if (GameStates.IsNormalGame)
-                            details = $"TOHE v{Main.PluginDisplayVersion}";
+                            details = $"TOHFE v{Main.PluginDisplayVersion}";
 
                         else if (GameStates.IsHideNSeek)
-                            details = $"TOHE v{Main.PluginDisplayVersion} - Hide & Seek";
+                            details = $"TOHFE v{Main.PluginDisplayVersion} - Hide & Seek";
 
-                        else details = $"TOHE v{Main.PluginDisplayVersion}";
+                        else details = $"TOHFE v{Main.PluginDisplayVersion}";
 
                         activity.Details = details;
                     }
@@ -60,7 +60,7 @@ namespace TOHE.Patches
             {
                 Logger.Error("Error in updating discord rpc", "DiscordPatch");
                 Logger.Exception(ex, "DiscordPatch");
-                details = $"TOHE v{Main.PluginDisplayVersion}";
+                details = $"TOHFE v{Main.PluginDisplayVersion}";
                 activity.Details = details;
             }
         }

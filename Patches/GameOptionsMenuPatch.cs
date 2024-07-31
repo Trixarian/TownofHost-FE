@@ -2,10 +2,10 @@ using BepInEx.Unity.IL2CPP.Utils.Collections;
 using System;
 using TMPro;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 using Object = UnityEngine.Object;
 
-namespace TOHE;
+namespace TOHFE;
 
 // Thanks: https://github.com/Yumenopai/TownOfHost_Y/blob/main/Patches/GameOptionsMenuPatch.cs
 public static class ModGameOptionsMenu

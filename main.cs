@@ -9,17 +9,17 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using TOHE.Roles.Core;
-using TOHE.Roles.Double;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Double;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
 
-[assembly: AssemblyFileVersion(TOHE.Main.PluginVersion)]
-[assembly: AssemblyInformationalVersion(TOHE.Main.PluginVersion)]
-[assembly: AssemblyVersion(TOHE.Main.PluginVersion)]
-namespace TOHE;
+[assembly: AssemblyFileVersion(TOHFE.Main.PluginVersion)]
+[assembly: AssemblyInformationalVersion(TOHFE.Main.PluginVersion)]
+[assembly: AssemblyVersion(TOHFE.Main.PluginVersion)]
+namespace TOHFE;
 
-[BepInPlugin(PluginGuid, "TOHE", PluginVersion)]
+[BepInPlugin(PluginGuid, "TOHFE", PluginVersion)]
 [BepInIncompatibility("jp.ykundesu.supernewroles")]
 [BepInProcess("Among Us.exe")]
 public class Main : BasePlugin
@@ -27,8 +27,8 @@ public class Main : BasePlugin
     // == プログラム設定 / Program Config ==
     public const string OriginalForkId = "OriginalTOH";
 
-    public static readonly string ModName = "TOHE";
-    public static readonly string ForkId = "TOHE";
+    public static readonly string ModName = "TOHFE";
+    public static readonly string ForkId = "TOHFE";
     public static readonly string ModColor = "#ffc0cb";
     public static readonly bool AllowPublicRoom = true;
 
@@ -62,7 +62,7 @@ public class Main : BasePlugin
     public static readonly string WebsiteInviteUrl = "https://tohre.dev";
     
     public static readonly bool ShowKofiButton = false;
-    public static readonly string kofiInviteUrl = "https://ko-fi.com/TOHE";
+    public static readonly string kofiInviteUrl = "https://ko-fi.com/TOHFE";
 
     public Harmony Harmony { get; } = new Harmony(PluginGuid);
     public static Version version = Version.Parse(PluginVersion);
@@ -206,7 +206,7 @@ public class Main : BasePlugin
         string path = @$"./{LANGUAGE_FOLDER_NAME}/{filename}";
         if (File.Exists(path))
         {
-            TOHE.Logger.Info($"Load custom Role Color file：{filename}", "LoadCustomRoleColor");
+            TOHFE.Logger.Info($"Load custom Role Color file：{filename}", "LoadCustomRoleColor");
             using StreamReader sr = new(path, Encoding.GetEncoding("UTF-8"));
             string text;
             string[] tmp = [];
@@ -224,19 +224,19 @@ public class Main : BasePlugin
                             { 
                                 roleColors[role] = "#"+color;
                             }
-                            else TOHE.Logger.Error($"Invalid Hexcolor #{color}", "LoadCustomRoleColor");
+                            else TOHFE.Logger.Error($"Invalid Hexcolor #{color}", "LoadCustomRoleColor");
                         }
                     }
                     catch (KeyNotFoundException)
                     {
-                        TOHE.Logger.Warn($"Invalid Key：{tmp[0]}", "LoadCustomTranslation");
+                        TOHFE.Logger.Warn($"Invalid Key：{tmp[0]}", "LoadCustomTranslation");
                     }
                 }
             }
         }
         else
         {
-            TOHE.Logger.Error($"File not found：{filename}", "LoadCustomTranslation");
+            TOHFE.Logger.Error($"File not found：{filename}", "LoadCustomTranslation");
         }
     }
 
@@ -269,7 +269,7 @@ public class Main : BasePlugin
         {
             roleColors.Clear();
             var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "TOHE.Resources.roleColor.json";
+            string resourceName = "TOHFE.Resources.roleColor.json";
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             {
                 if (stream != null)
@@ -287,13 +287,13 @@ public class Main : BasePlugin
                         else
                         {
                             // Handle invalid or unrecognized enum keys
-                            TOHE.Logger.Error($"Invalid enum key: {kvp.Key}", "Reading Role Colors");
+                            TOHFE.Logger.Error($"Invalid enum key: {kvp.Key}", "Reading Role Colors");
                         }
                     }
                 }
                 else
                 {
-                    TOHE.Logger.Error($"Embedded resource not found.", "Reading Role Colors");
+                    TOHFE.Logger.Error($"Embedded resource not found.", "Reading Role Colors");
                 }
             }
 
@@ -318,8 +318,8 @@ public class Main : BasePlugin
         }
         catch (ArgumentException ex)
         {
-            TOHE.Logger.Error("错误：字典出现重复项", "LoadDictionary");
-            TOHE.Logger.Exception(ex, "LoadDictionary");
+            TOHFE.Logger.Error("错误：字典出现重复项", "LoadDictionary");
+            TOHFE.Logger.Exception(ex, "LoadDictionary");
             hasArgumentException = true;
             ExceptionMessage = ex.Message;
             ExceptionMessageIsShown = false;
@@ -327,7 +327,7 @@ public class Main : BasePlugin
     }
     public static void LoadRoleClasses()
     {
-        TOHE.Logger.Info("Loading All RoleClasses...", "LoadRoleClasses");
+        TOHFE.Logger.Info("Loading All RoleClasses...", "LoadRoleClasses");
         try
         {
             var RoleTypes = Assembly.GetAssembly(typeof(RoleBase))!
@@ -351,11 +351,11 @@ public class Main : BasePlugin
                 CustomRoleManager.RoleClass.Add(role, (RoleBase)Activator.CreateInstance(roleType));
             }
 
-            TOHE.Logger.Info("RoleClasses Loaded Successfully", "LoadRoleClasses");
+            TOHFE.Logger.Info("RoleClasses Loaded Successfully", "LoadRoleClasses");
         }
         catch (Exception err)
         {
-            TOHE.Logger.Error($"Error at LoadRoleClasses: {err}", "LoadRoleClasses");
+            TOHFE.Logger.Error($"Error at LoadRoleClasses: {err}", "LoadRoleClasses");
         }
     }
     static void UpdateCustomTranslation()
@@ -363,7 +363,7 @@ public class Main : BasePlugin
         string path = @$"./{LANGUAGE_FOLDER_NAME}/RoleColor.dat";
         if (File.Exists(path))
         {
-            TOHE.Logger.Info("Updating Custom Role Colors", "UpdateRoleColors");
+            TOHFE.Logger.Info("Updating Custom Role Colors", "UpdateRoleColors");
             try
             {
                 List<string> roleList = [];
@@ -396,7 +396,7 @@ public class Main : BasePlugin
             }
             catch (Exception e)
             {
-                TOHE.Logger.Error("An error occurred: " + e.Message, "UpdateRoleColors");
+                TOHFE.Logger.Error("An error occurred: " + e.Message, "UpdateRoleColors");
             }
         }
     }
@@ -416,7 +416,7 @@ public class Main : BasePlugin
         Instance = this;
 
         //Client Options
-        HideName = Config.Bind("Client Options", "Hide Game Code Name", "TOHE");
+        HideName = Config.Bind("Client Options", "Hide Game Code Name", "TOHFE");
         HideColor = Config.Bind("Client Options", "Hide Game Code Color", $"{ModColor}");
         DebugKeyInput = Config.Bind("Authentication", "Debug Key", "");
 
@@ -440,35 +440,35 @@ public class Main : BasePlugin
         GodMode = Config.Bind("Client Options", "GodMode", false);
         AutoRehost = Config.Bind("Client Options", "AutoRehost", false);
 
-        Logger = BepInEx.Logging.Logger.CreateLogSource("TOHE");
+        Logger = BepInEx.Logging.Logger.CreateLogSource("TOHFE");
         coroutines = AddComponent<Coroutines>();
-        TOHE.Logger.Enable();
-        //TOHE.Logger.Disable("NotifyRoles");
-        TOHE.Logger.Disable("SwitchSystem");
-        TOHE.Logger.Disable("ModNews");
-        TOHE.Logger.Disable("CustomRpcSender");
+        TOHFE.Logger.Enable();
+        //TOHFE.Logger.Disable("NotifyRoles");
+        TOHFE.Logger.Disable("SwitchSystem");
+        TOHFE.Logger.Disable("ModNews");
+        TOHFE.Logger.Disable("CustomRpcSender");
         if (!DebugModeManager.AmDebugger)
         {
-            TOHE.Logger.Disable("2018k");
-            TOHE.Logger.Disable("Github");
-            //TOHE.Logger.Disable("ReceiveRPC");
-            TOHE.Logger.Disable("SendRPC");
-            TOHE.Logger.Disable("SetRole");
-            TOHE.Logger.Disable("Info.Role");
-            TOHE.Logger.Disable("TaskState.Init");
-            //TOHE.Logger.Disable("Vote");
-            TOHE.Logger.Disable("RpcSetNamePrivate");
-            //TOHE.Logger.Disable("SendChat");
-            TOHE.Logger.Disable("SetName");
-            //TOHE.Logger.Disable("AssignRoles");
-            //TOHE.Logger.Disable("RepairSystem");
-            //TOHE.Logger.Disable("MurderPlayer");
-            //TOHE.Logger.Disable("CheckMurder");
-            TOHE.Logger.Disable("PlayerControl.RpcSetRole");
-            TOHE.Logger.Disable("SyncCustomSettings");
-            //TOHE.Logger.Disable("DoNotifyRoles");
+            TOHFE.Logger.Disable("2018k");
+            TOHFE.Logger.Disable("Github");
+            //TOHFE.Logger.Disable("ReceiveRPC");
+            TOHFE.Logger.Disable("SendRPC");
+            TOHFE.Logger.Disable("SetRole");
+            TOHFE.Logger.Disable("Info.Role");
+            TOHFE.Logger.Disable("TaskState.Init");
+            //TOHFE.Logger.Disable("Vote");
+            TOHFE.Logger.Disable("RpcSetNamePrivate");
+            //TOHFE.Logger.Disable("SendChat");
+            TOHFE.Logger.Disable("SetName");
+            //TOHFE.Logger.Disable("AssignRoles");
+            //TOHFE.Logger.Disable("RepairSystem");
+            //TOHFE.Logger.Disable("MurderPlayer");
+            //TOHFE.Logger.Disable("CheckMurder");
+            TOHFE.Logger.Disable("PlayerControl.RpcSetRole");
+            TOHFE.Logger.Disable("SyncCustomSettings");
+            //TOHFE.Logger.Disable("DoNotifyRoles");
         }
-        //TOHE.Logger.isDetail = true;
+        //TOHFE.Logger.isDetail = true;
 
         // 認証関連-初期化
         DebugKeyAuth = new HashAuth(DebugKeyHash, DebugKeySalt);
@@ -504,9 +504,9 @@ public class Main : BasePlugin
 
         IRandom.SetInstance(new NetRandomWrapper());
 
-        TOHE.Logger.Info($" {Application.version}", "Among Us Version");
+        TOHFE.Logger.Info($" {Application.version}", "Among Us Version");
 
-        var handler = TOHE.Logger.Handler("GitVersion");
+        var handler = TOHFE.Logger.Handler("GitVersion");
         handler.Info($"{nameof(ThisAssembly.Git.BaseTag)}: {ThisAssembly.Git.BaseTag}");
         handler.Info($"{nameof(ThisAssembly.Git.Commit)}: {ThisAssembly.Git.Commit}");
         handler.Info($"{nameof(ThisAssembly.Git.Commits)}: {ThisAssembly.Git.Commits}");
@@ -521,7 +521,7 @@ public class Main : BasePlugin
         if (!DebugModeManager.AmDebugger) ConsoleManager.DetachConsole();
         else ConsoleManager.CreateConsole();
 
-        TOHE.Logger.Msg("========= TOHE loaded! =========", "Plugin Load");
+        TOHFE.Logger.Msg("========= TOHFE loaded! =========", "Plugin Load");
     }
 }
 public enum CustomRoles
@@ -544,17 +544,17 @@ public enum CustomRoles
     Shapeshifter,
 
     // Crewmate Vanilla Remakes
-    CrewmateTOHE,
-    EngineerTOHE,
-    GuardianAngelTOHE,
-    NoisemakerTOHE,
-    ScientistTOHE,
-    TrackerTOHE,
+    CrewmateTOHFE,
+    EngineerTOHFE,
+    GuardianAngelTOHFE,
+    NoisemakerTOHFE,
+    ScientistTOHFE,
+    TrackerTOHFE,
 
     // Impostor Vanilla Remakes
-    ImpostorTOHE,
-    PhantomTOHE,
-    ShapeshifterTOHE,
+    ImpostorTOHFE,
+    PhantomTOHFE,
+    ShapeshifterTOHFE,
 
     // Impostor Ghost
     Bloodmoon,
@@ -965,7 +965,7 @@ public enum AdditionalWinners
 public enum SuffixModes
 {
     None = 0,
-    TOHE,
+    TOHFE,
     Streaming,
     Recording,
     RoomHost,

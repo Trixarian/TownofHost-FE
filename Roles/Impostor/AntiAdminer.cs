@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Text;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 // 参考 : https://github.com/ykundesu/SuperNewRoles/blob/master/SuperNewRoles/Mode/SuperHostRoles/BlockTool.cs
 // 贡献：https://github.com/Yumenopai/TownOfHost_Y/tree/AntiAdminer

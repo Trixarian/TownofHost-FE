@@ -1,4 +1,4 @@
-﻿namespace TOHE.Patches
+﻿namespace TOHFE.Patches
 {
     [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.BanMinutesLeft), MethodType.Getter)]
     public static class DisconnectPenaltyPatch {

@@ -1,8 +1,8 @@
 using AmongUs.GameOptions;
-using static TOHE.Translator;
-using static TOHE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Medusa : RoleBase
 {

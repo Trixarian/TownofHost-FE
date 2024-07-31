@@ -1,12 +1,12 @@
 using Hazel;
 using System;
 using System.Text;
-using TOHE.Modules;
-using TOHE.Patches;
+using TOHFE.Modules;
+using TOHFE.Patches;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(ControllerManager), nameof(ControllerManager.Update))]
 internal class ControllerManagerUpdatePatch
@@ -272,11 +272,11 @@ internal class ControllerManagerUpdatePatch
                 Utils.ShowActiveSettings();
             }
 
-            // Reset All TOHE Setting To Default
+            // Reset All TOHFE Setting To Default
             if (GameStates.IsLobby && GetKeysDown(KeyCode.LeftControl, KeyCode.LeftShift, KeyCode.Return, KeyCode.Delete))
             {
                 OptionItem.AllOptions.ToArray().Where(x => x.Id > 0).Do(x => x.SetValueNoRpc(x.DefaultValue));
-                Logger.SendInGame(GetString("RestTOHESetting"));
+                Logger.SendInGame(GetString("RestTOHFESetting"));
             }
 
             // Host kill self

@@ -1,9 +1,9 @@
 using AmongUs.GameOptions;
 using UnityEngine;
-using TOHE.Roles.AddOns.Common;
-using static TOHE.Translator;
+using TOHFE.Roles.AddOns.Common;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Poisoner : RoleBase
 {

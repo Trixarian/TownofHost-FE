@@ -2,13 +2,13 @@
 using System;
 using System.Text;
 using UnityEngine;
-using TOHE.Roles.Core;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 using InnerNet;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Coroner : RoleBase
 {

@@ -1,9 +1,9 @@
-using TOHE.Roles.Crewmate;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using TOHFE.Roles.Crewmate;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Mastermind : RoleBase
 {

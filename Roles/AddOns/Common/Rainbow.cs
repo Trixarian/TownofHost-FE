@@ -1,6 +1,6 @@
-using static TOHE.Options;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 // https://github.com/Yumenopai/TownOfHost_Y/blob/main/Roles/Crewmate/Y/Rainbow.cs
 public static class Rainbow

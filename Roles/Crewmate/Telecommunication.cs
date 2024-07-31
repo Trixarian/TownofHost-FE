@@ -1,12 +1,12 @@
 using System;
 using System.Text;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 using AmongUs.GameOptions;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Telecommunication : RoleBase
 {

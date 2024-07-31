@@ -1,9 +1,9 @@
 ﻿
 using AmongUs.GameOptions;
 
-namespace TOHE.Roles.Vanilla;
+namespace TOHFE.Roles.Vanilla;
 
-internal class EngineerTOHE : RoleBase
+internal class EngineerTOHFE : RoleBase
 {
     //===========================SETUP================================\\
     private const int Id = 6100;
@@ -19,12 +19,12 @@ internal class EngineerTOHE : RoleBase
 
     public override void SetupCustomOption()
     {
-        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.EngineerTOHE);
+        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.EngineerTOHFE);
         VentUseCooldown = IntegerOptionItem.Create(Id + 2, GeneralOption.EngineerBase_VentCooldown, new(0, 250, 5), 15, TabGroup.CrewmateRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.EngineerTOHE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.EngineerTOHFE])
             .SetValueFormat(OptionFormat.Seconds);
         InVentMaxTime = IntegerOptionItem.Create(Id + 3, GeneralOption.EngineerBase_InVentMaxTime, new(0, 250, 5), 15, TabGroup.CrewmateRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.EngineerTOHE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.EngineerTOHFE])
             .SetValueFormat(OptionFormat.Seconds);
     }
 

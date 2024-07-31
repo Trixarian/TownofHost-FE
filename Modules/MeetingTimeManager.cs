@@ -1,9 +1,9 @@
 using AmongUs.GameOptions;
 using System;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Impostor;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Impostor;
 
-namespace TOHE.Modules;
+namespace TOHFE.Modules;
 
 public class MeetingTimeManager
 {

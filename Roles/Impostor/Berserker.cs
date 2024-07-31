@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using TOHE.Modules;
+using TOHFE.Modules;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Berserker : RoleBase
 {

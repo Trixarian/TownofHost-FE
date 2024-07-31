@@ -1,10 +1,10 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 using Object = UnityEngine.Object;
 
-namespace TOHE;
+namespace TOHFE;
 
 // Thanks: https://github.com/Yumenopai/TownOfHost_Y/blob/main/Patches/GameSettingMenuPatch.cs
 [HarmonyPatch(typeof(GameSettingMenu))]
@@ -27,7 +27,7 @@ public class GameSettingMenuPatch
     {
         TabGroup[] ExludeList = Options.CurrentGameMode switch
         {
-            CustomGameMode.HidenSeekTOHE => Enum.GetValues<TabGroup>().Skip(3).ToArray(),
+            CustomGameMode.HidenSeekTOHFE => Enum.GetValues<TabGroup>().Skip(3).ToArray(),
             CustomGameMode.FFA => Enum.GetValues<TabGroup>().Skip(2).ToArray(),
             _ => []
         };

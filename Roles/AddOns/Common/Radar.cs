@@ -1,9 +1,9 @@
 ﻿using Hazel;
 using UnityEngine;
-using static TOHE.Options;
+using static TOHFE.Options;
 
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public static class Radar
 {

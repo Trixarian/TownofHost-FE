@@ -2,14 +2,14 @@
 using System.Text;
 using UnityEngine;
 using AmongUs.GameOptions;
-using TOHE.Roles.Impostor;
-using TOHE.Modules;
-using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Impostor;
+using TOHFE.Modules;
+using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Pacifist : RoleBase
 {

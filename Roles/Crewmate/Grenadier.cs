@@ -2,13 +2,13 @@
 using System;
 using System.Text;
 using UnityEngine;
-using TOHE.Modules;
-using static TOHE.Utils;
-using static TOHE.Options;
-using static TOHE.Translator;
-using TOHE.Roles.Core;
+using TOHFE.Modules;
+using static TOHFE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Grenadier : RoleBase
 {

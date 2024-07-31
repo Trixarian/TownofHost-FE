@@ -1,7 +1,7 @@
-﻿using static TOHE.Translator;
-using static TOHE.Options;
+﻿using static TOHFE.Translator;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Vigilante : RoleBase
 {

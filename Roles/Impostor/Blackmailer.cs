@@ -1,10 +1,10 @@
 ﻿using AmongUs.GameOptions;
-using TOHE.Roles.Core;
-using TOHE.Roles.Neutral;
-using static TOHE.MeetingHudStartPatch;
-using static TOHE.Translator;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Neutral;
+using static TOHFE.MeetingHudStartPatch;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Blackmailer : RoleBase
 {

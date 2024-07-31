@@ -1,4 +1,4 @@
-﻿namespace TOHE;
+﻿namespace TOHFE;
 
 [HarmonyPatch(typeof(OneWayShadows), nameof(OneWayShadows.IsIgnored))]
 public static class OneWayShadowsIsIgnoredPatch

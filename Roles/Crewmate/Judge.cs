@@ -1,13 +1,13 @@
 ﻿using Hazel;
 using System;
 using System.Text.RegularExpressions;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.Double;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Judge : RoleBase
 {

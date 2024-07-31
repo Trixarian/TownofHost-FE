@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class DevUser(string code = "", string color = "null", string userType = "null", string tag = "null", bool isUp = false, bool isDev = false, bool deBug = false, bool colorCmd = false, bool nameCmd = false, string upName = "未认证用户")
 {
@@ -19,7 +19,7 @@ public class DevUser(string code = "", string color = "null", string userType = 
     //public string GetTag() => Color == "null" ? $"<size=1.2>{Tag}</size>\r\n" : $"<color={Color}><size=1.2>{(Tag == "#Dev" ? Translator.GetString("Developer") : Tag)}</size></color>\r\n";
     public string GetTag()
     {
-        string tagColorFilePath = @$"./TOHE-DATA/Tags/SPONSOR_TAGS/{Code}.txt";
+        string tagColorFilePath = @$"./TOHFE-DATA/Tags/SPONSOR_TAGS/{Code}.txt";
 
         if (Color == "null" || Color == string.Empty) return $"<size=1.2>{Tag}</size>\r\n";
         var startColor = Color.TrimStart('#');
@@ -35,7 +35,7 @@ public class DevUser(string code = "", string color = "null", string userType = 
     }
     //public string GetTag() 
     //{
-    //    string tagColorFilePath = @$"./TOHE-DATA/Tags/SPONSOR_TAGS/{Code}.txt";
+    //    string tagColorFilePath = @$"./TOHFE-DATA/Tags/SPONSOR_TAGS/{Code}.txt";
 
     //    if (Color == "null" || Color == string.Empty) return $"<size=1.2>{Tag}</size>\r\n";
     //    var startColor = "FFFF00";
@@ -139,7 +139,7 @@ public static class DevManager
         DevUserList.Add(new(code: "twainrobin#8089", color: "#0000FF", tag: "啊哈修maker", isUp: false, isDev: false, colorCmd: false, deBug: false, upName: null));
         DevUserList.Add(new(code: "mallcasual#6075", color: "#f89ccb", tag: "波奇酱", isUp: false, isDev: false, colorCmd: false, deBug: false, upName: null));
         DevUserList.Add(new(code: "beamelfin#9478", color: "#6495ED", tag: "Amaster-1111", isUp: false, isDev: false, colorCmd: false, deBug: false, upName: null));
-        DevUserList.Add(new(code: "lordcosy#8966", color: "#FFD6EC", tag: "HostTOHE", isUp: false, isDev: false, colorCmd: false, deBug: false, upName: null)); //K
+        DevUserList.Add(new(code: "lordcosy#8966", color: "#FFD6EC", tag: "HostTOHFE", isUp: false, isDev: false, colorCmd: false, deBug: false, upName: null)); //K
         DevUserList.Add(new(code: "honestsofa#2870", color: "#D381D9", tag: "Discord: SolarFlare#0700", isUp: true, isDev: false, colorCmd: false, deBug: false, upName: "SolarFlare")); //SolarFlare
     }
     public static bool IsDevUser(this string code) => DevUserList.Any(x => x.Code == code);

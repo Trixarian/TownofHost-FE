@@ -1,6 +1,6 @@
 using System;
 
-namespace TOHE.Modules;
+namespace TOHFE.Modules;
 
 public interface ILogHandler
 {

@@ -12,20 +12,20 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using UnityEngine;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.AddOns.Crewmate;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
-using TOHE.Roles.Core;
-using static TOHE.Translator;
-using TOHE.Patches;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.AddOns.Crewmate;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
+using TOHFE.Roles.Core;
+using static TOHFE.Translator;
+using TOHFE.Patches;
 
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class Utils
 {
@@ -1419,14 +1419,14 @@ public static class Utils
     public static bool IsPlayerModerator(string friendCode)
     {
         if (friendCode == "") return false;
-        var friendCodesFilePath = @"./TOHE-DATA/Moderators.txt";
+        var friendCodesFilePath = @"./TOHFE-DATA/Moderators.txt";
         var friendCodes = File.ReadAllLines(friendCodesFilePath);
         return friendCodes.Any(code => code.Contains(friendCode));
     }
     public static bool IsPlayerVIP(string friendCode)
     {
         if (friendCode == "") return false;
-        var friendCodesFilePath = @"./TOHE-DATA/VIP-List.txt";
+        var friendCodesFilePath = @"./TOHFE-DATA/VIP-List.txt";
         var friendCodes = File.ReadAllLines(friendCodesFilePath);
         return friendCodes.Any(code => code.Contains(friendCode));
     }
@@ -1550,7 +1550,7 @@ public static class Utils
             {
                 if (IsPlayerVIP(player.FriendCode))
                 {
-                    string colorFilePath = @$"./TOHE-DATA/Tags/VIP_TAGS/{player.FriendCode}.txt";
+                    string colorFilePath = @$"./TOHFE-DATA/Tags/VIP_TAGS/{player.FriendCode}.txt";
                     //static color
                     if (!Options.GradientTagsOpt.GetBool())
                     { 
@@ -1594,7 +1594,7 @@ public static class Utils
             {
                 if (IsPlayerModerator(player.FriendCode))
                 {
-                    string colorFilePath = @$"./TOHE-DATA/Tags/MOD_TAGS/{player.FriendCode}.txt";
+                    string colorFilePath = @$"./TOHFE-DATA/Tags/MOD_TAGS/{player.FriendCode}.txt";
                     //static color
                     if (!Options.GradientTagsOpt.GetBool())
                     { 
@@ -1638,7 +1638,7 @@ public static class Utils
             {
                 name = Options.GetSuffixMode() switch
                 {
-                    SuffixModes.TOHE => name += $"\r\n<color={Main.ModColor}>TOHE v{Main.PluginDisplayVersion}</color>",
+                    SuffixModes.TOHFE => name += $"\r\n<color={Main.ModColor}>TOHFE v{Main.PluginDisplayVersion}</color>",
                     SuffixModes.Streaming => name += $"\r\n<size=1.7><color={Main.ModColor}>{GetString("SuffixMode.Streaming")}</color></size>",
                     SuffixModes.Recording => name += $"\r\n<size=1.7><color={Main.ModColor}>{GetString("SuffixMode.Recording")}</color></size>",
                     SuffixModes.RoomHost => name += $"\r\n<size=1.7><color={Main.ModColor}>{GetString("SuffixMode.RoomHost")}</color></size>",
@@ -2279,15 +2279,15 @@ public static class Utils
     }
     public static void DumpLog()
     {
-        string f = $"{Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)}/TOHE-logs/";
+        string f = $"{Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)}/TOHFE-logs/";
         string t = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-        string filename = $"{f}TOHE-v{Main.PluginVersion}-{t}.log";
+        string filename = $"{f}TOHFE-v{Main.PluginVersion}-{t}.log";
         if (!Directory.Exists(f)) Directory.CreateDirectory(f);
         FileInfo file = new(@$"{Environment.CurrentDirectory}/BepInEx/LogOutput.log");
         file.CopyTo(@filename);
 
         if (PlayerControl.LocalPlayer != null)
-            HudManager.Instance?.Chat?.AddChat(PlayerControl.LocalPlayer, string.Format(GetString("Message.DumpfileSaved"), $"TOHE - v{Main.PluginVersion}-{t}.log"));
+            HudManager.Instance?.Chat?.AddChat(PlayerControl.LocalPlayer, string.Format(GetString("Message.DumpfileSaved"), $"TOHFE - v{Main.PluginVersion}-{t}.log"));
 
         SendMessage(string.Format(GetString("Message.DumpcmdUsed"), PlayerControl.LocalPlayer.GetNameWithRole()));
 

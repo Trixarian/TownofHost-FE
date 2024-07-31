@@ -1,14 +1,14 @@
 ﻿using Hazel;
 using System;
 using System.Text.RegularExpressions;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.Core;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Double;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Councillor : RoleBase
 {

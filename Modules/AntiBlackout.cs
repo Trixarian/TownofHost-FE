@@ -1,10 +1,10 @@
 using Hazel;
 using System;
 using System.Runtime.CompilerServices;
-using TOHE.Modules;
-using TOHE.Roles.Core;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class AntiBlackout
 {

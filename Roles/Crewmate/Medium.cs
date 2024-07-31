@@ -1,14 +1,14 @@
 ﻿using Hazel;
 using System;
 using System.Text;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Utils;
-using static TOHE.Translator;
-using static TOHE.MeetingHudStartPatch;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
+using static TOHFE.MeetingHudStartPatch;
 using InnerNet;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Medium : RoleBase
 {

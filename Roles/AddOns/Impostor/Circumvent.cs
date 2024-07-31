@@ -1,5 +1,5 @@
 ﻿
-namespace TOHE.Roles.AddOns.Impostor;
+namespace TOHFE.Roles.AddOns.Impostor;
 
 public static class Circumvent
 {

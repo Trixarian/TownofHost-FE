@@ -1,9 +1,9 @@
 using InnerNet;
-using TOHE.Modules;
+using TOHFE.Modules;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.MakePublic))]
 internal class MakePublicPatch

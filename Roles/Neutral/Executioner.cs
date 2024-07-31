@@ -1,9 +1,9 @@
 using Hazel;
 using System;
-using TOHE.Roles.Core;
-using static TOHE.Options;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Executioner : RoleBase
 {
@@ -39,7 +39,7 @@ internal class Executioner : RoleBase
     }
     public static readonly CustomRoles[] CRoleChangeRoles =
     [
-        CustomRoles.CrewmateTOHE,
+        CustomRoles.CrewmateTOHFE,
         CustomRoles.Celebrity,
         CustomRoles.Bodyguard,
         CustomRoles.Dictator,

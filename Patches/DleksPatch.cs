@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 // Thanks Galster (https://github.com/Galster-dev)
 [HarmonyPatch(typeof(AmongUsClient._CoStartGameHost_d__32), nameof(AmongUsClient._CoStartGameHost_d__32.MoveNext))]
@@ -64,8 +64,8 @@ class AllMapIconsPatch
 
         MapIconByName DleksIncon = Object.Instantiate(__instance, __instance.gameObject.transform).AllMapIcons[0];
         DleksIncon.Name = MapNames.Dleks;
-        DleksIncon.MapImage = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner.png", 100f);
-        DleksIncon.NameImage = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner-Wordart.png", 100f);
+        DleksIncon.MapImage = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner.png", 100f);
+        DleksIncon.NameImage = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner-Wordart.png", 100f);
 
         __instance.AllMapIcons.Add(DleksIncon);
     }

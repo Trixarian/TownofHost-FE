@@ -1,7 +1,7 @@
 ﻿
-namespace TOHE.Roles.Vanilla;
+namespace TOHFE.Roles.Vanilla;
 
-internal class ImpostorTOHE : RoleBase
+internal class ImpostorTOHFE : RoleBase
 {
     //===========================SETUP================================\\
     private const int Id = 300;
@@ -14,7 +14,7 @@ internal class ImpostorTOHE : RoleBase
 
     public override void SetupCustomOption()
     {
-        Options.SetupRoleOptions(Id, TabGroup.ImpostorRoles, CustomRoles.ImpostorTOHE);
+        Options.SetupRoleOptions(Id, TabGroup.ImpostorRoles, CustomRoles.ImpostorTOHFE);
     }
 
     public override void Init()

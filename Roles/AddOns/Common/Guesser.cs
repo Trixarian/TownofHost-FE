@@ -1,7 +1,7 @@
-﻿using static TOHE.Options;
+﻿using static TOHFE.Options;
 using UnityEngine;
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public static class Guesser
 {

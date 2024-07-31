@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 // Thanks: https://github.com/SubmergedAmongUs/Submerged/blob/4a5a6b47cbed526670ae4b7eae76acd7c42e35de/Submerged/UI/Patches/MapSelectButtonPatches.cs#L49
 class CreateOptionsPickerPatch
@@ -48,8 +48,8 @@ class CreateOptionsPickerPatch
                     //__instance.MapImage.transform.localScale = new Vector3(-1f, 1f, 1f);
                     //__instance.MapName.transform.localScale = new Vector3(-1f, 1f, 1f);
 
-                    __instance.MapImage.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner.png", 100f);
-                    __instance.MapName.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner-Wordart.png", 100f);
+                    __instance.MapImage.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner.png", 100f);
+                    __instance.MapName.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner-Wordart.png", 100f);
                 }));
 
                 for (int i = DleksPos; i < AllMapButton.Length; i++)
@@ -72,8 +72,8 @@ class CreateOptionsPickerPatch
                         //__instance.MapImage.transform.localScale = new Vector3(-1f, 1f, 1f);
                         //__instance.MapName.transform.localScale = new Vector3(-1f, 1f, 1f);
 
-                        __instance.MapImage.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner.png", 100f);
-                        __instance.MapName.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner-Wordart.png", 100f);
+                        __instance.MapImage.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner.png", 100f);
+                        __instance.MapName.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner-Wordart.png", 100f);
                     }
                     else
                     {

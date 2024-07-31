@@ -1,8 +1,8 @@
-﻿using TOHE.Roles.Double;
-using static TOHE.Options;
-using static TOHE.Translator;
+﻿using TOHFE.Roles.Double;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Provocateur : RoleBase
 {

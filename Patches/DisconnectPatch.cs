@@ -1,4 +1,4 @@
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnDisconnected))]
 class OnDisconnectedPatch

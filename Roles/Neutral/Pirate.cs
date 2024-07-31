@@ -1,15 +1,15 @@
 ﻿using Hazel;
 using InnerNet;
 using System.Text.RegularExpressions;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.Core;
-using TOHE.Roles.Double;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Double;
 using UnityEngine;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 internal class Pirate : RoleBase
 {
     //===========================SETUP================================\\

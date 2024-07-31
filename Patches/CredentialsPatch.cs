@@ -1,10 +1,10 @@
 using System.Text;
 using TMPro;
-using TOHE.Modules;
+using TOHFE.Modules;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(PingTracker), nameof(PingTracker.Update))]
 class PingTrackerUpdatePatch
@@ -162,7 +162,7 @@ class VersionShowerStartPatch
             Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Enhanced Network</color>";
             buildtype = "Debug";
 #endif
-        Logger.Info($"v{Main.PluginVersion}, {buildtype}:{ThisAssembly.Git.Branch}:({ThisAssembly.Git.Commit}), link [{ThisAssembly.Git.RepositoryUrl}], dirty: [{ThisAssembly.Git.IsDirty}]", "TOHE version");
+        Logger.Info($"v{Main.PluginVersion}, {buildtype}:{ThisAssembly.Git.Branch}:({ThisAssembly.Git.Commit}), link [{ThisAssembly.Git.RepositoryUrl}], dirty: [{ThisAssembly.Git.IsDirty}]", "TOHFE version");
 
         if (Main.IsAprilFools)
             Main.credentialsText = $"<color=#00bfff>Town Of Host</color> v11.45.14";

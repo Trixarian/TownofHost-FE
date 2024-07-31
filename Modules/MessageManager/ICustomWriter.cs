@@ -1,7 +1,7 @@
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using InnerNet;
 
-namespace TOHE;
+namespace TOHFE;
 
 public interface ICustomWriter
 {

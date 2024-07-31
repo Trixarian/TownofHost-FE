@@ -1,4 +1,4 @@
-﻿namespace TOHE.Patches;
+﻿namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(HauntMenuMinigame), nameof(HauntMenuMinigame.SetFilterText))]
 public static class HauntMenuMinigameSetFilterTextPatch

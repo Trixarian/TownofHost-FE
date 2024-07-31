@@ -1,7 +1,7 @@
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class ErrorText : MonoBehaviour
 {

@@ -2,11 +2,11 @@
 using System;
 using System.Text;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Bastion : RoleBase
 {

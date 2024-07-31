@@ -1,7 +1,7 @@
 ﻿using Hazel;
 using InnerNet;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 public enum GameDataTag : byte
 {

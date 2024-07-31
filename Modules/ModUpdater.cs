@@ -3,20 +3,20 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 using UnityEngine.Networking;
 using IEnumerator = System.Collections.IEnumerator;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch]
 public class ModUpdater
 {
     //private static readonly string URL_2018k = "http://api.tohre.dev";
     private static readonly string URL_Github = "https://api.github.com/repos/0xDrMoe/TownofHost-Enhanced";
-    //public static readonly string downloadTest = "https://github.com/Pietrodjaowjao/TOHEN-Contributions/releases/download/v123123123/TOHE.dll";
+    //public static readonly string downloadTest = "https://github.com/Pietrodjaowjao/TOHFEN-Contributions/releases/download/v123123123/TOHFE.dll";
     public static bool hasUpdate = false;
     //public static bool isNewer = false;
     public static bool forceUpdate = false;
@@ -179,7 +179,7 @@ public class ModUpdater
         try
         {
             var fileName = Assembly.GetExecutingAssembly().Location;
-            if (Directory.Exists("TOH_DATA") && File.Exists(@"./TOHE-DATA/BanWords.txt"))
+            if (Directory.Exists("TOH_DATA") && File.Exists(@"./TOHFE-DATA/BanWords.txt"))
             {
                 DirectoryInfo di = new("TOH_DATA");
                 di.Delete(true);
@@ -212,7 +212,7 @@ public class ModUpdater
     public static void DeleteOldFiles()
     {
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        string searchPattern = "TOHE.dll*";
+        string searchPattern = "TOHFE.dll*";
         string[] files = Directory.GetFiles(path, searchPattern);
         try
         {
@@ -235,7 +235,7 @@ public class ModUpdater
 
     private static IEnumerator DownloadDLL(string url)
     {
-        var savePath = "BepInEx/plugins/TOHE.dll.temp";
+        var savePath = "BepInEx/plugins/TOHFE.dll.temp";
         Application.targetFrameRate = -1;
 
         // Delete the temporary file if it exists

@@ -1,10 +1,10 @@
 ﻿using Hazel;
 using InnerNet;
-using static TOHE.Options;
-using static TOHE.Utils;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class PunchingBag : RoleBase// bad roll, plz don't use this hosts
 {

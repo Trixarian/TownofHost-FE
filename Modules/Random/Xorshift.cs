@@ -1,6 +1,6 @@
 using System;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class Xorshift(uint seed) : IRandom
 {

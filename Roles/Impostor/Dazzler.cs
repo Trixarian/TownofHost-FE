@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHE.Roles.AddOns.Common;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using TOHFE.Roles.AddOns.Common;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Dazzler : RoleBase
 {

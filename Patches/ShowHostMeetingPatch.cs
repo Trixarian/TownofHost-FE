@@ -1,8 +1,8 @@
 using TMPro;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 // Thanks TOU-R: https://github.com/eDonnes124/Town-Of-Us-R/blob/master/source/Patches/ShowHostMeetingPatch.cs
 

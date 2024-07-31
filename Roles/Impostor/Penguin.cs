@@ -1,13 +1,13 @@
 ﻿using Hazel;
 using AmongUs.GameOptions;
 using UnityEngine;
-using static TOHE.Translator;
-using static TOHE.Options;
-using TOHE.Roles.Core;
+using static TOHFE.Translator;
+using static TOHFE.Options;
+using TOHFE.Roles.Core;
 using InnerNet;
 
 // https://github.com/tukasa0001/TownOfHost/blob/main/Roles/Impostor/Penguin.cs
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Penguin : RoleBase
 {

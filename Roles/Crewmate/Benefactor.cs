@@ -1,8 +1,8 @@
 ﻿using Hazel;
 using System;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Benefactor : RoleBase
 {

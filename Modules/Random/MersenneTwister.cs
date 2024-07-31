@@ -22,7 +22,7 @@
 
 using System;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class MersenneTwister : IRandom
 {

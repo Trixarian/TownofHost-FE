@@ -1,14 +1,14 @@
 ﻿using Hazel;
 using System;
 using InnerNet;
-using TOHE.Modules;
-using TOHE.Roles.Core;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.MeetingHudStartPatch;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.MeetingHudStartPatch;
 
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Quizmaster : RoleBase
 {

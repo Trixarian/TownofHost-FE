@@ -1,10 +1,10 @@
 using Hazel;
 using UnityEngine;
-using static TOHE.Translator;
-using static TOHE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Options;
 using InnerNet;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Snitch : RoleBase
 {

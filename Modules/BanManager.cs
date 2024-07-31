@@ -5,17 +5,17 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class BanManager
 {
-    private static readonly string DENY_NAME_LIST_PATH = @"./TOHE-DATA/DenyName.txt";
-    private static readonly string BAN_LIST_PATH = @"./TOHE-DATA/BanList.txt";
-    private static readonly string MODERATOR_LIST_PATH = @"./TOHE-DATA/Moderators.txt";
-    private static readonly string VIP_LIST_PATH = @"./TOHE-DATA/VIP-List.txt";
-    private static readonly string WHITE_LIST_LIST_PATH = @"./TOHE-DATA/WhiteList.txt";
+    private static readonly string DENY_NAME_LIST_PATH = @"./TOHFE-DATA/DenyName.txt";
+    private static readonly string BAN_LIST_PATH = @"./TOHFE-DATA/BanList.txt";
+    private static readonly string MODERATOR_LIST_PATH = @"./TOHFE-DATA/Moderators.txt";
+    private static readonly string VIP_LIST_PATH = @"./TOHFE-DATA/VIP-List.txt";
+    private static readonly string WHITE_LIST_LIST_PATH = @"./TOHFE-DATA/WhiteList.txt";
     //private static List<string> EACList = []; // Don't make it read-only
     public static List<string> TempBanWhiteList = []; //To prevent writing to ban list
     public static List<Dictionary<string, System.Text.Json.JsonElement>> EACDict = [];
@@ -23,7 +23,7 @@ public static class BanManager
     {
         try
         {
-            Directory.CreateDirectory("TOHE-DATA");
+            Directory.CreateDirectory("TOHFE-DATA");
 
             if (!File.Exists(BAN_LIST_PATH))
             {
@@ -34,7 +34,7 @@ public static class BanManager
             {
                 Logger.Warn("Create a new DenyName.txt file", "BanManager");
                 File.Create(DENY_NAME_LIST_PATH).Close();
-                File.WriteAllText(DENY_NAME_LIST_PATH, GetResourcesTxt("TOHE.Resources.Config.DenyName.txt"));
+                File.WriteAllText(DENY_NAME_LIST_PATH, GetResourcesTxt("TOHFE.Resources.Config.DenyName.txt"));
             }
             if (!File.Exists(MODERATOR_LIST_PATH))
             {
@@ -53,7 +53,7 @@ public static class BanManager
             }
 
             // Read EAC List
-            //var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOHE.Resources.Config.EACList.txt");
+            //var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TOHFE.Resources.Config.EACList.txt");
             //stream.Position = 0;
             //using StreamReader sr = new(stream, Encoding.UTF8);
             //string line;
@@ -111,7 +111,7 @@ public static class BanManager
 
         try
         {
-            Directory.CreateDirectory("TOHE-DATA");
+            Directory.CreateDirectory("TOHFE-DATA");
             if (!File.Exists(DENY_NAME_LIST_PATH)) File.Create(DENY_NAME_LIST_PATH).Close();
             using StreamReader sr = new(DENY_NAME_LIST_PATH);
             string line;
@@ -192,7 +192,7 @@ public static class BanManager
 
         try
         {
-            Directory.CreateDirectory("TOHE-DATA");
+            Directory.CreateDirectory("TOHFE-DATA");
             if (!File.Exists(BAN_LIST_PATH)) File.Create(BAN_LIST_PATH).Close();
             using StreamReader sr = new(BAN_LIST_PATH);
             string line;
@@ -239,7 +239,7 @@ public static class BanManager
     public static bool CheckAllowList(string friendcode)
     {
         if (friendcode == "") return false;
-        var allowListFilePath = @"./TOHE-DATA/WhiteList.txt";
+        var allowListFilePath = @"./TOHFE-DATA/WhiteList.txt";
         if (!File.Exists(allowListFilePath)) File.Create(allowListFilePath).Close();
         var friendcodes = File.ReadAllLines(allowListFilePath);
         return friendcodes.Any(x => x == friendcode || x.Contains(friendcode));

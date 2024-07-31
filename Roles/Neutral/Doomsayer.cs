@@ -1,11 +1,11 @@
 ﻿using Hazel;
 using UnityEngine;
-using static TOHE.Utils;
-using static TOHE.Translator;
-using TOHE.Roles.Core;
+using static TOHFE.Utils;
+using static TOHFE.Translator;
+using TOHFE.Roles.Core;
 using InnerNet;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Doomsayer : RoleBase
 {
