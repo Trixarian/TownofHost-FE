@@ -2198,7 +2198,7 @@
   "Warning.ShowAntiBlackExiledPlayer": "<b>Last meeting triggered Black Screen Prevention!\nFollowing is the information of the player exiled in the last meeting.</b>\n",
   "DisableAntiBlackoutProtects": "Desactivar protection Anti-Apagón (Recomendado para realizar pruebas)",
   "Warning.InvalidRpc": "Kicked <b>{0}</b> because an invalid RPC was received.\nPlease check that no mods other than TOHFE are installed.",
-  "Warning.NoModHost": "Town of Host Enhanced no fue instalado por el Anfitrión",
+  "Warning.NoModHost": "Town of Host FE no fue instalado por el Anfitrión",
   "Warning.MismatchedVersion": "<b>{0}</b> no usa la misma versión de <b>{1}</b>",
   "Warning.AutoExitAtMismatchedVersion": "El anfitrión está jugando vanilla o una versión distinta de {0}\nSerás expulsado en {1}",
   "Warning.CanNotUseBepInExConsole": "El uso de la consola está prohibida\nAsí que la consola ha sido desactivada",
