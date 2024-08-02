@@ -2946,7 +2946,6 @@ class ChatUpdatePatch
         if (DoBlockChat) return;
 
         Instance ??= __instance;
-        if (Instance == null) return;
 
         if (Main.DarkTheme.Value)
         {
