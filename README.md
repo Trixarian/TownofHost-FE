@@ -37,39 +37,39 @@
 > 
 > - Town of Host: Enhanced was forked from Town of Host: Re-Edited.
 >
-### :star: [TOHE](https://github.com/KARPED1EM/TownOfHostEdited) :
+### :star: [TOHE](https://github.com/KARPED1EM/TownOfHostEdited)
 > 
 > - Town of Host: Re-Edited was forked from Town of Host: Edited. (TONX)
 > 
-### :star: [TOH](https://github.com/tukasa0001/TownOfHost) :
+### :star: [TOH](https://github.com/tukasa0001/TownOfHost)
 > 
 > - Our repo is based initially on Town of Host.
 > 
-### :star: [TOHY](https://github.com/Yumenopai/TownOfHost_Y) :
+### :star: [TOHY](https://github.com/Yumenopai/TownOfHost_Y)
 > 
 > - Many role ideas
 > - Provided roles: AntiAdminer, CursedWolf, Workaholic, Greedier (Greedy), DarkHide (Stalker)
 > - Reference: Modify game announcement
 > - Ported new UI for settings (for version AU v2024.6.18)
 > 
-### :star: [TOH:TOR](https://github.com/music-discussion/TownOfHost-TheOtherRoles) :
+### :star: [TOH:TOR](https://github.com/music-discussion/TownOfHost-TheOtherRoles)
 > 
 > - Many role ideas
 > - Reference: Exile Confirm
 > - Reference: Split RPC Pack
 > 
-### :star: [SNR](https://github.com/ykundesu/SuperNewRoles) :
+### :star: [SNR](https://github.com/ykundesu/SuperNewRoles)
 > 
 > - Reference: Credentials menu
 > - Reference: Switch Horse Mode
 > - Reference: Search Mod Game
 > - Reference: Custom Button
 >
-### :star: [TOP](https://github.com/tugaru1975/TownOfPlus) :
+### :star: [TOP](https://github.com/tugaru1975/TownOfPlus)
 > 
 > - Reference: Zoom
 > 
-### :star: [RHR](https://github.com/sansaaaaai/Revolutionary-host-roles) :
+### :star: [RHR](https://github.com/sansaaaaai/Revolutionary-host-roles)
 > 
 > - Reference: Modify settings menu
 > 
