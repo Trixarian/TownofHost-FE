@@ -432,7 +432,7 @@ public class Main : BasePlugin
         ForceOwnLanguageRoleName = Config.Bind("Client Options", "ForceOwnLanguageRoleName", false);
         EnableCustomButton = Config.Bind("Client Options", "EnableCustomButton", true);
         EnableCustomSoundEffect = Config.Bind("Client Options", "EnableCustomSoundEffect", true);
-        EnableCustomDecorations = Config.Bind("Client Options", "EnableCustomDecorations", true);
+        EnableCustomDecorations = Config.Bind("Client Options", "EnableCustomDecorations", false);
         SwitchVanilla = Config.Bind("Client Options", "SwitchVanilla", false);
 
         // Debug
