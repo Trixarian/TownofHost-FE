@@ -1003,7 +1003,7 @@ class FixedUpdateInNormalGamePatch
         catch (Exception ex)
         {
             Utils.ThrowException(ex);
-            Logger.Error($"Error for {__instance.GetNameWithRole().RemoveHtmlTags()}", "FixedUpdateInNormalGamePatch");
+            Logger.Error($"Error for {__instance.GetNameWithRole().RemoveHtmlTags()}: Error: {ex}", "FixedUpdateInNormalGamePatch");
         }
     }
 
@@ -1043,11 +1043,18 @@ class FixedUpdateInNormalGamePatch
         {
             Zoom.OnFixedUpdate();
 
-            // ChatUpdatePatch doesn't work when host chat is hidden
-            if (AmongUsClient.Instance.AmHost && player.AmOwner && !DestroyableSingleton<HudManager>.Instance.Chat.isActiveAndEnabled)
-            {
-                ChatUpdatePatch.Postfix(ChatUpdatePatch.Instance);
-            }
+            //try
+            //{
+            //    // ChatUpdatePatch doesn't work when host chat is hidden
+            //    if (AmongUsClient.Instance.AmHost && player.AmOwner && !DestroyableSingleton<HudManager>.Instance.Chat.isActiveAndEnabled)
+            //    {
+            //        ChatUpdatePatch.Postfix(ChatUpdatePatch.Instance);
+            //    }
+            //}
+            //catch (Exception er)
+            //{
+            //    Logger.Error($"Error: {er}", "ChatUpdatePatch");
+            //}
         }
 
         // Only during the game
@@ -1398,7 +1405,7 @@ class FixedUpdateInNormalGamePatch
                                     partnerPlayer.Data.IsDead = true;
                                     partnerPlayer.RpcExileV2();
                                     Main.PlayerStates[partnerPlayer.PlayerId].SetDead();
-                                    if (MeetingHud.Instance?.state == MeetingHud.VoteStates.Discussion)
+                                    if (MeetingHud.Instance?.state is MeetingHud.VoteStates.Discussion or MeetingHud.VoteStates.NotVoted or MeetingHud.VoteStates.Voted)
                                     {
                                         MeetingHud.Instance?.CheckForEndVoting();
                                     }
