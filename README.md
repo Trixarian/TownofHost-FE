@@ -31,7 +31,7 @@
 **Credit to these mods and their developers for the code and help:**
 ### :star: [TOHE](https://github.com/0xDrMoe/TownofHost-Enhanced) 
 > 
-> - Town of Host: Friens Edition was forked from Town of Host: Enhanced.
+> - Town of Host: Frens Edition was forked from Town of Host: Enhanced.
 >
 ### :star: [TOHRE](https://github.com/Loonie-Toons/) 
 > 
