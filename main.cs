@@ -39,9 +39,9 @@ public class Main : BasePlugin
     public static ConfigEntry<string> DebugKeyInput { get; private set; }
 
     public const string PluginGuid = "com.trixarian.tohfe";
-    public const string PluginVersion = "2024.0813.203.9999"; // YEAR.MMDD.VERSION.CANARYDEV
-    public const string PluginDisplayVersion = "2.0.3";
-    public const string SupportedVersionAU = "2024.8.13";
+    public const string PluginVersion = "2024.0906.204.9999"; // YEAR.MMDD.VERSION.CANARYDEV
+    public const string PluginDisplayVersion = "2.0.4";
+    public const string SupportedVersionAU = "2024.9.4";
 
     /******************* Change one of the three variables to true before making a release. *******************/
     public static readonly bool devRelease = false; // Latest: V2.0.0 Dev 25
