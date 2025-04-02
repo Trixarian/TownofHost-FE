@@ -1,21 +1,19 @@
-﻿using Hazel;
-using AmongUs.GameOptions;
-using UnityEngine;
-using TOHFE.Roles.Core;
+using Hazel;
 using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using UnityEngine;
 using static TOHFE.Options;
-using static TOHFE.Utils;
 using static TOHFE.Translator;
+using static TOHFE.Utils;
 
 namespace TOHFE.Roles.Neutral;
 
 internal class Revolutionist : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Revolutionist;
     private const int Id = 15200;
-    private static readonly HashSet<byte> PlayerIds = [];
-    public static bool HasEnabled => PlayerIds.Any();
-    
+    public override bool IsDesyncRole => true;
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.NeutralChaos;
     //==================================================================\\
@@ -62,20 +60,19 @@ internal class Revolutionist : RoleBase
         RevolutionistLastTime.Clear();
         RevolutionistCountdown.Clear();
         CurrentDrawTarget = byte.MaxValue;
-
-        PlayerIds.Clear();
     }
     public override void Add(byte playerId)
     {
-        PlayerIds.Add(playerId);
-        
         CustomRoleManager.OnFixedUpdateOthers.Add(OnFixUpdateOthers);
+        CustomRoleManager.CheckDeadBodyOthers.Add(CheckDeadBody);
 
         foreach (var ar in Main.AllPlayerControls)
             IsDraw.Add((playerId, ar.PlayerId), false);
-
-        if (!Main.ResetCamPlayerList.Contains(playerId))
-            Main.ResetCamPlayerList.Add(playerId);
+    }
+    public override void Remove(byte playerId)
+    {
+        CustomRoleManager.OnFixedUpdateOthers.Remove(OnFixUpdateOthers);
+        CustomRoleManager.CheckDeadBodyOthers.Remove(CheckDeadBody);
     }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = RevolutionistCooldown.GetFloat();
 
@@ -197,10 +194,18 @@ internal class Revolutionist : RoleBase
             RevolutionistTimer.TryAdd(killer.PlayerId, (target, 0f));
             NotifyRoles(SpecifySeer: killer, SpecifyTarget: target);
             SetCurrentDrawTargetRPC(killer.PlayerId, target.PlayerId);
+            killer.RpcSetVentInteraction();
         }
         return false;
     }
-    private static void OnFixUpdateOthers(PlayerControl player) // jesus christ
+    private void CheckDeadBody(PlayerControl killer, PlayerControl target, bool inMeeting)
+    {
+        if (!_Player.IsAlive() || target.PlayerId == _Player.PlayerId || inMeeting || Main.MeetingIsStarted) return;
+
+        _Player.RpcSetVentInteraction();
+        _ = new LateTask(() => { NotifyRoles(SpecifySeer: _Player, ForceLoop: false); }, 1f, $"Update name for Revolutionist {_Player?.PlayerId}", shoudLog: false);
+    }
+    private static void OnFixUpdateOthers(PlayerControl player, bool lowLoad, long nowTime)
     {
         if (RevolutionistTimer.TryGetValue(player.PlayerId, out var revolutionistTimerData))
         {
@@ -228,7 +233,7 @@ internal class Revolutionist : RoleBase
                     SetDrawPlayerRPC(player, rv_target, true);
                     NotifyRoles(SpecifySeer: player, SpecifyTarget: rv_target);
                     ResetCurrentDrawTarget(playerId);
-                    if (IRandom.Instance.Next(1, 100) <= RevolutionistKillProbability.GetInt())
+                    if (IRandom.Instance.Next(1, 100) <= RevolutionistKillProbability.GetInt() && !rv_target.IsTransformedNeutralApocalypse())
                     {
                         rvTargetId.SetDeathReason(PlayerState.DeathReason.Sacrifice);
                         player.RpcMurderPlayer(rv_target);
@@ -239,8 +244,8 @@ internal class Revolutionist : RoleBase
                 }
                 else
                 {
-                    float range = NormalGameOptionsV08.KillDistances[Mathf.Clamp(player.Is(Reach.IsReach) ? 2 : Main.NormalOptions.KillDistance, 0, 2)] + 0.5f;
-                    float dis = Vector2.Distance(player.GetCustomPosition(), rv_target.GetCustomPosition());
+                    float range = ExtendedPlayerControl.GetKillDistances(ovverideValue: player.Is(Reach.IsReach), newValue: 2) + 0.5f;
+                    float dis = GetDistance(player.GetCustomPosition(), rv_target.GetCustomPosition());
                     if (dis <= range)
                     {
                         RevolutionistTimer[playerId] = (rv_target, rv_time + Time.fixedDeltaTime);
@@ -255,18 +260,17 @@ internal class Revolutionist : RoleBase
                 }
             }
         }
-        if (IsDrawDone(player) && player.IsAlive())
+        if (!lowLoad && IsDrawDone(player) && player.IsAlive())
         {
             var playerId = player.PlayerId;
             if (RevolutionistStart.TryGetValue(playerId, out long startTime))
             {
                 if (RevolutionistLastTime.TryGetValue(playerId, out long lastTime))
                 {
-                    long nowtime = GetTimeStamp();
-                    if (lastTime != nowtime)
+                    if (lastTime != nowTime)
                     {
-                        RevolutionistLastTime[playerId] = nowtime;
-                        lastTime = nowtime;
+                        RevolutionistLastTime[playerId] = nowTime;
+                        lastTime = nowTime;
                     }
                     int time = (int)(lastTime - startTime);
                     int countdown = RevolutionistVentCountDown.GetInt() - time;
@@ -276,7 +280,7 @@ internal class Revolutionist : RoleBase
                     {
                         GetDrawPlayerCount(playerId, out var list);
 
-                        foreach (var pc in list.Where(x => x != null && x.IsAlive()).ToArray())
+                        foreach (var pc in list.Where(x => x.IsAlive()).ToArray())
                         {
                             pc.Data.IsDead = true;
                             pc.SetDeathReason(PlayerState.DeathReason.Sacrifice);

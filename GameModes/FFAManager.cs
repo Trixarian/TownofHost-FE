@@ -1,5 +1,5 @@
-﻿using Hazel;
-using System;
+using Hazel;
+using System.Text;
 using TOHFE.Modules;
 using UnityEngine;
 using static TOHFE.Translator;
@@ -22,6 +22,7 @@ internal static class FFAManager
 
     //Options
     public static OptionItem FFA_GameTime;
+    public static OptionItem FFA_ShowChatInGame;
     public static OptionItem FFA_KCD;
     public static OptionItem FFA_LowerVision;
     public static OptionItem FFA_IncreasedSpeed;
@@ -37,11 +38,20 @@ internal static class FFAManager
 
     public static void SetupCustomOption()
     {
+        TextOptionItem.Create(10000030, "MenuTitle.FreeForAll", TabGroup.ModSettings)
+            .SetGameMode(CustomGameMode.FFA)
+            .SetColor(new Color32(0, 255, 165, byte.MaxValue));
+
         FFA_GameTime = IntegerOptionItem.Create(67_223_001, "FFA_GameTime", new(30, 600, 10), 300, TabGroup.ModSettings, false)
             .SetGameMode(CustomGameMode.FFA)
             .SetColor(new Color32(0, 255, 165, byte.MaxValue))
             .SetValueFormat(OptionFormat.Seconds)
             .SetHeader(true);
+        
+        FFA_ShowChatInGame = BooleanOptionItem.Create(67_233_014, "FFA_ShowChatInGame", false, TabGroup.ModSettings, false)
+            .SetColor(new Color32(0, 255, 165, byte.MaxValue))
+            .SetGameMode(CustomGameMode.FFA);
+        
         FFA_KCD = FloatOptionItem.Create(67_223_002, "FFA_KCD", new(1f, 60f, 1f), 10f, TabGroup.ModSettings, false)
             .SetGameMode(CustomGameMode.FFA)
             .SetColor(new Color32(0, 255, 165, byte.MaxValue))
@@ -99,25 +109,18 @@ internal static class FFAManager
             FFAVentDuration = [];
             FFAEnterVentTime = [];
         }
+    }
+    public static void SetData()
+    {
+        if (Options.CurrentGameMode != CustomGameMode.FFA) return;
 
-        _ = new LateTask( ()=>
+        RoundTime = FFA_GameTime.GetInt() + 8;
+        var now = Utils.GetTimeStamp() + 8;
+        foreach (PlayerControl pc in Main.AllAlivePlayerControls)
         {
-            try
-            {
-                Utils.SetChatVisibleForEveryone();
-            }
-            catch (Exception error)
-            {
-                Logger.Error($"Error: {error}", "FFA Init");
-            }
-            RoundTime = FFA_GameTime.GetInt() + 8;
-            var now = Utils.GetTimeStamp() + 8;
-            foreach (PlayerControl pc in Main.AllAlivePlayerControls)
-            {
-                KBScore.TryAdd(pc.PlayerId, 0);
-                if (FFA_DisableVentingWhenKCDIsUp.GetBool()) FFALastKill.TryAdd(pc.PlayerId, now);
-            }
-        }, 10f, "Set Chat Visible for Everyone");
+            KBScore[pc.PlayerId] = 0;
+            if (FFA_DisableVentingWhenKCDIsUp.GetBool()) FFALastKill[pc.PlayerId] = now;
+        }
     }
     private static void SendRPCSyncFFAPlayer(byte playerId)
     {
@@ -133,7 +136,7 @@ internal static class FFAManager
     }
     public static void SendRPCSyncNameNotify(PlayerControl pc)
     {
-        if (pc.AmOwner || !pc.IsModClient()) return;
+        if (!pc.IsNonHostModdedClient()) return;
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncFFANameNotify, SendOption.Reliable, pc.GetClientId());
         if (NameNotify.ContainsKey(pc.PlayerId))
             writer.Write(NameNotify[pc.PlayerId].TEXT);
@@ -160,7 +163,7 @@ internal static class FFAManager
     public static string GetDisplayScore(byte playerId)
     {
         int rank = GetRankOfScore(playerId);
-        string score = KBScore.TryGetValue(playerId, out var s) ? $"{s}" : "Invalid";
+        string score = KBScore.TryGetValue(playerId, out var s) ? $"{s}" : "0";
         string text = string.Format(GetString("FFADisplayScore"), rank.ToString(), score);
         Color color = Utils.GetRoleColor(CustomRoles.Killer);
         return Utils.ColorString(color, text);
@@ -227,11 +230,13 @@ internal static class FFAManager
             bool mark = false;
             var nowKCD = Main.AllPlayerKillCooldown[killer.PlayerId];
             byte EffectType;
-            if (!GameStates.AirshipIsActive) EffectType = (byte)HashRandom.Next(0, 10);
-            else EffectType = (byte)HashRandom.Next(4, 10);
+            var random = IRandom.Instance;
+
+            if (!GameStates.AirshipIsActive) EffectType = (byte)random.Next(0, 10);
+            else EffectType = (byte)random.Next(4, 10);
             if (EffectType <= 7) // Buff
             {
-                byte EffectID = (byte)HashRandom.Next(0, 3);
+                byte EffectID = (byte)random.Next(0, 3);
                 if (GameStates.AirshipIsActive) EffectID = 2;
                 switch (EffectID)
                 {
@@ -269,7 +274,7 @@ internal static class FFAManager
             }
             else if (EffectType == 8) // De-Buff
             {
-                byte EffectID = (byte)HashRandom.Next(0, 3);
+                byte EffectID = (byte)random.Next(0, 3);
                 if (GameStates.AirshipIsActive) EffectID = 1;
                 switch (EffectID)
                 {
@@ -336,8 +341,10 @@ internal static class FFAManager
 
     public static void OnPlayerKill(PlayerControl killer)
     {
-        if (PlayerControl.LocalPlayer.Is(CustomRoles.GM))
-            PlayerControl.LocalPlayer.KillFlash();
+        foreach (var player in Main.AllPlayerControls.Where(x => x.Is(CustomRoles.GM)))
+        {
+            player.KillFlash();
+        }
 
         KBScore[killer.PlayerId]++;
     }
@@ -414,6 +421,15 @@ internal static class FFAManager
         arrows += Utils.ColorString(Utils.GetRoleColor(CustomRoles.Killer), arrow);
 
         return arrows;
+    }
+
+    public static void AppendFFAKcount(StringBuilder builder)
+    {
+        int AliveFFAKiller = Main.AllAlivePlayerControls.Count(x => x.Is(CustomRoles.Killer));
+        int DeadFFASpectator = Main.AllPlayerControls.Count(x => x.Is(CustomRoles.Killer) && !x.IsAlive());
+
+        builder.Append(string.Format(GetString("Remaining.FFAKiller"), AliveFFAKiller));
+        builder.Append(string.Format("\n\r" + GetString("Remaining.FFASpectator"), DeadFFASpectator));
     }
 
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]

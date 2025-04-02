@@ -1,13 +1,12 @@
+using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
-using UnityEngine;
 
 namespace TOHFE;
 
-//参考
+//ÕÅé×Çâ
 //https://github.com/Koke1024/Town-Of-Moss/blob/main/TownOfMoss/Patches/MeltDownBoost.cs
 
 public class SabotageSystemPatch
@@ -127,10 +126,13 @@ public class SabotageSystemPatch
         {
             Logger.Info($" IsActive", "MushroomMixupSabotageSystem.UpdateSystem.Postfix");
 
-            foreach (var pc in Main.AllAlivePlayerControls.Where(player => !player.Is(Custom_Team.Impostor) && Main.ResetCamPlayerList.Contains(player.PlayerId)).ToArray())
+            foreach (var pc in Main.AllAlivePlayerControls)
             {
-                // Need for hiding player names if player is desync Impostor
-                Utils.NotifyRoles(SpecifySeer: pc, ForceLoop: true, MushroomMixupIsActive: true);
+                if ((!pc.Is(Custom_Team.Impostor) || Main.PlayerStates[pc.PlayerId].IsNecromancer) && pc.HasDesyncRole())
+                {
+                    // Need for hiding player names if player is desync Impostor
+                    Utils.NotifyRoles(SpecifySeer: pc, ForceLoop: true, MushroomMixupIsActive: true);
+                }
             }
         }
     }
@@ -175,17 +177,24 @@ public class SabotageSystemPatch
                     _ = new LateTask(() =>
                     {
                         // After MushroomMixup sabotage, shapeshift cooldown sets to 0
-                        foreach (var pc in Main.AllAlivePlayerControls)
+                        foreach (PlayerControl pc in Main.AllAlivePlayerControls)
                         {
-                            // Reset Ability Cooldown To Default For Alive Players
-                            pc.RpcResetAbilityCooldown();
+                            // Do Unshift, because mushroom mixup revert all shapeshifted players
+                            pc.DoUnShiftState(true);
+
+                            // Reset Ability Cooldown To Default For Living Players
+                            if (pc.GetCustomRole().GetRoleTypes() != RoleTypes.Engineer)
+                                pc.RpcResetAbilityCooldown();
                         }
                     }, 1.2f, "Reset Ability Cooldown Arter Mushroom Mixup");
 
-                    foreach (var pc in Main.AllAlivePlayerControls.Where(player => !player.Is(Custom_Team.Impostor) && Main.ResetCamPlayerList.Contains(player.PlayerId)).ToArray())
+                    foreach (var pc in Main.AllAlivePlayerControls)
                     {
-                        // Need for display player names if player is desync Impostor
-                        Utils.NotifyRoles(SpecifySeer: pc, ForceLoop: true);
+                        if ((!pc.Is(Custom_Team.Impostor) || Main.PlayerStates[pc.PlayerId].IsNecromancer) && pc.HasDesyncRole())
+                        {
+                            // Need for display player names if player is desync Impostor
+                            Utils.NotifyRoles(SpecifySeer: pc, ForceLoop: true);
+                        }
                     }
                 }
             }
@@ -220,9 +229,9 @@ public class SabotageSystemPatch
             if (GameStates.AirshipIsActive)
             {
                 var truePosition = player.GetCustomPosition();
-                if (Options.DisableAirshipViewingDeckLightsPanel.GetBool() && Vector2.Distance(truePosition, new(-12.93f, -11.28f)) <= 2f) return false;
-                if (Options.DisableAirshipGapRoomLightsPanel.GetBool() && Vector2.Distance(truePosition, new(13.92f, 6.43f)) <= 2f) return false;
-                if (Options.DisableAirshipCargoLightsPanel.GetBool() && Vector2.Distance(truePosition, new(30.56f, 2.12f)) <= 2f) return false;
+                if (Options.DisableAirshipViewingDeckLightsPanel.GetBool() && Utils.GetDistance(truePosition, new(-12.93f, -11.28f)) <= 2f) return false;
+                if (Options.DisableAirshipGapRoomLightsPanel.GetBool() && Utils.GetDistance(truePosition, new(13.92f, 6.43f)) <= 2f) return false;
+                if (Options.DisableAirshipCargoLightsPanel.GetBool() && Utils.GetDistance(truePosition, new(30.56f, 2.12f)) <= 2f) return false;
             }
 
             if (Fool.IsEnable && player.Is(CustomRoles.Fool))
@@ -254,21 +263,46 @@ public class SabotageSystemPatch
     [HarmonyPatch(typeof(ElectricTask), nameof(ElectricTask.Initialize))]
     public static class ElectricTaskInitializePatch
     {
+        private static long LastUpdate;
         public static void Postfix()
         {
+            long now = Utils.TimeStamp;
+            if (LastUpdate >= now) return;
+            LastUpdate = now;
+
             Utils.MarkEveryoneDirtySettings();
-            if (!GameStates.IsMeeting)
-                Utils.NotifyRoles(ForceLoop: true);
+
+            if (GameStates.IsInTask)
+            {
+                foreach (var pc in Main.AllAlivePlayerControls)
+                    if (pc.Is(CustomRoles.Mare))
+                        Utils.NotifyRoles(SpecifyTarget: pc);
+            }
+
+            Logger.Info("Lights sabotage called", "ElectricTask");
         }
     }
     [HarmonyPatch(typeof(ElectricTask), nameof(ElectricTask.Complete))]
     public static class ElectricTaskCompletePatch
     {
+        private static long LastUpdate;
+
         public static void Postfix()
         {
+            long now = Utils.TimeStamp;
+            if (LastUpdate >= now) return;
+            LastUpdate = now;
+
             Utils.MarkEveryoneDirtySettings();
-            if (!GameStates.IsMeeting)
-                Utils.NotifyRoles(ForceLoop: true);
+
+            if (GameStates.IsInTask)
+            {
+                foreach (PlayerControl pc in Main.AllAlivePlayerControls)
+                    if (pc.Is(CustomRoles.Mare))
+                        Utils.NotifyRoles(SpecifyTarget: pc);
+            }
+
+            Logger.Info("Lights sabotage fixed", "ElectricTask");
         }
     }
     // https://github.com/tukasa0001/TownOfHost/blob/357f7b5523e4bdd0bb58cda1e0ff6cceaa84813d/Patches/SabotageSystemPatch.cs
@@ -314,9 +348,8 @@ public class SabotageSystemPatch
                     return false;
             }
 
-            if (player.GetRoleClass() is Glitch gc)
+            if (Options.CurrentGameMode is CustomGameMode.SpeedRun)
             {
-                gc.Mimic(player);
                 return false;
             }
 
@@ -326,7 +359,7 @@ public class SabotageSystemPatch
         public static void Postfix(SabotageSystemType __instance, bool __runOriginal)
         {
             // __runOriginal - the result that was returned from Prefix
-            if (!AmongUsClient.Instance.AmHost || GameStates.IsHideNSeek || !(isCooldownModificationEnabled && __runOriginal))
+            if (!AmongUsClient.Instance.AmHost || GameStates.IsHideNSeek || !__runOriginal || !isCooldownModificationEnabled)
             {
                 return;
             }

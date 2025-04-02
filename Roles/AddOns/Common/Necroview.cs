@@ -1,22 +1,23 @@
-﻿using static TOHFE.Options;
+using static TOHFE.Options;
 
 namespace TOHFE.Roles.AddOns.Common;
 
-public static class Necroview
+public class Necroview : IAddon
 {
+    public CustomRoles Role => CustomRoles.Necroview;
     private const int Id = 19600;
+    public AddonTypes Type => AddonTypes.Helpful;
 
-    public static OptionItem ImpCanBeNecroview;
-    public static OptionItem CrewCanBeNecroview;
-    public static OptionItem NeutralCanBeNecroview;
-
-    public static void SetupCustomOptions()
+    public void SetupCustomOption()
     {
-        SetupAdtRoleOptions(Id, CustomRoles.Necroview, canSetNum: true, tab: TabGroup.Addons);
-        ImpCanBeNecroview = BooleanOptionItem.Create(Id + 10, "ImpCanBeNecroview", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Necroview]);
-        CrewCanBeNecroview = BooleanOptionItem.Create(Id + 11, "CrewCanBeNecroview", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Necroview]);
-        NeutralCanBeNecroview = BooleanOptionItem.Create(Id + 12, "NeutralCanBeNecroview", true, TabGroup.Addons, false) .SetParent(CustomRoleSpawnChances[CustomRoles.Necroview]);
+        SetupAdtRoleOptions(Id, CustomRoles.Necroview, canSetNum: true, tab: TabGroup.Addons, teamSpawnOptions: true);
     }
+    public void Init()
+    { }
+    public void Add(byte playerId, bool gameIsLoading = true)
+    { }
+    public void Remove(byte playerId)
+    { }
 
     public static string NameColorOptions(PlayerControl target)
     {
@@ -30,10 +31,10 @@ public static class Necroview
                 or CustomRoles.Egoist
                 or CustomRoles.Recruit
                 or CustomRoles.Soulless)
-                return Main.roleColors[CustomRoles.Knight];
+                return "7f8c8d";
         }
 
-        if (customRole.IsImpostorTeamV2() || customRole.IsMadmate())
+        if ((customRole.IsImpostorTeamV2() || customRole.IsMadmate() || target.Is(CustomRoles.Madmate)) && !target.Is(CustomRoles.Admired))
         {
             return Main.roleColors[CustomRoles.Impostor];
         }
@@ -43,7 +44,11 @@ public static class Necroview
             return Main.roleColors[CustomRoles.Bait];
         }
 
-        return Main.roleColors[CustomRoles.Knight];
+        if (customRole.IsCoven() || customRole.Equals(CustomRoles.Enchanted))
+        {
+            return Main.roleColors[CustomRoles.Coven];
+        }
+        return "7f8c8d";
     }
 }
 

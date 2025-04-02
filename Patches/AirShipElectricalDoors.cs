@@ -3,7 +3,7 @@ namespace TOHFE;
 public class AirshipElectricalDoors
 {
     private static ElectricalDoors Instance
-        => ShipStatus.Instance.Systems[SystemTypes.Decontamination].Cast<ElectricalDoors>();
+        => ShipStatus.Instance.Systems[SystemTypes.Decontamination].CastFast<ElectricalDoors>();
 
     public static void Initialize()
     {

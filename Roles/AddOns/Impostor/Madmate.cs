@@ -1,4 +1,4 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using TOHFE.Roles.AddOns.Crewmate;
 using TOHFE.Roles.Double;
 using TOHFE.Roles.Impostor;
@@ -66,7 +66,22 @@ public static class Madmate
         JudgeCanBeMadmate = BooleanOptionItem.Create(Id2 + 13, "JudgeCanBeMadmate", false, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Madmate]);
     }
 
-    public static void ApplyGameOptions(IGameOptions opt) => opt.SetVision(MadmateHasImpostorVision.GetBool());
+    public static void ApplyGameOptions(IGameOptions opt)
+    {
+        if (MadmateHasImpostorVision.GetBool())
+        {
+            var impVision = Main.RealOptionsData.GetFloat(FloatOptionNames.ImpostorLightMod);
+            if (Utils.IsActive(SystemTypes.Electrical))
+            {
+                opt.SetFloat(FloatOptionNames.CrewLightMod, impVision * 5);
+            }
+            else
+            {
+                opt.SetFloat(FloatOptionNames.CrewLightMod, impVision);
+            }
+            opt.SetFloat(FloatOptionNames.ImpostorLightMod, impVision);
+        }
+    }
 
     private static readonly string[] madmateSpawnMode =
     [
@@ -83,8 +98,9 @@ public static class Madmate
 
     public static bool CanBeMadmate(this PlayerControl pc, bool forAdmirer = false, bool forGangster = false)
     {
-        return pc != null && !pc.Is(CustomRoles.Madmate) && (pc.GetCustomRole().IsCrewmate() || (forAdmirer && pc.GetCustomRole().IsNeutral()))
+        return pc != null && !pc.Is(CustomRoles.Madmate) && (pc.GetCustomRole().IsCrewmate() || (forAdmirer && pc.GetCustomRole().IsNeutral() || forAdmirer && pc.GetCustomRole().IsCoven()))
         && !(pc.CheckCanBeMadmate(forGangster) ||
+            pc.Is(CustomRoles.ChiefOfPolice) ||
             pc.Is(CustomRoles.LazyGuy) ||
             pc.Is(CustomRoles.Lazy) ||
             pc.Is(CustomRoles.Loyal) ||
@@ -96,7 +112,8 @@ public static class Madmate
             pc.Is(CustomRoles.Paranoia) ||
             pc.Is(CustomRoles.Vigilante) ||
             (pc.Is(CustomRoles.NiceMini) && Mini.Age >= 18) ||
-            (pc.Is(CustomRoles.Hurried) && !Hurried.CanBeOnMadMate.GetBool())
+            (pc.Is(CustomRoles.Hurried) && !Hurried.CanBeOnMadMate.GetBool()) ||
+            (CovenManager.HasNecronomicon(pc.PlayerId) && pc.Is(CustomRoles.CovenLeader))
             );
     }
     public static bool CheckCanBeMadmate(this PlayerControl pc, bool forGangster = false)

@@ -1,4 +1,4 @@
-﻿namespace TOHFE.Patches;
+namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(Constants), nameof(Constants.GetBroadcastVersion))]
 class ServerUpdatePatch

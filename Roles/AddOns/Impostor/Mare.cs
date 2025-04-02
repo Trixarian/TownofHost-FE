@@ -3,16 +3,18 @@ using static TOHFE.Options;
 
 namespace TOHFE.Roles.AddOns.Impostor;
 
-public static class Mare
+public class Mare : IAddon
 {
+    public CustomRoles Role => CustomRoles.Mare;
     private const int Id = 23000;
-    public static List<byte> playerIdList = [];
+    public AddonTypes Type => AddonTypes.Impostor;
+    public static readonly HashSet<byte> playerIdList = [];
 
     public static OptionItem KillCooldownInLightsOut;
     private static OptionItem SpeedInLightsOut;
     private static bool idAccelerated = false;
 
-    public static void SetupCustomOption()
+    public void SetupCustomOption()
     {
         SetupAdtRoleOptions(Id, CustomRoles.Mare, canSetNum: true, tab: TabGroup.Addons);
         SpeedInLightsOut = FloatOptionItem.Create(Id + 10, "MareAddSpeedInLightsOut", new(0.1f, 0.5f, 0.1f), 0.3f, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Mare])
@@ -20,17 +22,21 @@ public static class Mare
         KillCooldownInLightsOut = FloatOptionItem.Create(Id + 11, "MareKillCooldownInLightsOut", new(0f, 180f, 2.5f), 7.5f, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Mare])
             .SetValueFormat(OptionFormat.Seconds);
     }
-
-    public static void Init()
+    public void Init()
     {
-        playerIdList = [];
+        playerIdList.Clear();
     }
-    public static void Add(byte mare)
+    public void Add(byte playerId, bool gameIsLoading = true)
     {
-        playerIdList.Add(mare);
+        if (!playerIdList.Contains(playerId))
+            playerIdList.Add(playerId);
+    }
+    public void Remove(byte playerId)
+    {
+        playerIdList.Remove(playerId);
     }
     public static bool IsEnable => playerIdList.Any();
-    
+
     public static float GetKillCooldown => Utils.IsActive(SystemTypes.Electrical) ? KillCooldownInLightsOut.GetFloat() : DefaultKillCooldown;
 
     public static void ApplyGameOptions(byte playerId)

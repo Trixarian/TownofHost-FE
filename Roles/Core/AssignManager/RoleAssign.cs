@@ -1,4 +1,5 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
+using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Double;
 using TOHFE.Roles.Impostor;
 using TOHFE.Roles.Neutral;
@@ -8,15 +9,20 @@ namespace TOHFE.Roles.Core.AssignManager;
 public class RoleAssign
 {
     public static Dictionary<byte, CustomRoles> SetRoles = [];
-    public static Dictionary<PlayerControl, CustomRoles> RoleResult;
+    public static Dictionary<byte, CustomRoles> RoleResult = [];
     public static CustomRoles[] AllRoles => [.. RoleResult.Values];
 
+    [Obfuscation(Exclude = true)]
     enum RoleAssignType
     {
         Impostor,
         NeutralKilling,
         NonKillingNeutral,
-        Crewmate
+        NeutralApocalypse,
+        Coven,
+        Crewmate,
+
+        None
     }
 
     public class RoleAssignInfo(CustomRoles role, int spawnChance, int maxCount, int assignedCount = 0)
@@ -27,7 +33,7 @@ public class RoleAssign
         public int AssignedCount { get => assignedCount; set => assignedCount = value; }
     }
 
-    public static void GetNeutralCounts(int NKmaxOpt, int NKminOpt, int NNKmaxOpt, int NNKminOpt, ref int ResultNKnum, ref int ResultNNKnum)
+    public static void GetNeutralCounts(int NKmaxOpt, int NKminOpt, int NNKmaxOpt, int NNKminOpt, int NAmaxOpt, int NAminOpt, ref int ResultNKnum, ref int ResultNNKnum, ref int ResultNAnum)
     {
         var rd = IRandom.Instance;
 
@@ -40,6 +46,20 @@ public class RoleAssign
         {
             ResultNKnum = rd.Next(NKminOpt, NKmaxOpt + 1);
         }
+
+        if (NAmaxOpt > 0 && NAmaxOpt >= NAminOpt)
+        {
+            ResultNAnum = rd.Next(NAminOpt, NAmaxOpt + 1);
+        }
+    }
+    public static void GetCovenCounts(int CVmaxOpt, int CVminOpt, ref int ResultCVnum)
+    {
+        var rd = IRandom.Instance;
+
+        if (CVmaxOpt > 0 && CVmaxOpt >= CVminOpt)
+        {
+            ResultCVnum = rd.Next(CVminOpt, CVmaxOpt + 1);
+        }
     }
 
     public static void StartSelect()
@@ -47,27 +67,59 @@ public class RoleAssign
         switch (Options.CurrentGameMode)
         {
             case CustomGameMode.FFA:
-                RoleResult = [];
-                foreach (PlayerControl pc in Main.AllAlivePlayerControls)
+                foreach (PlayerControl pc in Main.AllPlayerControls)
                 {
-                    RoleResult.Add(pc, CustomRoles.Killer);
+                    if (Main.EnableGM.Value && pc.IsHost())
+                    {
+                        RoleResult[pc.PlayerId] = CustomRoles.GM;
+                        continue;
+                    }
+                    else if (TagManager.AssignGameMaster(pc.FriendCode))
+                    {
+                        RoleResult[pc.PlayerId] = CustomRoles.GM;
+                        Logger.Info($"Assign Game Master due to tag for [{pc.PlayerId}]{pc.GetRealName()}", "TagManager");
+                        continue;
+                    }
+                    RoleResult[pc.PlayerId] = CustomRoles.Killer;
+                }
+                return;
+
+            case CustomGameMode.SpeedRun:
+                foreach (PlayerControl pc in Main.AllPlayerControls)
+                {
+                    if (Main.EnableGM.Value && pc.IsHost())
+                    {
+                        RoleResult[pc.PlayerId] = CustomRoles.GM;
+                        continue;
+                    }
+                    else if (TagManager.AssignGameMaster(pc.FriendCode))
+                    {
+                        RoleResult[pc.PlayerId] = CustomRoles.GM;
+                        Logger.Info($"Assign Game Master due to tag for [{pc.PlayerId}]{pc.GetRealName()}", "TagManager");
+                        continue;
+                    }
+                    RoleResult[pc.PlayerId] = CustomRoles.Runner;
                 }
                 return;
         }
 
-        RoleResult = [];
         var rd = IRandom.Instance;
         int playerCount = Main.AllAlivePlayerControls.Length;
         int optImpNum = Main.RealOptionsData.GetInt(Int32OptionNames.NumImpostors);
         int optNonNeutralKillingNum = 0;
         int optNeutralKillingNum = 0;
+        int optNeutralApocalypseNum = 0;
+        int optCovenNum = 0;
 
-        GetNeutralCounts(Options.NeutralKillingRolesMaxPlayer.GetInt(), Options.NeutralKillingRolesMinPlayer.GetInt(), Options.NonNeutralKillingRolesMaxPlayer.GetInt(), Options.NonNeutralKillingRolesMinPlayer.GetInt(), ref optNeutralKillingNum, ref optNonNeutralKillingNum);
+        GetNeutralCounts(Options.NeutralKillingRolesMaxPlayer.GetInt(), Options.NeutralKillingRolesMinPlayer.GetInt(), Options.NonNeutralKillingRolesMaxPlayer.GetInt(), Options.NonNeutralKillingRolesMinPlayer.GetInt(), Options.NeutralApocalypseRolesMaxPlayer.GetInt(), Options.NeutralApocalypseRolesMinPlayer.GetInt(), ref optNeutralKillingNum, ref optNonNeutralKillingNum, ref optNeutralApocalypseNum);
+        GetCovenCounts(Options.CovenRolesMaxPlayer.GetInt(), Options.CovenRolesMinPlayer.GetInt(), ref optCovenNum);
 
         int readyRoleNum = 0;
         int readyImpNum = 0;
         int readyNonNeutralKillingNum = 0;
         int readyNeutralKillingNum = 0;
+        int readyNeutralApocalypseNum = 0;
+        int readyCovenNum = 0;
 
         List<CustomRoles> FinalRolesList = [];
 
@@ -76,6 +128,8 @@ public class RoleAssign
         Roles[RoleAssignType.Impostor] = [];
         Roles[RoleAssignType.NeutralKilling] = [];
         Roles[RoleAssignType.NonKillingNeutral] = [];
+        Roles[RoleAssignType.NeutralApocalypse] = [];
+        Roles[RoleAssignType.Coven] = [];
         Roles[RoleAssignType.Crewmate] = [];
 
         foreach (var id in SetRoles.Keys.Where(id => Utils.GetPlayerById(id) == null).ToArray()) SetRoles.Remove(id);
@@ -95,6 +149,7 @@ public class RoleAssign
                 case CustomRoles.NotAssigned:
                 case CustomRoles.NiceMini:
                 case CustomRoles.EvilMini:
+                case CustomRoles.Runner:
                     continue;
             }
 
@@ -118,7 +173,9 @@ public class RoleAssign
 
             if (role.IsImpostor()) Roles[RoleAssignType.Impostor].Add(info);
             else if (role.IsNK()) Roles[RoleAssignType.NeutralKilling].Add(info);
+            else if (role.IsNA()) Roles[RoleAssignType.NeutralApocalypse].Add(info);
             else if (role.IsNonNK()) Roles[RoleAssignType.NonKillingNeutral].Add(info);
+            else if (role.IsCoven()) Roles[RoleAssignType.Coven].Add(info);
             else Roles[RoleAssignType.Crewmate].Add(info);
         }
 
@@ -132,63 +189,90 @@ public class RoleAssign
         Logger.Msg("=====================================================", "AllActiveRoles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.Impostor].Select(x => $"{x.Role}: {x.SpawnChance}% - {x.MaxCount}")), "ImpRoles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.NeutralKilling].Select(x => $"{x.Role}: {x.SpawnChance}% - {x.MaxCount}")), "NKRoles");
+        Logger.Info(string.Join(", ", Roles[RoleAssignType.NeutralApocalypse].Select(x => $"{x.Role}: {x.SpawnChance}% - {x.MaxCount}")), "NARoles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.NonKillingNeutral].Select(x => $"{x.Role}: {x.SpawnChance}% - {x.MaxCount}")), "NonNKRoles");
+        Logger.Info(string.Join(", ", Roles[RoleAssignType.Coven].Select(x => $"{x.Role}: {x.SpawnChance}% - {x.MaxCount}")), "CovenRoles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.Crewmate].Select(x => $"{x.Role}: {x.SpawnChance}% - {x.MaxCount}")), "CrewRoles");
         Logger.Msg("=====================================================", "AllActiveRoles");
 
         IEnumerable<RoleAssignInfo> TempAlwaysImpRoles = Roles[RoleAssignType.Impostor].Where(x => x.SpawnChance == 100);
         IEnumerable<RoleAssignInfo> TempAlwaysNKRoles = Roles[RoleAssignType.NeutralKilling].Where(x => x.SpawnChance == 100);
+        IEnumerable<RoleAssignInfo> TempAlwaysNARoles = Roles[RoleAssignType.NeutralApocalypse].Where(x => x.SpawnChance == 100);
         IEnumerable<RoleAssignInfo> TempAlwaysNNKRoles = Roles[RoleAssignType.NonKillingNeutral].Where(x => x.SpawnChance == 100);
+        IEnumerable<RoleAssignInfo> TempAlwaysCovenRoles = Roles[RoleAssignType.Coven].Where(x => x.SpawnChance == 100);
         IEnumerable<RoleAssignInfo> TempAlwaysCrewRoles = Roles[RoleAssignType.Crewmate].Where(x => x.SpawnChance == 100);
 
         // DistinctBy - Removes duplicate roles if there are any
         // Shuffle - Shuffles all roles in the list into a randomized order
         // Take - Takes the first x roles of the list ... x is the maximum number of roles we could need of that team
 
-        Roles[RoleAssignType.Impostor] = Roles[RoleAssignType.Impostor].Shuffle(rd).Take(optImpNum).ToList();
-        Roles[RoleAssignType.NeutralKilling] = Roles[RoleAssignType.NeutralKilling].Shuffle(rd).Take(optNeutralKillingNum).ToList();
-        Roles[RoleAssignType.NonKillingNeutral] = Roles[RoleAssignType.NonKillingNeutral].Shuffle(rd).Take(optNonNeutralKillingNum).ToList();
-        Roles[RoleAssignType.Crewmate] = Roles[RoleAssignType.Crewmate].Shuffle(rd).Take(playerCount).ToList();
+        Roles[RoleAssignType.Impostor] = Roles[RoleAssignType.Impostor].Shuffle(rd).Shuffle(rd).Take(optImpNum).ToList();
+        Roles[RoleAssignType.NeutralKilling] = Roles[RoleAssignType.NeutralKilling].Shuffle(rd).Shuffle(rd).Take(optNeutralKillingNum).ToList();
+        Roles[RoleAssignType.NeutralApocalypse] = Roles[RoleAssignType.NeutralApocalypse].Shuffle(rd).Shuffle(rd).Take(optNeutralApocalypseNum).ToList();
+        Roles[RoleAssignType.NonKillingNeutral] = Roles[RoleAssignType.NonKillingNeutral].Shuffle(rd).Shuffle(rd).Take(optNonNeutralKillingNum).ToList();
+        Roles[RoleAssignType.Coven] = Roles[RoleAssignType.Coven].Shuffle(rd).Shuffle(rd).Take(optCovenNum).ToList();
+        Roles[RoleAssignType.Crewmate] = Roles[RoleAssignType.Crewmate].Shuffle(rd).Shuffle(rd).Take(playerCount).ToList();
 
         Roles[RoleAssignType.Impostor].AddRange(TempAlwaysImpRoles);
         Roles[RoleAssignType.NeutralKilling].AddRange(TempAlwaysNKRoles);
+        Roles[RoleAssignType.NeutralApocalypse].AddRange(TempAlwaysNARoles);
         Roles[RoleAssignType.NonKillingNeutral].AddRange(TempAlwaysNNKRoles);
+        Roles[RoleAssignType.Coven].AddRange(TempAlwaysCovenRoles);
         Roles[RoleAssignType.Crewmate].AddRange(TempAlwaysCrewRoles);
 
         Roles[RoleAssignType.Impostor] = Roles[RoleAssignType.Impostor].DistinctBy(x => x.Role).ToList();
         Roles[RoleAssignType.NeutralKilling] = Roles[RoleAssignType.NeutralKilling].DistinctBy(x => x.Role).ToList();
+        Roles[RoleAssignType.NeutralApocalypse] = Roles[RoleAssignType.NeutralApocalypse].DistinctBy(x => x.Role).ToList();
         Roles[RoleAssignType.NonKillingNeutral] = Roles[RoleAssignType.NonKillingNeutral].DistinctBy(x => x.Role).ToList();
+        Roles[RoleAssignType.Coven] = Roles[RoleAssignType.Coven].DistinctBy(x => x.Role).ToList();
         Roles[RoleAssignType.Crewmate] = Roles[RoleAssignType.Crewmate].DistinctBy(x => x.Role).ToList();
 
         Logger.Msg("======================================================", "SelectedRoles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.Impostor].Select(x => x.Role.ToString())), "Selected-Impostor-Roles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.NeutralKilling].Select(x => x.Role.ToString())), "Selected-NK-Roles");
+        Logger.Info(string.Join(", ", Roles[RoleAssignType.NeutralApocalypse].Select(x => x.Role.ToString())), "Selected-NA-Roles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.NonKillingNeutral].Select(x => x.Role.ToString())), "Selected-NonNK-Roles");
+        Logger.Info(string.Join(", ", Roles[RoleAssignType.Coven].Select(x => x.Role.ToString())), "Selected-Coven-Roles");
         Logger.Info(string.Join(", ", Roles[RoleAssignType.Crewmate].Select(x => x.Role.ToString())), "Selected-Crew-Roles");
         Logger.Msg("======================================================", "SelectedRoles");
 
-        var AllPlayers = Main.AllAlivePlayerControls.ToList();
+        var AllPlayers = Main.AllPlayerControls.ToList();
 
         // Players on the EAC banned list will be assigned as GM when opening rooms
         if (BanManager.CheckEACList(PlayerControl.LocalPlayer.FriendCode, PlayerControl.LocalPlayer.GetClient().GetHashedPuid()))
         {
+            Logger.Warn("Host presets in BanManager.CheckEACList", "EAC");
             Main.EnableGM.Value = true;
-            RoleResult[PlayerControl.LocalPlayer] = CustomRoles.GM;
+            RoleResult[PlayerControl.LocalPlayer.PlayerId] = CustomRoles.GM;
             AllPlayers.Remove(PlayerControl.LocalPlayer);
         }
-        if (Main.EnableGM.Value)
+
+        foreach (var player in Main.AllPlayerControls)
         {
-            RoleResult[PlayerControl.LocalPlayer] = CustomRoles.GM;
-            AllPlayers.Remove(PlayerControl.LocalPlayer);
-            SetRoles.Remove(PlayerControl.LocalPlayer.PlayerId);
+            if (player == null) continue;
+
+            if (TagManager.AssignGameMaster(player.FriendCode))
+            {
+                Logger.Info($"Assign Game Master due to tag for [{player.PlayerId}]{player.GetRealName()}", "TagManager");
+                RoleResult[player.PlayerId] = CustomRoles.GM;
+                SetRoles.Remove(player.PlayerId);
+                AllPlayers.Remove(player);
+            }
+            else if (Main.EnableGM.Value && player.IsHost())
+            {
+                RoleResult[PlayerControl.LocalPlayer.PlayerId] = CustomRoles.GM;
+                SetRoles.Remove(PlayerControl.LocalPlayer.PlayerId);
+                AllPlayers.Remove(PlayerControl.LocalPlayer);
+            }
         }
+
         // Pre-Assigned Roles By Host Are Selected First
         foreach (var item in SetRoles)
         {
-            PlayerControl pc = AllPlayers.FirstOrDefault(x => x.PlayerId == item.Key);
+            PlayerControl pc = Utils.GetPlayerById(item.Key);
             if (pc == null) continue;
 
-            RoleResult[pc] = item.Value;
+            RoleResult[item.Key] = item.Value;
             AllPlayers.Remove(pc);
 
             if (item.Value.IsImpostor())
@@ -201,13 +285,23 @@ public class RoleAssign
                 Roles[RoleAssignType.NeutralKilling].Where(x => x.Role == item.Value).Do(x => x.AssignedCount++);
                 readyNeutralKillingNum++;
             }
+            else if (item.Value.IsNA())
+            {
+                Roles[RoleAssignType.NeutralApocalypse].Where(x => x.Role == item.Value).Do(x => x.AssignedCount++);
+                readyNeutralApocalypseNum++;
+            }
+            else if (item.Value.IsCoven())
+            {
+                Roles[RoleAssignType.Coven].Where(x => x.Role == item.Value).Do(x => x.AssignedCount++);
+                readyCovenNum++;
+            }
             else if (item.Value.IsNonNK())
             {
                 Roles[RoleAssignType.NonKillingNeutral].Where(x => x.Role == item.Value).Do(x => x.AssignedCount++);
                 readyNonNeutralKillingNum++;
             }
 
-            readyRoleNum++;
+            //readyRoleNum++;
 
             Logger.Warn($"Pre-Set Role Assigned: {pc.GetRealName()} => {item.Value}", "RoleAssign");
         }
@@ -215,7 +309,53 @@ public class RoleAssign
         RoleAssignInfo[] Imps = [];
         RoleAssignInfo[] NNKs = [];
         RoleAssignInfo[] NKs = [];
+        RoleAssignInfo[] NAs = [];
+        RoleAssignInfo[] Covs = [];
         RoleAssignInfo[] Crews = [];
+
+        List<RoleAssignType> KillingFractions = [];
+
+        bool spawnNK = false;
+        bool spawnNA = false;
+        bool spawnCoven = false;
+
+        if (Roles[RoleAssignType.NeutralKilling].Count > 0)
+        {
+            KillingFractions.Add(RoleAssignType.NeutralKilling);
+        }
+        if (Roles[RoleAssignType.NeutralApocalypse].Count > 0)
+        {
+            KillingFractions.Add(RoleAssignType.NeutralApocalypse);
+        }
+        if (Roles[RoleAssignType.Coven].Count > 0)
+        {
+            KillingFractions.Add(RoleAssignType.Coven);
+        }
+
+        var randomType = Options.SpawnOneRandomKillingFraction.GetBool()
+            ? KillingFractions.RandomElement() : RoleAssignType.None;
+
+        switch (randomType)
+        {
+            case RoleAssignType.NeutralKilling:
+                spawnNK = true;
+                break;
+            case RoleAssignType.NeutralApocalypse:
+                spawnNA = true;
+                break;
+            case RoleAssignType.Coven:
+                spawnCoven = true;
+                break;
+            default:
+                spawnNK = true;
+                spawnNA = true;
+                spawnCoven = true;
+                break;
+        }
+
+        Logger.Info($"Spawn NK: {spawnNK}, Spawn NA: {spawnNA}, Spawn Coven: {spawnCoven}", "SpawnKillingFractions");
+
+        playerCount = AllPlayers.Count;
 
         // Impostor Roles
         {
@@ -397,7 +537,7 @@ public class RoleAssign
                     {
                         var selected = ChanceNonNKRoles.RandomElement();
                         var info = NonNKRoleCounts.FirstOrDefault(x => x.Role == selected);
-                        
+
                         // Remove 'x' times
                         for (int j = 0; j < info.SpawnChance / 5; j++)
                             ChanceNonNKRoles.Remove(selected);
@@ -420,6 +560,7 @@ public class RoleAssign
             }
 
             // Neutral Killing Roles
+            if (spawnNK)
             {
                 List<CustomRoles> AlwaysNKRoles = [];
                 List<CustomRoles> ChanceNKRoles = [];
@@ -516,8 +657,209 @@ public class RoleAssign
                     }
                 }
             }
+
+            // Neutral Apocalypse Roles
+            if (spawnNA)
+            {
+                List<CustomRoles> AlwaysNARoles = [];
+                List<CustomRoles> ChanceNARoles = [];
+                for (int i = 0; i < Roles[RoleAssignType.NeutralApocalypse].Count; i++)
+                {
+                    RoleAssignInfo item = Roles[RoleAssignType.NeutralApocalypse][i];
+
+                    if (item.SpawnChance == 100)
+                    {
+                        for (int j = 0; j < item.MaxCount; j++)
+                        {
+                            // Don't add if Host has assigned this role by using '/up'
+                            if (SetRoles.ContainsValue(item.Role))
+                            {
+                                var playerId = SetRoles.FirstOrDefault(x => x.Value == item.Role).Key;
+                                SetRoles.Remove(playerId);
+                                continue;
+                            }
+
+                            AlwaysNARoles.Add(item.Role);
+                        }
+                    }
+                    else
+                    {
+                        // Add 'MaxCount' (1) times
+                        for (int k = 0; k < item.MaxCount; k++)
+                        {
+                            // Don't add if Host has assigned this role by using '/up'
+                            if (SetRoles.ContainsValue(item.Role))
+                            {
+                                var playerId = SetRoles.FirstOrDefault(x => x.Value == item.Role).Key;
+                                SetRoles.Remove(playerId);
+                                continue;
+                            }
+
+                            // Make "Spawn Chance ÷ 5 = x" (Example: 65 ÷ 5 = 13)
+                            for (int j = 0; j < item.SpawnChance / 5; j++)
+                            {
+                                // Add NA roles 'x' times (13)
+                                ChanceNARoles.Add(item.Role);
+                            }
+                        }
+                    }
+                }
+
+                RoleAssignInfo[] NARoleCounts = AlwaysNARoles.Distinct().Select(GetAssignInfo).ToArray().AddRangeToArray(ChanceNARoles.Distinct().Select(GetAssignInfo).ToArray());
+                NAs = NARoleCounts;
+
+                // Assign roles set to 100%
+                if (readyNeutralApocalypseNum < optNeutralApocalypseNum)
+                {
+                    while (AlwaysNARoles.Any() && optNeutralApocalypseNum > 0)
+                    {
+                        var selected = AlwaysNARoles[rd.Next(0, AlwaysNARoles.Count)];
+                        var info = NARoleCounts.FirstOrDefault(x => x.Role == selected);
+                        AlwaysNARoles.Remove(selected);
+                        if (info.AssignedCount >= info.MaxCount) continue;
+
+                        FinalRolesList.Add(selected);
+                        info.AssignedCount++;
+                        readyRoleNum++;
+                        readyNeutralApocalypseNum++;
+
+                        NAs = NARoleCounts;
+
+                        if (readyRoleNum >= playerCount) goto EndOfAssign;
+                        if (readyNeutralApocalypseNum >= optNeutralApocalypseNum) break;
+                    }
+                }
+
+                // Assign other roles when needed
+                if (readyRoleNum < playerCount && readyNeutralApocalypseNum < optNeutralApocalypseNum)
+                {
+                    while (ChanceNARoles.Any() && optNeutralApocalypseNum > 0)
+                    {
+                        var selectesItem = rd.Next(0, ChanceNARoles.Count);
+                        var selected = ChanceNARoles[selectesItem];
+                        var info = NARoleCounts.FirstOrDefault(x => x.Role == selected);
+
+                        // Remove 'x' times
+                        for (int j = 0; j < info.SpawnChance / 5; j++)
+                            ChanceNARoles.Remove(selected);
+
+                        FinalRolesList.Add(selected);
+                        info.AssignedCount++;
+                        readyRoleNum++;
+                        readyNeutralApocalypseNum++;
+
+                        NAs = NARoleCounts;
+
+                        if (info.AssignedCount >= info.MaxCount) while (ChanceNARoles.Contains(selected)) ChanceNARoles.Remove(selected);
+
+                        if (readyRoleNum >= playerCount) goto EndOfAssign;
+                        if (readyNeutralApocalypseNum >= optNeutralApocalypseNum) break;
+                    }
+                }
+            }
         }
 
+        // Coven Roles
+        {
+            if (spawnCoven)
+            {
+                List<CustomRoles> AlwaysCVRoles = [];
+                List<CustomRoles> ChanceCVRoles = [];
+                for (int i = 0; i < Roles[RoleAssignType.Coven].Count; i++)
+                {
+                    RoleAssignInfo item = Roles[RoleAssignType.Coven][i];
+
+                    if (item.SpawnChance == 100)
+                    {
+                        for (int j = 0; j < item.MaxCount; j++)
+                        {
+                            // Don't add if Host has assigned this role by using '/up'
+                            if (SetRoles.ContainsValue(item.Role))
+                            {
+                                var playerId = SetRoles.FirstOrDefault(x => x.Value == item.Role).Key;
+                                SetRoles.Remove(playerId);
+                                continue;
+                            }
+
+                            AlwaysCVRoles.Add(item.Role);
+                        }
+                    }
+                    else
+                    {
+                        // Add 'MaxCount' (1) times
+                        for (int k = 0; k < item.MaxCount; k++)
+                        {
+                            // Don't add if Host has assigned this role by using '/up'
+                            if (SetRoles.ContainsValue(item.Role))
+                            {
+                                var playerId = SetRoles.FirstOrDefault(x => x.Value == item.Role).Key;
+                                SetRoles.Remove(playerId);
+                                continue;
+                            }
+
+                            // Make "Spawn Chance ÷ 5 = x" (Example: 65 ÷ 5 = 13)
+                            for (int j = 0; j < item.SpawnChance / 5; j++)
+                            {
+                                // Add coven roles 'x' times (13)
+                                ChanceCVRoles.Add(item.Role);
+                            }
+                        }
+                    }
+                }
+
+                RoleAssignInfo[] CVRoleCounts = AlwaysCVRoles.Distinct().Select(GetAssignInfo).ToArray().AddRangeToArray(ChanceCVRoles.Distinct().Select(GetAssignInfo).ToArray());
+                Covs = CVRoleCounts;
+
+                // Assign roles set to 100%
+                if (readyCovenNum < optCovenNum)
+                {
+                    while (AlwaysCVRoles.Any() && optCovenNum > 0)
+                    {
+                        var selected = AlwaysCVRoles[rd.Next(0, AlwaysCVRoles.Count)];
+                        var info = CVRoleCounts.FirstOrDefault(x => x.Role == selected);
+                        AlwaysCVRoles.Remove(selected);
+                        if (info.AssignedCount >= info.MaxCount) continue;
+
+                        FinalRolesList.Add(selected);
+                        info.AssignedCount++;
+                        readyRoleNum++;
+                        readyCovenNum++;
+
+                        Covs = CVRoleCounts;
+
+                        if (readyRoleNum >= playerCount) goto EndOfAssign;
+                        if (readyCovenNum >= optCovenNum) break;
+                    }
+                }
+
+                // Assign other roles when needed
+                if (readyRoleNum < playerCount && readyCovenNum < optCovenNum)
+                {
+                    while (ChanceCVRoles.Any() && optCovenNum > 0)
+                    {
+                        var selectesItem = rd.Next(0, ChanceCVRoles.Count);
+                        var selected = ChanceCVRoles[selectesItem];
+                        var info = CVRoleCounts.FirstOrDefault(x => x.Role == selected);
+
+                        // Remove 'x' times
+                        for (int j = 0; j < info.SpawnChance / 5; j++)
+                            ChanceCVRoles.Remove(selected);
+
+                        FinalRolesList.Add(selected);
+                        info.AssignedCount++;
+                        readyRoleNum++;
+                        readyCovenNum++;
+
+                        Covs = CVRoleCounts;
+
+                        if (info.AssignedCount >= info.MaxCount) while (ChanceCVRoles.Contains(selected)) ChanceCVRoles.Remove(selected);
+
+                        if (readyRoleNum >= playerCount) goto EndOfAssign;
+                        if (readyCovenNum >= optCovenNum) break;
+                    }
+                }
+            }
+        }
         // Crewmate Roles
         {
             List<CustomRoles> AlwaysCrewRoles = [];
@@ -567,7 +909,7 @@ public class RoleAssign
             RoleAssignInfo[] CrewRoleCounts = AlwaysCrewRoles.Distinct().Select(GetAssignInfo).ToArray().AddRangeToArray(ChanceCrewRoles.Distinct().Select(GetAssignInfo).ToArray());
             Crews = CrewRoleCounts;
 
-            // Assign roles set to ALWAYS
+            // Assign roles set to 100%
             if (readyRoleNum < playerCount)
             {
                 while (AlwaysCrewRoles.Any())
@@ -617,10 +959,13 @@ public class RoleAssign
         if (Imps.Any()) Logger.Info(string.Join(", ", Imps.Select(x => $"{x.Role} - {x.AssignedCount}/{x.MaxCount} ({x.SpawnChance}%)")), "ImpRoleResult");
         if (NNKs.Any()) Logger.Info(string.Join(", ", NNKs.Select(x => $"{x.Role} - {x.AssignedCount}/{x.MaxCount} ({x.SpawnChance}%)")), "NNKRoleResult");
         if (NKs.Any()) Logger.Info(string.Join(", ", NKs.Select(x => $"{x.Role} - {x.AssignedCount}/{x.MaxCount} ({x.SpawnChance}%)")), "NKRoleResult");
+        if (NAs.Any()) Logger.Info(string.Join(", ", NKs.Select(x => $"{x.Role} - {x.AssignedCount}/{x.MaxCount} ({x.SpawnChance}%)")), "NARoleResult");
+        if (Covs.Any()) Logger.Info(string.Join(", ", Covs.Select(x => $"{x.Role} - {x.AssignedCount}/{x.MaxCount} ({x.SpawnChance}%)")), "CovRoleResult");
         if (Crews.Any()) Logger.Info(string.Join(", ", Crews.Select(x => $"{x.Role} - {x.AssignedCount}/{x.MaxCount} ({x.SpawnChance}%)")), "CrewRoleResult");
 
         if (Sunnyboy.CheckSpawn() && FinalRolesList.Remove(CustomRoles.Jester)) FinalRolesList.Add(CustomRoles.Sunnyboy);
         if (Bard.CheckSpawn() && FinalRolesList.Remove(CustomRoles.Arrogance)) FinalRolesList.Add(CustomRoles.Bard);
+        if (Requiter.CheckSpawn() && FinalRolesList.Remove(CustomRoles.Knight)) FinalRolesList.Add(CustomRoles.Requiter);
 
         if (Romantic.HasEnabled)
         {
@@ -643,18 +988,18 @@ public class RoleAssign
         {
             // Shuffle all players list
             if (AllPlayers.Count > 2)
-                AllPlayers = AllPlayers.Shuffle(rd).ToList();
+                AllPlayers = AllPlayers.Shuffle(rd).Shuffle(rd).ToList();
 
             // Shuffle final roles list
             if (FinalRolesList.Count > 2)
-                FinalRolesList = FinalRolesList.Shuffle(rd).ToList();
+                FinalRolesList = FinalRolesList.Shuffle(rd).Shuffle(rd).ToList();
 
             // Select random role and player from list
             var randomPlayer = AllPlayers.RandomElement();
             var assignedRole = FinalRolesList.RandomElement();
 
             // Assign random role for random player
-            RoleResult[randomPlayer] = assignedRole;
+            RoleResult[randomPlayer.PlayerId] = assignedRole;
             Logger.Info($"Player：{randomPlayer.GetRealName()} => {assignedRole}", "RoleAssign");
 
             // Remove random role and player from list
@@ -663,9 +1008,9 @@ public class RoleAssign
         }
 
         if (AllPlayers.Any())
-            Logger.Warn("Role assignment error: There are players who have not been assigned a role", "RoleAssign");
+            Logger.Warn("Role assignment warirng: There are players who have not been assigned a role", "RoleAssign");
         if (FinalRolesList.Any())
-            Logger.Warn("Team assignment error: There is an unassigned team", "RoleAssign");
+            Logger.Warn("Team assignment warirng: There is an unassigned team", "RoleAssign");
         return;
 
         RoleAssignInfo GetAssignInfo(CustomRoles role) => Roles.Values.FirstOrDefault(x => x.Any(y => y.Role == role))?.FirstOrDefault(x => x.Role == role);

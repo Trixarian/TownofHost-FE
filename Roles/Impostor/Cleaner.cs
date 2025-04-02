@@ -1,14 +1,12 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TOHFE.Roles.Impostor;
 
 internal class Cleaner : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Cleaner;
     private const int Id = 3000;
-    private static readonly HashSet<byte> Playerids = [];
-    public static bool HasEnabled => Playerids.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorSupport;
     //==================================================================\\
@@ -17,8 +15,6 @@ internal class Cleaner : RoleBase
 
     private static OptionItem KillCooldown;
     private static OptionItem KillCooldownAfterCleaning;
-
-    private static readonly HashSet<byte> CleanerBodies = [];
 
     public override void SetupCustomOption()
     {
@@ -30,26 +26,16 @@ internal class Cleaner : RoleBase
             .SetParent(Options.CustomRoleSpawnChances[CustomRoles.Cleaner])
             .SetValueFormat(OptionFormat.Seconds);
     }
-    public override void Init()
-    {
-        CleanerBodies.Clear();
-        Playerids.Clear();
-    }
-    public override void Add(byte playerId)
-    {
-        Playerids.Add(playerId);
-    }
 
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = KillCooldown.GetFloat();
 
     public override bool OnCheckReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo deadBody, PlayerControl killer)
     {
-        if (CleanerBodies.Contains(deadBody.PlayerId)) return false;
+        if (Main.UnreportableBodies.Contains(deadBody.PlayerId)) return false;
 
         if (reporter.Is(CustomRoles.Cleaner))
         {
-            CleanerBodies.Remove(deadBody.PlayerId);
-            CleanerBodies.Add(deadBody.PlayerId);
+            Main.UnreportableBodies.Add(deadBody.PlayerId);
 
             reporter.Notify(Translator.GetString("CleanerCleanBody"));
             reporter.SetKillCooldownV3(KillCooldownAfterCleaning.GetFloat(), forceAnime: true);

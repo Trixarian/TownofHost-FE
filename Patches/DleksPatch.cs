@@ -1,13 +1,23 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TOHFE.Patches;
 
 // Thanks Galster (https://github.com/Galster-dev)
-[HarmonyPatch(typeof(AmongUsClient._CoStartGameHost_d__32), nameof(AmongUsClient._CoStartGameHost_d__32.MoveNext))]
+
+/*
+ * Info for those who port this code to their mod or view the code
+ * We patch CoStartGameHost so it's not work now in normal game
+ * But work for AU code
+ * So not used, execpt vanilla Hide&Seek
+*/
+
+[HarmonyPatch(typeof(AmongUsClient._CoStartGameHost_d__37), nameof(AmongUsClient._CoStartGameHost_d__37.MoveNext))]
 public static class DleksPatch
 {
-    private static bool Prefix(AmongUsClient._CoStartGameHost_d__32 __instance, ref bool __result)
+    private static bool Prefix(AmongUsClient._CoStartGameHost_d__37 __instance, ref bool __result)
     {
+        if (GameStates.IsNormalGame) return true;
+
         if (__instance.__1__state != 0)
         {
             return true;
@@ -41,6 +51,7 @@ class AllMapIconsPatch
 {
     // Vanilla players getting error when trying get dleks map icon
     [HarmonyPatch(nameof(GameStartManager.Start)), HarmonyPostfix]
+    [Obfuscation(Exclude = true)]
     public static void Postfix_AllMapIcons(GameStartManager __instance)
     {
         if (__instance == null) return;
@@ -87,13 +98,13 @@ public static class VentSetButtonsPatch
 {
     public static bool ShowButtons = false;
     // Fix arrows buttons in vent on Dleks map and "Index was outside the bounds of the array" errors
-    private static bool Prefix(Vent __instance, [HarmonyArgument(0)] ref bool enabled)
+    private static bool Prefix(/*Vent __instance, */[HarmonyArgument(0)] ref bool enabled)
     {
         // if map is Dleks
-        if (GameStates.DleksIsActive && Main.introDestroyed)
+        if (GameStates.DleksIsActive && Main.IntroDestroyed)
         {
             enabled = false;
-            if (GameStates.IsMeeting) 
+            if (GameStates.IsMeeting)
                 ShowButtons = false;
         }
         return true;
@@ -101,7 +112,7 @@ public static class VentSetButtonsPatch
     public static void Postfix(Vent __instance, [HarmonyArgument(0)] bool enabled)
     {
         if (!GameStates.DleksIsActive) return;
-        if (enabled || !Main.introDestroyed) return;
+        if (enabled || !Main.IntroDestroyed) return;
 
         var setActive = ShowButtons || !PlayerControl.LocalPlayer.inVent && !GameStates.IsMeeting;
         switch (__instance.Id)

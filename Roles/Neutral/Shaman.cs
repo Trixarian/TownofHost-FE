@@ -1,14 +1,16 @@
-﻿using static TOHFE.Translator;
-using static TOHFE.Options;
 using TOHFE.Roles.Core;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
 namespace TOHFE.Roles.Neutral;
 
 internal class Shaman : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Shaman;
     private const int Id = 13600;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Shaman);
+    public override bool IsDesyncRole => true;
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.NeutralBenign;
     //==================================================================\\
@@ -29,11 +31,6 @@ internal class Shaman : RoleBase
     {
         ShamanTarget = byte.MaxValue;
         ShamanTargetChoosen = false;
-    }
-    public override void Add(byte playerId)
-    {
-        if (!Main.ResetCamPlayerList.Contains(playerId))
-            Main.ResetCamPlayerList.Add(playerId);
     }
     public override bool CanUseKillButton(PlayerControl pc) => true;
     public override void AfterMeetingTasks()
@@ -77,5 +74,5 @@ internal class Shaman : RoleBase
     }
     private PlayerControl ChangeTarget(PlayerControl target)
         => target.IsAlive() && ShamanTargetChoosen ? Utils.GetPlayerById(ShamanTarget) : target;
-    
+
 }

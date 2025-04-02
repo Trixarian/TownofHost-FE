@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using static TOHFE.Utils;
 
 namespace TOHFE;
 
-//参考元 : https://github.com/ykundesu/SuperNewRoles/blob/master/SuperNewRoles/Mode/SuperHostRoles/BlockTool.cs
+//ÕÅé×ÇâÕàâ : https://github.com/ykundesu/SuperNewRoles/blob/master/SuperNewRoles/Mode/SuperHostRoles/BlockTool.cs
 class DisableDevice
 {
     public static bool DoDisable => Options.DisableDevices.GetBool();
@@ -11,20 +12,20 @@ class DisableDevice
     private static int frame = 0;
     public static readonly Dictionary<string, Vector2> DevicePos = new()
     {
-        ["SkeldAdmin"] = new Vector2 (3.48f, -8.62f),
-        ["SkeldCamera"] = new Vector2 (-13.06f, -2.45f),
-        ["MiraHQAdmin"] = new Vector2 (21.02f, 19.09f),
-        ["MiraHQDoorLog"] = new Vector2 (16.22f, 5.82f),
-        ["PolusLeftAdmin"] = new Vector2 (22.80f, -21.52f),
-        ["PolusRightAdmin"] = new Vector2 (24.66f, -21.52f),
-        ["PolusCamera"] = new Vector2 (2.96f, -12.74f),
-        ["PolusVital"] = new Vector2 (26.70f, -15.94f),
-        ["DleksAdmin"] = new Vector2 (-3.48f, -8.62f),
-        ["DleksCamera"] = new Vector2 (13.06f, -2.45f),
-        ["AirshipCockpitAdmin"] = new Vector2 (-22.32f, 0.91f),
-        ["AirshipRecordsAdmin"] = new Vector2 (19.89f, 12.60f),
-        ["AirshipCamera"] = new Vector2 (8.10f, -9.63f),
-        ["AirshipVital"] = new Vector2 (25.24f, -7.94f),
+        ["SkeldAdmin"] = new Vector2(3.48f, -8.62f),
+        ["SkeldCamera"] = new Vector2(-13.06f, -2.45f),
+        ["MiraHQAdmin"] = new Vector2(21.02f, 19.09f),
+        ["MiraHQDoorLog"] = new Vector2(16.22f, 5.82f),
+        ["PolusLeftAdmin"] = new Vector2(22.80f, -21.52f),
+        ["PolusRightAdmin"] = new Vector2(24.66f, -21.52f),
+        ["PolusCamera"] = new Vector2(2.96f, -12.74f),
+        ["PolusVital"] = new Vector2(26.70f, -15.94f),
+        ["DleksAdmin"] = new Vector2(-3.48f, -8.62f),
+        ["DleksCamera"] = new Vector2(13.06f, -2.45f),
+        ["AirshipCockpitAdmin"] = new Vector2(-22.32f, 0.91f),
+        ["AirshipRecordsAdmin"] = new Vector2(19.89f, 12.60f),
+        ["AirshipCamera"] = new Vector2(8.10f, -9.63f),
+        ["AirshipVital"] = new Vector2(25.24f, -7.94f),
         ["FungleCamera"] = new Vector2(6.20f, 0.10f),
         ["FungleVital"] = new Vector2(-2.50f, -9.80f)
     };
@@ -33,7 +34,7 @@ class DisableDevice
         return Map switch
         {
             MapNames.Skeld => 1.8f,
-            MapNames.Mira => 2.4f,
+            MapNames.MiraHQ => 2.4f,
             MapNames.Polus => 1.8f,
             MapNames.Dleks => 1.5f,
             MapNames.Airship => 1.8f,
@@ -52,13 +53,14 @@ class DisableDevice
         {
             try
             {
-                if (pc.IsModClient()) continue;
+                if (pc.IsModded()) continue;
 
                 bool doComms = false;
                 Vector2 PlayerPos = pc.transform.position;
                 bool ignore = (Options.DisableDevicesIgnoreImpostors.GetBool() && pc.Is(Custom_Team.Impostor)) ||
                         (Options.DisableDevicesIgnoreNeutrals.GetBool() && pc.Is(Custom_Team.Neutral)) ||
                         (Options.DisableDevicesIgnoreCrewmates.GetBool() && pc.Is(Custom_Team.Crewmate)) ||
+                        (Options.DisableDevicesIgnoreCoven.GetBool() && pc.Is(Custom_Team.Coven)) ||
                         (Options.DisableDevicesIgnoreAfterAnyoneDied.GetBool() && GameStates.AlreadyDied);
 
                 var mapId = Utils.GetActiveMapId();
@@ -70,48 +72,48 @@ class DisableDevice
                     {
                         case 0:
                             if (Options.DisableSkeldAdmin.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["SkeldAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["SkeldAdmin"]) <= UsableDistance(mapName);
                             if (Options.DisableSkeldCamera.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["SkeldCamera"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["SkeldCamera"]) <= UsableDistance(mapName);
                             break;
                         case 1:
                             if (Options.DisableMiraHQAdmin.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["MiraHQAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["MiraHQAdmin"]) <= UsableDistance(mapName);
                             if (Options.DisableMiraHQDoorLog.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["MiraHQDoorLog"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["MiraHQDoorLog"]) <= UsableDistance(mapName);
                             break;
                         case 2:
                             if (Options.DisablePolusAdmin.GetBool())
                             {
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["PolusLeftAdmin"]) <= UsableDistance(mapName);
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["PolusRightAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["PolusLeftAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["PolusRightAdmin"]) <= UsableDistance(mapName);
                             }
                             if (Options.DisablePolusCamera.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["PolusCamera"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["PolusCamera"]) <= UsableDistance(mapName);
                             if (Options.DisablePolusVital.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["PolusVital"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["PolusVital"]) <= UsableDistance(mapName);
                             break;
                         case 3:
                             if (Options.DisableSkeldAdmin.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["DleksAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["DleksAdmin"]) <= UsableDistance(mapName);
                             if (Options.DisableSkeldCamera.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["DleksCamera"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["DleksCamera"]) <= UsableDistance(mapName);
                             break;
                         case 4:
                             if (Options.DisableAirshipCockpitAdmin.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["AirshipCockpitAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["AirshipCockpitAdmin"]) <= UsableDistance(mapName);
                             if (Options.DisableAirshipRecordsAdmin.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["AirshipRecordsAdmin"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["AirshipRecordsAdmin"]) <= UsableDistance(mapName);
                             if (Options.DisableAirshipCamera.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["AirshipCamera"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["AirshipCamera"]) <= UsableDistance(mapName);
                             if (Options.DisableAirshipVital.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["AirshipVital"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["AirshipVital"]) <= UsableDistance(mapName);
                             break;
                         case 5:
                             if (Options.DisableFungleBinoculars.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["FungleCamera"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["FungleCamera"]) <= UsableDistance(mapName);
                             if (Options.DisableFungleVital.GetBool())
-                                doComms |= Vector2.Distance(PlayerPos, DevicePos["FungleVital"]) <= UsableDistance(mapName);
+                                doComms |= GetDistance(PlayerPos, DevicePos["FungleVital"]) <= UsableDistance(mapName);
                             break;
                     }
                 }
@@ -156,6 +158,7 @@ public class RemoveDisableDevicesPatch
             (Options.DisableDevicesIgnoreImpostors.GetBool() && player.Is(Custom_Team.Impostor)) ||
             (Options.DisableDevicesIgnoreNeutrals.GetBool() && player.Is(Custom_Team.Neutral)) ||
             (Options.DisableDevicesIgnoreCrewmates.GetBool() && player.Is(Custom_Team.Crewmate)) ||
+            (Options.DisableDevicesIgnoreCoven.GetBool() && player.Is(Custom_Team.Coven)) ||
             (Options.DisableDevicesIgnoreAfterAnyoneDied.GetBool() && GameStates.AlreadyDied);
 
         var admins = UnityEngine.Object.FindObjectsOfType<MapConsole>(true);

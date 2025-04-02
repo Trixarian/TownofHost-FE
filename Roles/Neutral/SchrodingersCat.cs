@@ -1,4 +1,4 @@
-﻿using Hazel;
+using Hazel;
 using InnerNet;
 using TOHFE.Roles.Core;
 
@@ -8,6 +8,7 @@ namespace TOHFE.Roles.Neutral;
 internal class SchrodingersCat : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.SchrodingersCat;
     private const int Id = 6900;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.SchrodingersCat);
     public override CustomRoles ThisRoleBase => CustomRoles.Crewmate;
@@ -49,7 +50,7 @@ internal class SchrodingersCat : RoleBase
 
     public override bool OnCheckMurderAsTarget(PlayerControl killer, PlayerControl target)
     {
-        if (killer == null || target == null) return true;
+        if (killer.Is(CustomRoles.Taskinator)) return true;
         if (teammate[target.PlayerId] != byte.MaxValue) return true;
 
         teammate[target.PlayerId] = killer.PlayerId;

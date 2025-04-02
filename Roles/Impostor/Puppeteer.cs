@@ -1,8 +1,6 @@
-﻿using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Modules;
 using TOHFE.Roles.Core;
-using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Double;
 using TOHFE.Roles.Neutral;
 using UnityEngine;
@@ -14,10 +12,8 @@ namespace TOHFE.Roles.Impostor;
 internal class Puppeteer : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Puppeteer;
     private const int Id = 4300;
-    private static readonly HashSet<byte> PlayerIds = [];
-    public static bool HasEnabled => PlayerIds.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorConcealing;
     //==================================================================\\
@@ -34,7 +30,6 @@ internal class Puppeteer : RoleBase
     }
     public override void Init()
     {
-        PlayerIds.Clear();
         PuppeteerList.Clear();
     }
     public override void Add(byte playerId)
@@ -43,12 +38,15 @@ internal class Puppeteer : RoleBase
         var pc = Utils.GetPlayerById(playerId);
         pc.AddDoubleTrigger();
 
-        PlayerIds.Add(playerId);
-
         if (AmongUsClient.Instance.AmHost)
         {
-            CustomRoleManager.OnFixedUpdateLowLoadOthers.Add(OnFixedUpdateOthers);
+            CustomRoleManager.OnFixedUpdateOthers.Add(OnFixedUpdateOthers);
         }
+    }
+    public override void Remove(byte playerId)
+    {
+        DoubleTrigger.PlayerIdList.Remove(playerId);
+        CustomRoleManager.OnFixedUpdateOthers.Remove(OnFixedUpdateOthers);
     }
 
     private static void SendRPC(byte puppetId, byte targetId, byte typeId)
@@ -83,26 +81,24 @@ internal class Puppeteer : RoleBase
 
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (target.Is(CustomRoles.LazyGuy) 
+        if (target.Is(CustomRoles.LazyGuy)
             || target.Is(CustomRoles.Lazy)
-            || target.Is(CustomRoles.NiceMini) && Mini.Age < 18
-            || Medic.ProtectList.Contains(target.PlayerId))
+            || target.Is(CustomRoles.NiceMini) && Mini.Age < 18)
             return false;
 
-            return killer.CheckDoubleTrigger(target, () => 
-            {         
-                PuppeteerList[target.PlayerId] = killer.PlayerId;
-                killer.SetKillCooldown();
-                SendRPC(killer.PlayerId, target.PlayerId, 1);
-                killer.RPCPlayCustomSound("Line");
-                Utils.NotifyRoles(SpecifySeer: killer, SpecifyTarget: target);
-            }
-        );
+        return killer.CheckDoubleTrigger(target, () =>
+        {
+            PuppeteerList[target.PlayerId] = killer.PlayerId;
+            killer.SetKillCooldown();
+            SendRPC(killer.PlayerId, target.PlayerId, 1);
+            killer.RPCPlayCustomSound("Line");
+            Utils.NotifyRoles(SpecifySeer: killer, SpecifyTarget: target);
+        });
     }
 
-    private void OnFixedUpdateOthers(PlayerControl puppet)
+    private void OnFixedUpdateOthers(PlayerControl puppet, bool lowLoad, long nowTime)
     {
-        if (!PuppetIsActive(puppet.PlayerId)) return;
+        if (lowLoad || !PuppetIsActive(puppet.PlayerId)) return;
 
         if (!puppet.IsAlive() || Pelican.IsEaten(puppet.PlayerId))
         {
@@ -116,9 +112,9 @@ internal class Puppeteer : RoleBase
 
             foreach (var target in Main.AllAlivePlayerControls)
             {
-                if (target.PlayerId != puppet.PlayerId && !(target.Is(Custom_Team.Impostor) || target.Is(CustomRoles.Pestilence)))
+                if (target.PlayerId != puppet.PlayerId && !(target.Is(Custom_Team.Impostor) || target.IsTransformedNeutralApocalypse()))
                 {
-                    dis = Vector2.Distance(puppeteerPos, target.transform.position);
+                    dis = Utils.GetDistance(puppeteerPos, target.transform.position);
                     targetDistance.Add(target.PlayerId, dis);
                 }
             }
@@ -127,7 +123,7 @@ internal class Puppeteer : RoleBase
             {
                 var min = targetDistance.OrderBy(c => c.Value).FirstOrDefault();
                 var target = Utils.GetPlayerById(min.Key);
-                var KillRange = NormalGameOptionsV08.KillDistances[Mathf.Clamp(Main.NormalOptions.KillDistance, 0, 2)];
+                var KillRange = ExtendedPlayerControl.GetKillDistances();
 
                 if (min.Value <= KillRange && puppet.CanMove && target.CanMove)
                 {
@@ -143,7 +139,7 @@ internal class Puppeteer : RoleBase
                         //Utils.NotifyRoles(SpecifySeer: puppet);
                         Utils.NotifyRoles(SpecifySeer: Utils.GetPlayerById(puppeteerId), SpecifyTarget: puppet, ForceLoop: true);
 
-                        if (!puppet.Is(CustomRoles.Pestilence) && PuppeteerDoubleKills.GetBool())
+                        if (!puppet.IsTransformedNeutralApocalypse() && PuppeteerDoubleKills.GetBool())
                         {
                             puppet.SetDeathReason(PlayerState.DeathReason.Drained);
                             puppet.RpcMurderPlayer(puppet);

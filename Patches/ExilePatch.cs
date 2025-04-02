@@ -1,4 +1,4 @@
-﻿using AmongUs.Data;
+using AmongUs.Data;
 using System;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Neutral;
@@ -8,9 +8,26 @@ namespace TOHFE;
 class ExileControllerWrapUpPatch
 {
     public static NetworkedPlayerInfo AntiBlackout_LastExiled;
+    [HarmonyPatch(typeof(ExileController), nameof(ExileController.Begin))]
+    class ExileControllerBeginPatch
+    {
+        // This patch is to show exile string for modded players
+        public static void Postfix(ExileController __instance, [HarmonyArgument(0)] ExileController.InitProperties init)
+        {
+            if (Options.CurrentGameMode is CustomGameMode.Standard && init != null && init.outfit != null)
+                __instance.completeString = CheckForEndVotingPatch.TempExileMsg;
+            // TempExileMsg for client is sent in RpcClose
+        }
+    }
+
     [HarmonyPatch(typeof(ExileController), nameof(ExileController.WrapUp))]
     class BaseExileControllerPatch
     {
+        public static void Prefix()
+        {
+            CheckAndDoRandomSpawn();
+            CheckForEndVotingPatch.TempExiledPlayer = null;
+        }
         public static void Postfix(ExileController __instance)
         {
             try
@@ -19,7 +36,7 @@ class ExileControllerWrapUpPatch
             }
             catch (Exception error)
             {
-                Utils.ThrowException(error);
+                Logger.Error($"Error after exiled: {error}", "WrapUp");
             }
             finally
             {
@@ -31,6 +48,10 @@ class ExileControllerWrapUpPatch
     [HarmonyPatch(typeof(AirshipExileController), nameof(AirshipExileController.WrapUpAndSpawn))]
     class AirshipExileControllerPatch
     {
+        public static void Prefix()
+        {
+            CheckAndDoRandomSpawn();
+        }
         public static void Postfix(AirshipExileController __instance)
         {
             try
@@ -47,11 +68,28 @@ class ExileControllerWrapUpPatch
             }
         }
     }
-    static void WrapUpPostfix(NetworkedPlayerInfo exiled)
+    private static void CheckAndDoRandomSpawn()
+    {
+        if (!AmongUsClient.Instance.AmHost) return;
+        if (RandomSpawn.IsRandomSpawn() || Options.CurrentGameMode == CustomGameMode.FFA)
+        {
+            RandomSpawn.SpawnMap spawnMap = Utils.GetActiveMapName() switch
+            {
+                MapNames.Skeld => new RandomSpawn.SkeldSpawnMap(),
+                MapNames.MiraHQ => new RandomSpawn.MiraHQSpawnMap(),
+                MapNames.Polus => new RandomSpawn.PolusSpawnMap(),
+                MapNames.Dleks => new RandomSpawn.DleksSpawnMap(),
+                MapNames.Fungle => new RandomSpawn.FungleSpawnMap(),
+                _ => null,
+            };
+            if (spawnMap != null) Main.AllPlayerControls.Do(spawnMap.RandomTeleport);
+        }
+    }
+    private static void WrapUpPostfix(NetworkedPlayerInfo exiled)
     {
         if (AntiBlackout.BlackOutIsActive) exiled = AntiBlackout_LastExiled;
 
-        // Still not springing up in airships
+        // Still not springing up in Airship
         if (!GameStates.AirshipIsActive)
         {
             foreach (var state in Main.PlayerStates.Values)
@@ -72,106 +110,74 @@ class ExileControllerWrapUpPatch
 
         if (CLThingy && exiled != null)
         {
-            // Reset player cam for exiled desync impostor
-            if (Main.ResetCamPlayerList.Contains(exiled.PlayerId))
-            {
-                exiled.Object?.ResetPlayerCam(1f);
-            }
-
             exiled.IsDead = true;
             exiled.PlayerId.SetDeathReason(PlayerState.DeathReason.Vote);
 
-            var exiledPC = Utils.GetPlayerById(exiled.PlayerId);
-            var exiledRoleClass = exiledPC.GetRoleClass();
-           
+            var exiledRoleClass = exiled.PlayerId.GetRoleClassById();
             var emptyString = string.Empty;
 
             exiledRoleClass?.CheckExile(exiled, ref DecidedWinner, isMeetingHud: false, name: ref emptyString);
-
             CustomRoleManager.AllEnabledRoles.Do(roleClass => roleClass.CheckExileTarget(exiled, ref DecidedWinner, isMeetingHud: false, name: ref emptyString));
 
             if (CustomWinnerHolder.WinnerTeam != CustomWinner.Terrorist) Main.PlayerStates[exiled.PlayerId].SetDead();
         }
-        
+
         if (AmongUsClient.Instance.AmHost && Main.IsFixedCooldown)
         {
             Main.RefixCooldownDelay = Options.DefaultKillCooldown - 3f;
         }
 
-        
+
         foreach (var player in Main.AllPlayerControls)
         {
             player.GetRoleClass()?.OnPlayerExiled(player, exiled);
 
-            // Check Anti BlackOut
-            if (player.GetCustomRole().IsImpostor() 
-                && !player.IsAlive() // if player is dead impostor
-                && AntiBlackout.BlackOutIsActive) // if Anti BlackOut is activated
-            {
-                player.ResetPlayerCam(1f);
-            }
-
-            // Check for remove pet
+            // Check for remove Pet
             player.RpcRemovePet();
 
-            // Reset Kill/Ability cooldown
-            player.ResetKillCooldown();
-            player.RpcResetAbilityCooldown();
+            // Set UnShift after meeting
+            player.DoUnShiftState();
         }
 
         Main.MeetingIsStarted = false;
         Main.MeetingsPassed++;
 
-        FallFromLadder.Reset();
-        Utils.CountAlivePlayers(sendLog: true, checkGameEnd: Options.CurrentGameMode is CustomGameMode.Standard);
-        Utils.AfterMeetingTasks();
-        Utils.SyncAllSettings();
-        Utils.NotifyRoles(NoCache: true);
-
-        if (RandomSpawn.IsRandomSpawn() || Options.CurrentGameMode == CustomGameMode.FFA)
-        {
-            _ = new LateTask(() =>
-            {
-                RandomSpawn.SpawnMap map = Utils.GetActiveMapId() switch
-                {
-                    0 => new RandomSpawn.SkeldSpawnMap(),
-                    1 => new RandomSpawn.MiraHQSpawnMap(),
-                    2 => new RandomSpawn.PolusSpawnMap(),
-                    3 => new RandomSpawn.DleksSpawnMap(),
-                    5 => new RandomSpawn.FungleSpawnMap(),
-                    _ => null,
-                };
-                if (map != null) Main.AllPlayerControls.Do(map.RandomTeleport);
-
-            }, 0.8f, "Random Spawn After Meeting");
-        }
+        Utils.CountAlivePlayers(sendLog: true, checkGameEnd: Options.CurrentGameMode == CustomGameMode.Standard);
     }
 
-    static void WrapUpFinalizer(NetworkedPlayerInfo exiled)
+    private static void WrapUpFinalizer(NetworkedPlayerInfo exiled)
     {
-        // Even if an exception occurs in WrapUpPostfix, this is the only part that will be executed reliably.
+        // Even if an exception occurs in WrapUpPostfix, this is the only part that will be executed reliably
         if (AmongUsClient.Instance.AmHost)
         {
             _ = new LateTask(() =>
             {
+                if (GameStates.IsEnded) return;
+
                 exiled = AntiBlackout_LastExiled;
                 AntiBlackout.SendGameData();
+                AntiBlackout.SetRealPlayerRoles();
+
                 if (AntiBlackout.BlackOutIsActive && // State in which the expulsion target is overwritten (need not be executed if the expulsion target is not overwritten)
-                    exiled != null && // exiled is not null
+                    exiled != null && // Exiled is not null
                     exiled.Object != null) //exiled.Object is not null
                 {
                     exiled.Object.RpcExileV2();
                 }
-            }, 0.8f, "Restore IsDead Task");
+            }, Options.CurrentGameMode is CustomGameMode.Standard ? 0.5f : 1.4f, "Restore IsDead Task");
+
+            _ = new LateTask(AntiBlackout.ResetAfterMeeting, 0.6f, "ResetAfterMeeting");
 
             _ = new LateTask(() =>
             {
+                if (GameStates.IsEnded) return;
+
                 Main.AfterMeetingDeathPlayers.Do(x =>
                 {
-                    var player = Utils.GetPlayerById(x.Key);
+                    var player = x.Key.GetPlayer();
                     var state = Main.PlayerStates[x.Key];
-                    
-                    Logger.Info($"{player.GetNameWithRole().RemoveHtmlTags()} died with {x.Value}", "AfterMeetingDeath");
+
+                    Logger.Info($"{player?.GetNameWithRole().RemoveHtmlTags()} died with {x.Value}", "AfterMeetingDeath");
 
                     state.deathReason = x.Value;
                     state.SetDead();
@@ -180,20 +186,30 @@ class ExileControllerWrapUpPatch
                     if (x.Value == PlayerState.DeathReason.Suicide)
                         player?.SetRealKiller(player, true);
 
-                    // Reset player cam for dead desync impostor
-                    if (Main.ResetCamPlayerList.Contains(x.Key))
-                    {
-                        player?.ResetPlayerCam(1f);
-                    }
-
                     MurderPlayerPatch.AfterPlayerDeathTasks(player, player, true);
                 });
+
                 Main.AfterMeetingDeathPlayers.Clear();
 
-            }, 0.8f, "AfterMeetingDeathPlayers Task");
+                Utils.AfterMeetingTasks();
+                Utils.SyncAllSettings();
+                Utils.CheckAndSetVentInteractions();
+
+                if (Main.CurrentServerIsVanilla && Options.BypassRateLimitAC.GetBool())
+                {
+                    Main.Instance.StartCoroutine(Utils.NotifyEveryoneAsync(speed: 5));
+                }
+                else
+                {
+                    Utils.NotifyRoles();
+                }
+
+                Main.LastMeetingEnded = Utils.TimeStamp;
+            }, 1f, "AfterMeetingDeathPlayers Task");
         }
+
         //This should happen shortly after the Exile Controller wrap up finished for clients
-        //For Certain Laggy clients 0.8f delay is still not enough. The finish time can differ.
+        //For Certain Laggy clients 0.8f delay is still not enough. The finish time can differ
         //If the delay is too long, it will influence other normal players' view
 
         GameStates.AlreadyDied |= !Utils.IsAllAlive;

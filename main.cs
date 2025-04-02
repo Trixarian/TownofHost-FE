@@ -4,11 +4,15 @@ using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using Il2CppInterop.Runtime.Injection;
+using MonoMod.Utils;
 using System;
 using System.IO;
-using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using TOHFE.Modules;
+using TOHFE.Patches.Crowded;
+using TOHFE.Roles.AddOns;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Double;
 using TOHFE.Roles.Neutral;
@@ -21,10 +25,18 @@ namespace TOHFE;
 
 [BepInPlugin(PluginGuid, "TOHFE", PluginVersion)]
 [BepInIncompatibility("jp.ykundesu.supernewroles")]
+[BepInIncompatibility("com.ten.betteramongus")]
+[BepInIncompatibility("com.ten.thebetterroles")]
+[BepInIncompatibility("xyz.crowdedmods.crowdedmod")]
+[BepInIncompatibility("com.slushiegoose.townofus")]
+[BepInIncompatibility("com.gurge44.endlesshostroles")]
+[BepInIncompatibility("com.emptybottle.townofhost")]
+[BepInIncompatibility("me.eisbison.theotherroles")]
+[BepInIncompatibility("com.discussions.LotusContinued")]
 [BepInProcess("Among Us.exe")]
 public class Main : BasePlugin
 {
-    // == プログラム設定 / Program Config ==
+    // == Program Config ==
     public const string OriginalForkId = "OriginalTOH";
 
     public static readonly string ModName = "TOHFE";
@@ -35,18 +47,22 @@ public class Main : BasePlugin
     public static HashAuth DebugKeyAuth { get; private set; }
     public const string DebugKeyHash = "c0fd562955ba56af3ae20d7ec9e64c664f0facecef4b3e366e109306adeae29d";
     public const string DebugKeySalt = "59687b";
+    public static string FileHash { get; private set; } = "";
 
     public static ConfigEntry<string> DebugKeyInput { get; private set; }
 
     public const string PluginGuid = "com.trixarian.tohfe";
-    public const string PluginVersion = "2024.0906.204.9999"; // YEAR.MMDD.VERSION.CANARYDEV
-    public const string PluginDisplayVersion = "2.0.4";
-    public const string SupportedVersionAU = "2024.9.4";
+    public const string PluginVersion = "2025.0330.230.00060"; // YEAR.MMDD.VERSION.CANARYDEV
+    public const string PluginDisplayVersion = "2.3.0";
+    public static readonly List<(int year, int month, int day, int revision)> SupportedVersionAU = 
+        [
+            (2024, 8, 11, 0) // 2025.3.25 & 16.0.0
+        ];
 
     /******************* Change one of the three variables to true before making a release. *******************/
-    public static readonly bool devRelease = false; // Latest: V2.0.0 Dev 25
-    public static readonly bool canaryRelease = false; // Latest: V2.0.0 Canary 12
-    public static readonly bool fullRelease = true; // Latest: V2.0.4
+    public static readonly bool devRelease = false; // Latest: V2.3.0 Alpha 2 Hotfix 2
+    public static readonly bool canaryRelease = false; // Latest: V2.2.0 Beta 4
+    public static readonly bool fullRelease = true; // Latest: V2.3.0
 
     public static bool hasAccess = true;
 
@@ -56,13 +72,13 @@ public class Main : BasePlugin
     public static readonly string GitHubInviteUrl = "https://github.com/Trixarian/TownofHost-FE";
 
     public static readonly bool ShowDiscordButton = false;
-    public static readonly string DiscordInviteUrl = "https://discord.gg/tohe";
+    public static readonly string DiscordInviteUrl = "https://discord.gg/ten";
 
     public static readonly bool ShowWebsiteButton = false;
-    public static readonly string WebsiteInviteUrl = "https://tohre.dev";
-    
-    public static readonly bool ShowKofiButton = false;
-    public static readonly string kofiInviteUrl = "https://ko-fi.com/reallynottrix";
+    public static readonly string WebsiteInviteUrl = "https://weareten.ca/";
+
+    public static readonly bool ShowDonationButton = false;
+    public static readonly string DonationInviteUrl = "https://ko-fi.com/reallynottrix";
 
     public Harmony Harmony { get; } = new Harmony(PluginGuid);
     public static Version version = Version.Parse(PluginVersion);
@@ -73,8 +89,9 @@ public class Main : BasePlugin
     public static bool AlreadyShowMsgBox = false;
     public static string credentialsText;
     public Coroutines coroutines;
-    public static NormalGameOptionsV08 NormalOptions => GameOptionsManager.Instance.currentNormalGameOptions;
-    public static HideNSeekGameOptionsV08 HideNSeekOptions => GameOptionsManager.Instance.currentHideNSeekGameOptions;
+    public Dispatcher dispatcher;
+    public static NormalGameOptionsV09 NormalOptions => GameOptionsManager.Instance.currentNormalGameOptions;
+    public static HideNSeekGameOptionsV09 HideNSeekOptions => GameOptionsManager.Instance.currentHideNSeekGameOptions;
     //Client Options
     public static ConfigEntry<string> HideName { get; private set; }
     public static ConfigEntry<string> HideColor { get; private set; }
@@ -88,6 +105,7 @@ public class Main : BasePlugin
     public static ConfigEntry<bool> DisableLobbyMusic { get; private set; }
     public static ConfigEntry<bool> ShowTextOverlay { get; private set; }
     public static ConfigEntry<bool> HorseMode { get; private set; }
+    public static ConfigEntry<bool> LongMode { get; private set; }
     public static ConfigEntry<bool> ForceOwnLanguage { get; private set; }
     public static ConfigEntry<bool> ForceOwnLanguageRoleName { get; private set; }
     public static ConfigEntry<bool> EnableCustomButton { get; private set; }
@@ -102,6 +120,7 @@ public class Main : BasePlugin
     public static ConfigEntry<bool> AutoRehost { get; private set; }
 
     public static Dictionary<int, PlayerVersion> playerVersion = [];
+    public static BAUPlayersData BAUPlayers = new();
     //Preset Name Options
     public static ConfigEntry<string> Preset1 { get; private set; }
     public static ConfigEntry<string> Preset2 { get; private set; }
@@ -113,10 +132,11 @@ public class Main : BasePlugin
     public static ConfigEntry<string> BetaBuildURL { get; private set; }
     public static ConfigEntry<float> LastKillCooldown { get; private set; }
     public static ConfigEntry<float> LastShapeshifterCooldown { get; private set; }
+    public static ConfigEntry<float> LastGuardianAngelCooldown { get; private set; }
     public static ConfigEntry<float> PlayerSpawnTimeOutCooldown { get; private set; }
 
     public static OptionBackupData RealOptionsData;
-    
+
     public static Dictionary<byte, PlayerState> PlayerStates = [];
     public static readonly Dictionary<byte, string> AllPlayerNames = [];
     public static readonly Dictionary<int, string> AllClientRealNames = [];
@@ -126,13 +146,12 @@ public class Main : BasePlugin
     public static readonly Dictionary<byte, Color32> PlayerColors = [];
     public static readonly Dictionary<byte, PlayerState.DeathReason> AfterMeetingDeathPlayers = [];
     public static readonly Dictionary<CustomRoles, string> roleColors = [];
-    const string LANGUAGE_FOLDER_NAME = "Language";
-    
+    public const string LANGUAGE_FOLDER_NAME = "TOHFE-DATA/Language";
+
     public static bool IsFixedCooldown => CustomRoles.Vampire.IsEnable() || CustomRoles.Poisoner.IsEnable();
     public static float RefixCooldownDelay = 0f;
     public static NetworkedPlayerInfo LastVotedPlayerInfo;
     public static string LastVotedPlayer;
-    public static readonly HashSet<byte> ResetCamPlayerList = [];
     public static readonly HashSet<byte> winnerList = [];
     public static readonly HashSet<string> winnerNameList = [];
     public static readonly HashSet<int> clientIdList = [];
@@ -140,7 +159,11 @@ public class Main : BasePlugin
     public static readonly Dictionary<string, int> PlayerQuitTimes = [];
     public static bool isChatCommand = false;
     public static bool MeetingIsStarted = false;
+    public static string LastSummaryMessage;
+    public static bool CurrentServerIsVanilla = false;
 
+    public static readonly HashSet<byte> DesyncPlayerList = [];
+    public static readonly HashSet<byte> MurderedThisRound = [];
     public static readonly HashSet<byte> TasklessCrewmate = [];
     public static readonly HashSet<byte> OverDeadPlayerList = [];
     public static readonly HashSet<byte> UnreportableBodies = [];
@@ -150,10 +173,17 @@ public class Main : BasePlugin
     public static readonly Dictionary<int, int> SayStartTimes = [];
     public static readonly Dictionary<int, int> SayBanwordsTimes = [];
     public static readonly Dictionary<byte, float> AllPlayerSpeed = [];
+    public static readonly Dictionary<byte, float> LastAllPlayerSpeed = [];
     public static readonly HashSet<byte> PlayersDiedInMeeting = [];
     public static readonly Dictionary<byte, long> AllKillers = [];
+    public static readonly Dictionary<byte, (NetworkedPlayerInfo.PlayerOutfit outfit, string name)> OvverideOutfit = [];
     public static readonly Dictionary<byte, bool> CheckShapeshift = [];
     public static readonly Dictionary<byte, byte> ShapeshiftTarget = [];
+    public static readonly HashSet<byte> UnShapeShifter = [];
+    public static readonly HashSet<byte> DeadPassedMeetingPlayers = [];
+    public static readonly Dictionary<byte, bool> LowLoadUpdateName = [];
+
+    public static bool GameIsLoaded { get; set; } = false;
 
     public static bool isLoversDead = true;
     public static readonly HashSet<PlayerControl> LoversPlayers = [];
@@ -165,22 +195,70 @@ public class Main : BasePlugin
     public static bool VisibleTasksCount = false;
     public static bool AssignRolesIsStarted = false;
     public static string HostRealName = "";
-    public static bool introDestroyed = false;
+    public static bool IntroDestroyed = false;
     public static int DiscussionTime;
     public static int VotingTime;
     public static float DefaultCrewmateVision;
     public static float DefaultImpostorVision;
     public static bool IsInitialRelease = DateTime.Now.Month == 1 && DateTime.Now.Day is 17;
-    public static bool IsAprilFools = DateTime.Now.Month == 4 && DateTime.Now.Day is 1;
+    public static bool IsAprilFools
+    {
+        get
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            DateTime t = new DateTime(utcNow.Year, 4, 1, 7, 0, 0, 0, DateTimeKind.Utc);
+            DateTime t2 = new DateTime(utcNow.Year, 4, 8, 7, 0, 0, 0, DateTimeKind.Utc);
+            return utcNow >= t && utcNow <= t2;
+        }
+    }
     public static bool ResetOptions = true;
     public static string FirstDied = ""; //Store with hash puid so things can pass through different round
-    public static string ShieldPlayer = "";
+    public static string FirstDiedPrevious = "";
     public static int MadmateNum = 0;
     public static int BardCreations = 0;
     public static int MeetingsPassed = 0;
+    public static long LastMeetingEnded = Utils.GetTimeStamp();
 
-    public static PlayerControl[] AllPlayerControls => PlayerControl.AllPlayerControls.ToArray().Where(p => p != null).ToArray();
-    public static PlayerControl[] AllAlivePlayerControls => PlayerControl.AllPlayerControls.ToArray().Where(p => p != null && p.IsAlive() && !p.Data.Disconnected && !Pelican.IsEaten(p.PlayerId)).ToArray();
+
+    public static PlayerControl[] AllPlayerControls
+    {
+        get
+        {
+            int count = PlayerControl.AllPlayerControls.Count;
+            var result = new PlayerControl[count];
+            int i = 0;
+            foreach (var pc in PlayerControl.AllPlayerControls)
+            {
+                if (pc == null || pc.PlayerId == 255) continue;
+                result[i++] = pc;
+            }
+
+            if (i == 0) return [];
+
+            Array.Resize(ref result, i);
+            return result;
+        }
+    }
+
+    public static PlayerControl[] AllAlivePlayerControls
+    {
+        get
+        {
+            int count = PlayerControl.AllPlayerControls.Count;
+            var result = new PlayerControl[count];
+            int i = 0;
+            foreach (var pc in PlayerControl.AllPlayerControls)
+            {
+                if (pc == null || pc.PlayerId == 255 || !pc.IsAlive() || pc.Data.Disconnected || Pelican.IsEaten(pc.PlayerId)) continue;
+                result[i++] = pc;
+            }
+
+            if (i == 0) return [];
+
+            Array.Resize(ref result, i);
+            return result;
+        }
+    }
 
     public static Main Instance;
 
@@ -190,7 +268,11 @@ public class Main : BasePlugin
 
     public static List<string> TName_Snacks_CN = ["冰激凌", "奶茶", "巧克力", "蛋糕", "甜甜圈", "可乐", "柠檬水", "冰糖葫芦", "果冻", "糖果", "牛奶", "抹茶", "烧仙草", "菠萝包", "布丁", "椰子冻", "曲奇", "红豆土司", "三彩团子", "艾草团子", "泡芙", "可丽饼", "桃酥", "麻薯", "鸡蛋仔", "马卡龙", "雪梅娘", "炒酸奶", "蛋挞", "松饼", "西米露", "奶冻", "奶酥", "可颂", "奶糖"];
     public static List<string> TName_Snacks_EN = ["Ice cream", "Milk tea", "Chocolate", "Cake", "Donut", "Coke", "Lemonade", "Candied haws", "Jelly", "Candy", "Milk", "Matcha", "Burning Grass Jelly", "Pineapple Bun", "Pudding", "Coconut Jelly", "Cookies", "Red Bean Toast", "Three Color Dumplings", "Wormwood Dumplings", "Puffs", "Can be Crepe", "Peach Crisp", "Mochi", "Egg Waffle", "Macaron", "Snow Plum Niang", "Fried Yogurt", "Egg Tart", "Muffin", "Sago Dew", "panna cotta", "soufflé", "croissant", "toffee"];
-    public static string Get_TName_Snacks => TranslationController.Instance.currentLanguage.languageID is SupportedLangs.SChinese or SupportedLangs.TChinese 
+
+    public static StringNames[] how2playN = [StringNames.HowToPlayText1, StringNames.HowToPlayText2, StringNames.HowToPlayText41, StringNames.HowToPlayText42, StringNames.HowToPlayText43, StringNames.HowToPlayText44, StringNames.HowToPlayText5, StringNames.HowToPlayText6, StringNames.HowToPlayText7, StringNames.HowToPlayText81, StringNames.HowToPlayText82];
+    public static StringNames[] how2playHnS = [StringNames.HideSeekHowToPlayCaptionOne, StringNames.HideSeekHowToPlayCaptionTwo, StringNames.HideSeekHowToPlayCaptionThree, StringNames.HideSeekHowToPlayPageOne, StringNames.HideSeekHowToPlaySubtextOne, StringNames.HideSeekHowToPlayCrewmateInfoOne, StringNames.HideSeekHowToPlayCrewmateInfoTwo, StringNames.HideSeekHowToPlayFlashlightConsoles, StringNames.HideSeekHowToPlayImpostorInfoOne, StringNames.HideSeekHowToPlayFinalHide, StringNames.HideSeekHowToPlayFlashlightDefault];
+    public static StringNames[] how2playEzHacked = [StringNames.ErrorAuthNonceFailure, StringNames.ErrorBanned, StringNames.ErrorBannedNoCode, StringNames.ErrorClientTimeout, StringNames.ErrorClientTimeoutConsole, StringNames.ErrorCommunications, StringNames.ErrorCrossPlatformCommunication, StringNames.ErrorDuplicateConnection, StringNames.ErrorFullGame, StringNames.ErrorHacking, StringNames.ErrorInactivity, StringNames.ErrorIntentionalLeaving, StringNames.ErrorInvalidName, StringNames.ErrorKicked, StringNames.ErrorKickedNoCode, StringNames.ErrorLobbyFailedGettingBlockedUsers];
+    public static string Get_TName_Snacks => TranslationController.Instance.currentLanguage.languageID is SupportedLangs.SChinese or SupportedLangs.TChinese
         ? TName_Snacks_CN.RandomElement()
         : TName_Snacks_EN.RandomElement();
 
@@ -217,12 +299,12 @@ public class Main : BasePlugin
                 {
                     try
                     {
-                        if (Enum.TryParse<CustomRoles>(tmp[0], out CustomRoles role))
+                        if (Enum.TryParse(tmp[0], out CustomRoles role))
                         {
                             var color = tmp[1].Trim().TrimStart('#');
                             if (Utils.CheckColorHex(color))
-                            { 
-                                roleColors[role] = "#"+color;
+                            {
+                                roleColors[role] = "#" + color;
                             }
                             else TOHFE.Logger.Error($"Invalid Hexcolor #{color}", "LoadCustomRoleColor");
                         }
@@ -275,7 +357,7 @@ public class Main : BasePlugin
                 if (stream != null)
                 {
                     using StreamReader reader = new(stream);
-                    
+
                     string jsonData = reader.ReadToEnd();
                     Dictionary<string, string> jsonDict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonData);
                     foreach (var kvp in jsonDict)
@@ -304,6 +386,9 @@ public class Main : BasePlugin
                     case Custom_Team.Impostor:
                         roleColors.TryAdd(role, "#ff1919");
                         break;
+                    case Custom_Team.Coven:
+                        roleColors.TryAdd(role, "#ac42f2");
+                        break;
                     default:
                         break;
                 }
@@ -313,7 +398,7 @@ public class Main : BasePlugin
             if (File.Exists(@$"./{LANGUAGE_FOLDER_NAME}/RoleColor.dat"))
             {
                 UpdateCustomTranslation();
-                LoadCustomRoleColor(); 
+                LoadCustomRoleColor();
             }
         }
         catch (ArgumentException ex)
@@ -334,18 +419,19 @@ public class Main : BasePlugin
                 .GetTypes()
                 .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(RoleBase)));
 
+            var roleInstances = RoleTypes.Select(x => (RoleBase)Activator.CreateInstance(x)).ToList();
+
             CustomRolesHelper.DuplicatedRoles = new Dictionary<CustomRoles, Type>
             {
                 { CustomRoles.NiceMini, typeof(Mini) },
                 { CustomRoles.EvilMini, typeof(Mini) }
             };
 
-
             foreach (var role in CustomRolesHelper.AllRoles.Where(x => x < CustomRoles.NotAssigned))
             {
                 if (!CustomRolesHelper.DuplicatedRoles.TryGetValue(role, out Type roleType))
                 {
-                    roleType = RoleTypes.FirstOrDefault(x => x.Name.Equals(role.ToString(), StringComparison.OrdinalIgnoreCase)) ?? typeof(DefaultSetup);
+                    roleType = roleInstances.FirstOrDefault(x => x.Role == role)?.GetType() ?? typeof(DefaultSetup);
                 }
 
                 CustomRoleManager.RoleClass.Add(role, (RoleBase)Activator.CreateInstance(roleType));
@@ -355,7 +441,28 @@ public class Main : BasePlugin
         }
         catch (Exception err)
         {
-            TOHFE.Logger.Error($"Error at LoadRoleClasses: {err}", "LoadRoleClasses");
+            Utils.ThrowException(err);
+        }
+    }
+    public static void LoadAddonClasses()
+    {
+        TOHFE.Logger.Info("Loading All AddonClasses...", "LoadAddonClasses");
+        try
+        {
+            var IAddonType = typeof(IAddon);
+            CustomRoleManager.AddonClasses.AddRange(Assembly
+            .GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => IAddonType.IsAssignableFrom(t) && !t.IsInterface)
+            .Select(x => (IAddon)Activator.CreateInstance(x))
+            .Where(x => x != null)
+            .ToDictionary(x => x.Role, x => x));
+
+            TOHFE.Logger.Info("AddonClasses Loaded Successfully", "LoadAddonClasses");
+        }
+        catch (Exception err)
+        {
+            Utils.ThrowException(err);
         }
     }
     static void UpdateCustomTranslation()
@@ -411,6 +518,19 @@ public class Main : BasePlugin
         File.WriteAllText(@$"./{LANGUAGE_FOLDER_NAME}/export_RoleColor.dat", sb.ToString());
     }
 
+    private void InitializeFileHash()
+    {
+        var file = Assembly.GetExecutingAssembly();
+        using var stream = file.Location != null ? File.OpenRead(file.Location) : null;
+        if (stream != null)
+        {
+            using var sha256 = SHA256.Create();
+            var hashBytes = sha256.ComputeHash(stream);
+            FileHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            TOHFE.Logger.Msg("Assembly Hash: " + FileHash, "Plugin Load");
+        }
+    }
+
     public override void Load()
     {
         Instance = this;
@@ -425,9 +545,10 @@ public class Main : BasePlugin
         EnableGM = Config.Bind("Client Options", "EnableGM", false);
         AutoStart = Config.Bind("Client Options", "AutoStart", false);
         DarkTheme = Config.Bind("Client Options", "DarkTheme", false);
-        DisableLobbyMusic = Config.Bind("Client Options", "DisableLobbyMusic", false);
+        DisableLobbyMusic = Config.Bind("Client Options", "DisableLobbyMusic", true);
         ShowTextOverlay = Config.Bind("Client Options", "ShowTextOverlay", false);
         HorseMode = Config.Bind("Client Options", "HorseMode", false);
+        LongMode = Config.Bind("Client Options", "LongMode", false);
         ForceOwnLanguage = Config.Bind("Client Options", "ForceOwnLanguage", false);
         ForceOwnLanguageRoleName = Config.Bind("Client Options", "ForceOwnLanguageRoleName", false);
         EnableCustomButton = Config.Bind("Client Options", "EnableCustomButton", true);
@@ -440,13 +561,22 @@ public class Main : BasePlugin
         GodMode = Config.Bind("Client Options", "GodMode", false);
         AutoRehost = Config.Bind("Client Options", "AutoRehost", false);
 
+        if (!DebugModeManager.AmDebugger)
+        {
+            HorseMode.Value = false;
+            // Disable Horse Mode since it cause client crash
+        }
+
         Logger = BepInEx.Logging.Logger.CreateLogSource("TOHFE");
         coroutines = AddComponent<Coroutines>();
+        dispatcher = AddComponent<Dispatcher>();
         TOHFE.Logger.Enable();
         //TOHFE.Logger.Disable("NotifyRoles");
         TOHFE.Logger.Disable("SwitchSystem");
         TOHFE.Logger.Disable("ModNews");
         TOHFE.Logger.Disable("CustomRpcSender");
+        TOHFE.Logger.Disable("RpcSetNamePrivate");
+        TOHFE.Logger.Disable("KnowRoleTarget");
         if (!DebugModeManager.AmDebugger)
         {
             TOHFE.Logger.Disable("2018k");
@@ -457,7 +587,6 @@ public class Main : BasePlugin
             TOHFE.Logger.Disable("Info.Role");
             TOHFE.Logger.Disable("TaskState.Init");
             //TOHFE.Logger.Disable("Vote");
-            TOHFE.Logger.Disable("RpcSetNamePrivate");
             //TOHFE.Logger.Disable("SendChat");
             TOHFE.Logger.Disable("SetName");
             //TOHFE.Logger.Disable("AssignRoles");
@@ -486,18 +615,21 @@ public class Main : BasePlugin
         MessageWait = Config.Bind("Other", "MessageWait", 1);
         LastKillCooldown = Config.Bind("Other", "LastKillCooldown", (float)30);
         LastShapeshifterCooldown = Config.Bind("Other", "LastShapeshifterCooldown", (float)30);
+        LastGuardianAngelCooldown = Config.Bind("Other", "LastGuardianAngelCooldown", (float)35);
         PlayerSpawnTimeOutCooldown = Config.Bind("Other", "PlayerSpawnTimeOutCooldown", (float)3);
 
         hasArgumentException = false;
         ExceptionMessage = "";
 
         LoadRoleClasses();
+        LoadAddonClasses();
         LoadRoleColors(); //loads all the role colors from default and then tries to load custom colors if any.
 
         CustomWinnerHolder.Reset();
         Translator.Init();
         BanManager.Init();
         TemplateManager.Init();
+        TagManager.Init();
         //SpamManager.Init();
         DevManager.Init();
         Cloud.Init();
@@ -515,21 +647,28 @@ public class Main : BasePlugin
         handler.Info($"{nameof(ThisAssembly.Git.Tag)}: {ThisAssembly.Git.Tag}");
 
         ClassInjector.RegisterTypeInIl2Cpp<ErrorText>();
+        ClassInjector.RegisterTypeInIl2Cpp<OptionShower>();
+        ClassInjector.RegisterTypeInIl2Cpp<MeetingHudPagingBehaviour>();
+        ClassInjector.RegisterTypeInIl2Cpp<ShapeShifterPagingBehaviour>();
+        ClassInjector.RegisterTypeInIl2Cpp<VitalsPagingBehaviour>();
+
+        NormalGameOptionsV09.RecommendedImpostors = NormalGameOptionsV09.MaxImpostors = Enumerable.Repeat(128, 128).ToArray();
+        NormalGameOptionsV09.MinPlayers = Enumerable.Repeat(4, 128).ToArray();
+        HideNSeekGameOptionsV09.MinPlayers = Enumerable.Repeat(4, 128).ToArray();
+        DisconnectPopup.ErrorMessages[DisconnectReasons.Hacking] = StringNames.ErrorHacking;
 
         Harmony.PatchAll();
 
-        if (!DebugModeManager.AmDebugger) ConsoleManager.DetachConsole();
-        else ConsoleManager.CreateConsole();
+        ConsoleManager.DetachConsole();
+        if (DebugModeManager.AmDebugger) ConsoleManager.CreateConsole();
 
+        InitializeFileHash();
         TOHFE.Logger.Msg("========= TOHFE loaded! =========", "Plugin Load");
     }
 }
+[Obfuscation(Exclude = true)]
 public enum CustomRoles
 {
-    /*******************************************************
-     * Please add all the new roles in alphabetical order *
-     ******************************************************/
-
     // Crewmate(Vanilla)
     Crewmate = 0,
     Engineer,
@@ -559,13 +698,14 @@ public enum CustomRoles
     // Impostor Ghost
     Bloodmoon,
     Minion,
+    Possessor,
 
     //Impostor
+    Abyssbringer,
     Anonymous,
     AntiAdminer,
     Arrogance,
     Bard,
-    Berserker,
     Blackmailer,
     Bomber,
     BountyHunter,
@@ -582,6 +722,7 @@ public enum CustomRoles
     Devourer,
     Disperser,
     DollMaster,
+    DoubleAgent,
     Eraser,
     Escapist,
     EvilGuesser,
@@ -619,6 +760,7 @@ public enum CustomRoles
     Sniper,
     SoulCatcher,
     Stealth,
+    YinYanger,
     Swooper,
     TimeThief,
     Trapster,
@@ -643,39 +785,40 @@ public enum CustomRoles
     Addict,
     Admirer,
     Alchemist,
+    Altruist,
     Bastion,
     Benefactor,
     Bodyguard,
     Captain,
-    Celebrity, 
+    Celebrity,
     Chameleon,
-    ChiefOfPolice, //police commisioner ///// UNUSED
+    ChiefOfPolice,
     Cleanser,
     CopyCat,
-    Coroner, 
+    Coroner,
     Crusader,
-    Deceiver, 
+    Deceiver,
     Deputy,
     Detective,
     Dictator,
     Doctor,
     Enigma,
-    FortuneTeller, 
+    FortuneTeller,
     Grenadier,
     Guardian,
     GuessMaster,
-    Inspector, 
+    Inspector,
     Investigator,
     Jailer,
     Judge,
     Keeper,
-    Knight, 
+    Knight,
     LazyGuy,
     Lighter,
     Lookout,
     Marshall,
     Mayor,
-    Mechanic, 
+    Mechanic,
     Medic,
     Medium,
     Merchant,
@@ -686,11 +829,12 @@ public enum CustomRoles
     NiceMini,
     Observer,
     Oracle,
-    Overseer, 
-    Pacifist, 
+    Overseer,
+    Pacifist,
     President,
     Psychic,
     Randomizer,
+    Requiter,
     Retributionist,
     Reverie,
     Sheriff,
@@ -706,6 +850,7 @@ public enum CustomRoles
     TimeMaster,
     Tracefinder,
     Transporter,
+    Ventguard,
     Veteran,
     Vigilante,
     Witness,
@@ -713,33 +858,34 @@ public enum CustomRoles
     //Neutral
     Agitater,
     Amnesiac,
+    Apocalypse,
     Arsonist,
+    Baker,
     Bandit,
+    Berserker,
     BloodKnight,
     Collector,
-    Cultist, 
+    Cultist,
     CursedSoul,
-    Demon, 
+    Death,
+    Demon,
     Doomsayer,
     Doppelganger,
     Executioner,
+    Famine,
     Follower,
     Glitch,
     God,
     Hater,
-    HexMaster,
     Huntsman,
     Imitator,
     Infectious,
     Innocent,
     Jackal,
     Jester,
-    Jinx,
     Juggernaut,
     Lawyer,
     Maverick,
-    Medusa,
-    Necromancer,
     Opportunist,
     Pelican,
     Pestilence,
@@ -748,13 +894,12 @@ public enum CustomRoles
     Pixie,
     PlagueBearer,
     PlagueDoctor,
-    Poisoner,
-    PotionMaster,
     Provocateur,
     PunchingBag,
     Pursuer,
     Pyromaniac,
     Quizmaster,
+    Revenant,
     Revolutionist,
     Romantic,
     RuthlessRomantic,
@@ -762,6 +907,7 @@ public enum CustomRoles
     Seeker,
     SerialKiller,
     Shaman,
+    Shocker,
     Shroud,
     Sidekick,
     Solsticer,
@@ -773,13 +919,33 @@ public enum CustomRoles
     Taskinator,
     Terrorist,
     Traitor,
+    Troller,
     Vector,
     VengefulRomantic,
     Virus,
     Vulture,
+    War,
     Werewolf,
     Workaholic,
     Wraith,
+
+    //Coven
+    Coven,
+    Conjurer,
+    CovenLeader,
+    Harvester,
+    Dreamweaver,
+    HexMaster,
+    Illusionist,
+    Jinx,
+    Medusa,
+    MoonDancer,
+    Necromancer,
+    Poisoner,
+    PotionMaster,
+    Ritualist,
+    Sacrifist,
+    VoodooMaster,
 
     //two-way camp
     Mini,
@@ -789,6 +955,9 @@ public enum CustomRoles
 
     //GM
     GM,
+
+    // Speed run
+    Runner,
 
     // Sub-role after 500
     NotAssigned = 500,
@@ -811,7 +980,10 @@ public enum CustomRoles
     Cyber,
     Diseased,
     DoubleShot,
+    Eavesdropper,
     Egoist,
+    Enchanted,
+    Evader,
     EvilSpirit,
     Flash,
     Fool,
@@ -831,6 +1003,7 @@ public enum CustomRoles
     Lucky,
     Madmate,
     Mare,
+    Rebirth,
     Mimic,
     Mundane,
     Necroview,
@@ -840,22 +1013,25 @@ public enum CustomRoles
     Onbound,
     Overclocked,
     Paranoia,
+    Prohibited,
     Radar,
     Rainbow,
     Rascal,
     Reach,
     Rebound,
+    Spurt,
     Recruit,
     Seer,
     Silent,
     Sleuth,
+    Sloth,
     Soulless,
     Statue,
     Stubborn,
     Susceptible,
     Swift,
     Tiebreaker,
-    TicketsStealer, //stealer
+    Stealer, //stealer
     Torch,
     Trapper,
     Tricky,
@@ -865,9 +1041,10 @@ public enum CustomRoles
     VoidBallot,
     Watcher,
     Workhorse,
-    Youtuber   
+    Youtuber
 }
 //WinData
+[Obfuscation(Exclude = true)]
 public enum CustomWinner
 {
     Draw = -1,
@@ -919,11 +1096,9 @@ public enum CustomWinner
     Pickpocket = CustomRoles.Pickpocket,
     Traitor = CustomRoles.Traitor,
     Vulture = CustomRoles.Vulture,
-    Pestilence = CustomRoles.Pestilence,
     Medusa = CustomRoles.Medusa,
     Spiritcaller = CustomRoles.Spiritcaller,
     Glitch = CustomRoles.Glitch,
-    Plaguebearer = CustomRoles.PlagueBearer,
     PlagueDoctor = CustomRoles.PlagueDoctor,
     PunchingBag = CustomRoles.PunchingBag,
     Doomsayer = CustomRoles.Doomsayer,
@@ -934,7 +1109,11 @@ public enum CustomWinner
     NiceMini = CustomRoles.Mini,
     Doppelganger = CustomRoles.Doppelganger,
     Solsticer = CustomRoles.Solsticer,
+    Shocker = CustomRoles.Shocker,
+    Apocalypse = CustomRoles.Apocalypse,
+    Coven = CustomRoles.Coven,
 }
+[Obfuscation(Exclude = true)]
 public enum AdditionalWinners
 {
     None = -1,
@@ -959,9 +1138,11 @@ public enum AdditionalWinners
     Pixie = CustomRoles.Pixie,
     Quizmaster = CustomRoles.Quizmaster,
     SchrodingersCat = CustomRoles.SchrodingersCat,
+    Troller = CustomRoles.Troller,
     //   NiceMini = CustomRoles.NiceMini,
     //   Baker = CustomRoles.Baker,
 }
+[Obfuscation(Exclude = true)]
 public enum SuffixModes
 {
     None = 0,
@@ -974,6 +1155,7 @@ public enum SuffixModes
     NoAndroidPlz,
     AutoHost
 }
+[Obfuscation(Exclude = true)]
 public enum VoteMode
 {
     Default,
@@ -981,12 +1163,15 @@ public enum VoteMode
     SelfVote,
     Skip
 }
+[Obfuscation(Exclude = true)]
 public enum TieMode
 {
     Default,
     All,
     Random
 }
+
+[Obfuscation(Exclude = true, Feature = "renaming", ApplyToMembers = true)]
 public class Coroutines : MonoBehaviour
 {
 }

@@ -1,4 +1,4 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using Hazel;
 using UnityEngine;
 
@@ -7,10 +7,8 @@ namespace TOHFE.Roles.Impostor;
 internal class Undertaker : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Undertaker;
     private const int Id = 4900;
-    private static readonly HashSet<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorConcealing;
     //==================================================================\\
@@ -20,7 +18,7 @@ internal class Undertaker : RoleBase
     private static OptionItem FreezeTime;
 
     private static readonly Dictionary<byte, Vector2> MarkedLocation = [];
-    
+
     private static float DefaultSpeed = new();
 
     public override void SetupCustomOption()
@@ -36,14 +34,12 @@ internal class Undertaker : RoleBase
 
     public override void Init()
     {
-        playerIdList.Clear();
         MarkedLocation.Clear();
         DefaultSpeed = new();
     }
 
     public override void Add(byte playerId)
     {
-        playerIdList.Add(playerId);
         MarkedLocation.TryAdd(playerId, ExtendedPlayerControl.GetBlackRoomPosition());
         DefaultSpeed = Main.AllPlayerSpeed[playerId];
     }
@@ -72,21 +68,17 @@ internal class Undertaker : RoleBase
         float yLoc = reader.ReadSingle();
 
         if (MarkedLocation.ContainsKey(PlayerId))
-            MarkedLocation[PlayerId] = new Vector2(xLoc,yLoc);
+            MarkedLocation[PlayerId] = new Vector2(xLoc, yLoc);
         else
             MarkedLocation.Add(PlayerId, ExtendedPlayerControl.GetBlackRoomPosition());
     }
-
-    public override bool OnCheckShapeshift(PlayerControl shapeshifter, PlayerControl target, ref bool resetCooldown, ref bool shouldAnimate)
+    public override void UnShapeShiftButton(PlayerControl shapeshifter)
     {
-        if (shapeshifter.PlayerId == target.PlayerId) return false;
-
         var shapeshifterId = shapeshifter.PlayerId;
         MarkedLocation[shapeshifterId] = shapeshifter.GetCustomPosition();
         SendRPC(shapeshifterId);
-        
+
         shapeshifter.Notify(Translator.GetString("RejectShapeshift.AbilityWasUsed"), time: 2f);
-        return false;
     }
 
     private static void FreezeUndertaker(PlayerControl player)
@@ -120,10 +112,10 @@ internal class Undertaker : RoleBase
             target.SetRealKiller(killer);
 
             MarkedLocation[killer.PlayerId] = ExtendedPlayerControl.GetBlackRoomPosition();
-            
+
             SendRPC(killer.PlayerId);
             FreezeUndertaker(killer);
-            
+
             killer.SyncSettings();
         }
         return false;
@@ -131,7 +123,7 @@ internal class Undertaker : RoleBase
 
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
-        foreach(var playerId in MarkedLocation.Keys)
+        foreach (var playerId in MarkedLocation.Keys)
         {
             MarkedLocation[playerId] = ExtendedPlayerControl.GetBlackRoomPosition();
             Main.AllPlayerSpeed[playerId] = DefaultSpeed;

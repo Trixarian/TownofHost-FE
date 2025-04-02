@@ -1,18 +1,17 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using Hazel;
+using InnerNet;
+using TOHFE.Roles.Core;
 using UnityEngine;
 using static TOHFE.Translator;
-using TOHFE.Roles.Core;
-using InnerNet;
 
 namespace TOHFE.Roles.Neutral;
 internal class Agitater : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Agitater;
     private const int Id = 15800;
-    private static readonly List<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
+    public override bool IsDesyncRole => true;
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.NeutralKilling;
     //==================================================================\\
@@ -24,11 +23,11 @@ internal class Agitater : RoleBase
     private static OptionItem AgitaterAutoReportBait;
     private static OptionItem HasImpostorVision;
 
-    public byte CurrentBombedPlayer = byte.MaxValue;
-    public byte LastBombedPlayer = byte.MaxValue;
-    public bool AgitaterHasBombed = false;
-    public long? CurrentBombedPlayerTime = new();
-    public long? AgitaterBombedTime = new();
+    public static byte CurrentBombedPlayer = byte.MaxValue;
+    public static byte LastBombedPlayer = byte.MaxValue;
+    public static bool AgitaterHasBombed = false;
+    public static long? CurrentBombedPlayerTime = new();
+    public static long? AgitaterBombedTime = new();
 
 
     public override void SetupCustomOption()
@@ -46,7 +45,6 @@ internal class Agitater : RoleBase
     }
     public override void Init()
     {
-        playerIdList.Clear();
         CurrentBombedPlayer = byte.MaxValue;
         LastBombedPlayer = byte.MaxValue;
         AgitaterHasBombed = false;
@@ -55,20 +53,23 @@ internal class Agitater : RoleBase
 
     public override void Add(byte playerId)
     {
-        playerIdList.Add(playerId);
-        CustomRoleManager.OnFixedUpdateLowLoadOthers.Add(OnFixedUpdateOthers);
-
-        if (!Main.ResetCamPlayerList.Contains(playerId))
-            Main.ResetCamPlayerList.Add(playerId);
+        CustomRoleManager.OnFixedUpdateOthers.Add(OnFixedUpdateOthers);
     }
 
-    public void ResetBomb()
+    public static void ResetBomb()
     {
-        CurrentBombedPlayer = byte.MaxValue;
+        CurrentBombedPlayer = 254;
         CurrentBombedPlayerTime = new();
         LastBombedPlayer = byte.MaxValue;
         AgitaterHasBombed = false;
-        SendRPC(CurrentBombedPlayer, LastBombedPlayer);
+    }
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
+    {
+        if (!lowLoad && CurrentBombedPlayer == 254)
+        {
+            SendRPC(CurrentBombedPlayer, LastBombedPlayer);
+            CurrentBombedPlayer = byte.MaxValue;
+        }
     }
     public override bool CanUseKillButton(PlayerControl pc) => true;
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = AgiTaterBombCooldown.GetFloat();
@@ -76,7 +77,6 @@ internal class Agitater : RoleBase
 
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (!HasEnabled) return false;
         if (AgitaterAutoReportBait.GetBool() && target.Is(CustomRoles.Bait)) return true;
         if (target.Is(CustomRoles.Pestilence))
         {
@@ -94,13 +94,13 @@ internal class Agitater : RoleBase
         AgitaterHasBombed = true;
         killer.ResetKillCooldown();
         killer.SetKillCooldown();
-        
+
         _ = new LateTask(() =>
         {
             if (CurrentBombedPlayer != byte.MaxValue && GameStates.IsInTask)
             {
                 var pc = Utils.GetPlayerById(CurrentBombedPlayer);
-                if (pc != null && pc.IsAlive() && killer != null)
+                if (pc != null && pc.IsAlive() && killer != null && !pc.IsTransformedNeutralApocalypse())
                 {
                     CurrentBombedPlayer.SetDeathReason(PlayerState.DeathReason.Bombed);
                     pc.RpcMurderPlayer(pc);
@@ -118,7 +118,7 @@ internal class Agitater : RoleBase
     {
         if (CurrentBombedPlayer == byte.MaxValue) return;
         var target = Utils.GetPlayerById(CurrentBombedPlayer);
-        var killer = Utils.GetPlayerById(playerIdList.First());
+        var killer = _Player;
         if (target == null || killer == null) return;
 
         CurrentBombedPlayer.SetDeathReason(PlayerState.DeathReason.Bombed);
@@ -129,9 +129,9 @@ internal class Agitater : RoleBase
         ResetBomb();
         Logger.Info($"{killer.GetRealName()} bombed {target.GetRealName()} on report", "Agitater");
     }
-    private void OnFixedUpdateOthers(PlayerControl player)
+    private void OnFixedUpdateOthers(PlayerControl player, bool lowLoad, long nowTime)
     {
-        if (!AgitaterHasBombed || CurrentBombedPlayer != player.PlayerId) return;
+        if (lowLoad || !AgitaterHasBombed || CurrentBombedPlayer != player.PlayerId) return;
 
         if (!player.IsAlive())
         {
@@ -147,7 +147,7 @@ internal class Agitater : RoleBase
             {
                 if (target.PlayerId != player.PlayerId && target.PlayerId != LastBombedPlayer)
                 {
-                    dis = Vector2.Distance(playerPos, target.transform.position);
+                    dis = Utils.GetDistance(playerPos, target.transform.position);
                     targetDistance.Add(target.PlayerId, dis);
                 }
             }
@@ -155,9 +155,9 @@ internal class Agitater : RoleBase
             if (targetDistance.Any())
             {
                 var min = targetDistance.OrderBy(c => c.Value).FirstOrDefault();
-                var target = Utils.GetPlayerById(min.Key);
-                var KillRange = GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)];
-                if (min.Value <= KillRange && !player.inVent && !target.inVent && player.RpcCheckAndMurder(target, true))
+                var target = min.Key.GetPlayer();
+                var KillRange = ExtendedPlayerControl.GetKillDistances();
+                if (min.Value <= KillRange && !player.inVent && !player.inMovingPlat && !target.inVent && !target.inMovingPlat && player.RpcCheckAndMurder(target, true))
                 {
                     PassBomb(player, target);
                 }

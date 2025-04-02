@@ -1,18 +1,18 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using Hazel;
+using InnerNet;
+using TOHFE.Modules;
 using TOHFE.Roles.Core;
-using UnityEngine;
+using static TOHFE.MeetingHudStartPatch;
 using static TOHFE.Options;
 using static TOHFE.Translator;
-using static TOHFE.MeetingHudStartPatch;
-using InnerNet;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace TOHFE.Roles.Neutral;
 
 internal class Solsticer : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Solsticer;
     private const int Id = 26200;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Solsticer);
     public override CustomRoles ThisRoleBase => SolsticerCanVent.GetBool() ? CustomRoles.Engineer : CustomRoles.Crewmate;
@@ -82,10 +82,10 @@ internal class Solsticer : RoleBase
     public override bool OnTaskComplete(PlayerControl player, int completedTaskCount, int totalTaskCount)
     {
         if (player == null) return true;
-        
+
         // Sycn for modded clients
         SendRPC();
-        
+
         if (patched)
         {
             ResetTasks(player);
@@ -93,6 +93,7 @@ internal class Solsticer : RoleBase
         var taskState = player.GetPlayerTaskState();
         if (taskState.IsTaskFinished)
         {
+            CustomSoundsManager.RPCPlayCustomSoundAll("Congrats");
             CustomWinnerHolder.ResetAndSetWinner(CustomWinner.Solsticer);
             CustomWinnerHolder.WinnerIds.Add(player.PlayerId);
         }
@@ -121,12 +122,9 @@ internal class Solsticer : RoleBase
         {
             TargetArrow.Add(target.PlayerId, pc.PlayerId);
         }
-        if (AmongUsClient.Instance.AmHost)
-        {
-            warningActived = true;
-            SendRPC();
-            Utils.NotifyRoles(ForceLoop: true);
-        }
+        warningActived = true;
+        SendRPC();
+        Utils.NotifyRoles(SpecifyTarget: pc);
     }
     public override bool OnCheckMurderAsTarget(PlayerControl killer, PlayerControl target)
     {
@@ -169,30 +167,32 @@ internal class Solsticer : RoleBase
         MurderMessage = "";
         patched = false;
     }
-    public override void OnFixedUpdate(PlayerControl pc)
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
-        if (patched && GameStates.IsInTask)
+        if (lowLoad) return;
+        if (patched)
         {
             Count--;
 
             if (Count > 0) return;
 
-            Count = 15;
+            Count = 4;
 
             var pos = ExtendedPlayerControl.GetBlackRoomPosition();
-            var dis = Vector2.Distance(pos, pc.GetCustomPosition());
+            var dis = Utils.GetDistance(pos, player.GetCustomPosition());
             if (dis < 1f)
                 return;
 
-            if (GameStates.IsMeeting || !patched) return;
-            pc.RpcTeleport(pos);
+            if (!patched) return;
+            player.RpcTeleport(pos);
         }
         else if (GameStates.IsInGame)
         {
-            if (Main.AllPlayerSpeed[pc.PlayerId] != SolsticerSpeed.GetFloat())
+            var playerId = player.PlayerId;
+            if (Main.AllPlayerSpeed[playerId] != SolsticerSpeed.GetFloat())
             {
-                Main.AllPlayerSpeed[pc.PlayerId] = SolsticerSpeed.GetFloat();
-                pc.MarkDirtySettings();
+                Main.AllPlayerSpeed[playerId] = SolsticerSpeed.GetFloat();
+                player.MarkDirtySettings();
             }
         }
     }
@@ -211,7 +211,6 @@ internal class Solsticer : RoleBase
             writer.Write(0);
             writer.Write(0);
         }
-        writer.Write(warningActived);
         writer.Write(playerid);
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
@@ -220,7 +219,6 @@ internal class Solsticer : RoleBase
         Logger.Info("syncsolsticer", "solsticer");
         int AllCount = reader.ReadInt32();
         int CompletedCount = reader.ReadInt32();
-        warningActived = reader.ReadBoolean();
         playerid = reader.ReadByte();
 
         if (AllCount != byte.MaxValue && CompletedCount != byte.MaxValue)
@@ -228,11 +226,6 @@ internal class Solsticer : RoleBase
             var taskState = Utils.GetPlayerById(playerid).GetPlayerTaskState();
             taskState.AllTasksCount = AllCount;
             taskState.CompletedTasksCount = CompletedCount;
-        }
-
-        if (warningActived)
-        {
-            ActiveWarning(Utils.GetPlayerById(playerid));
         }
     }
     public static bool OtherKnowSolsticer(PlayerControl target)
@@ -244,9 +237,7 @@ internal class Solsticer : RoleBase
     public void ResetTasks(PlayerControl pc)
     {
         SetShortTasksToAdd();
-        var taskState = pc.GetPlayerTaskState();
-        pc.Data.RpcSetTasks(new Il2CppStructArray<byte>(0)); //Let taskassign patch decide the tasks
-        taskState.CompletedTasksCount = 0;
+        pc.RpcResetTasks(); //Let taskassign patch decide the tasks
         pc.RpcGuardAndKill();
         pc.Notify(GetString("SolsticerTasksReset"));
         Main.AllPlayerControls.Do(x => TargetArrow.Remove(x.PlayerId, pc.PlayerId));
@@ -302,25 +293,5 @@ internal class Solsticer : RoleBase
                 MurderMessage = string.Format(GetString("SolsticerOnMeeting"), AddShortTasks);
             AddMsg(MurderMessage, pc.PlayerId, Utils.ColorString(Utils.GetRoleColor(CustomRoles.Solsticer), GetString("SolsticerTitle")));
         }
-    }
-    public override string PlayerKnowTargetColor(PlayerControl seer, PlayerControl target)
-    {
-        if (seer.Is(CustomRoles.SchrodingersCat))
-        {
-            if (SchrodingersCat.teammate.ContainsKey(seer.PlayerId) && target.PlayerId == SchrodingersCat.teammate[seer.PlayerId])
-            {
-                if (target.GetCustomRole().IsCrewmate()) return "#8CFFFF";
-                else return Main.roleColors[target.GetCustomRole()];
-            }
-        }
-        if (target.Is(CustomRoles.SchrodingersCat))
-        {
-            if (SchrodingersCat.teammate.ContainsKey(target.PlayerId) && seer.PlayerId == SchrodingersCat.teammate[target.PlayerId])
-            {
-                if (seer.GetCustomRole().IsCrewmate()) return "#8CFFFF";
-                else return Main.roleColors[seer.GetCustomRole()];
-            }
-        }
-        return string.Empty;
     }
 }

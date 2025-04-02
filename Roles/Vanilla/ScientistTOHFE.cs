@@ -1,4 +1,4 @@
-﻿
+
 using AmongUs.GameOptions;
 
 namespace TOHFE.Roles.Vanilla;
@@ -6,10 +6,8 @@ namespace TOHFE.Roles.Vanilla;
 internal class ScientistTOHFE : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.ScientistTOHFE;
     private const int Id = 6200;
-    private static readonly HashSet<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Scientist;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.CrewmateVanilla;
     //==================================================================\\
@@ -26,15 +24,6 @@ internal class ScientistTOHFE : RoleBase
         BatteryDuration = IntegerOptionItem.Create(Id + 3, GeneralOption.ScientistBase_BatteryDuration, new(1, 250, 1), 5, TabGroup.CrewmateRoles, false)
             .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ScientistTOHFE])
             .SetValueFormat(OptionFormat.Seconds);
-    }
-
-    public override void Init()
-    {
-        playerIdList.Clear();
-    }
-    public override void Add(byte playerId)
-    {
-        playerIdList.Add(playerId);
     }
 
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)

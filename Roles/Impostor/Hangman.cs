@@ -1,13 +1,16 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using TOHFE.Roles.AddOns.Impostor;
 using TOHFE.Roles.Core;
+using TOHFE.Roles.Double;
 using UnityEngine;
 using static TOHFE.Options;
+
 namespace TOHFE.Roles.Impostor;
 
 internal class Hangman : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Hangman;
     private const int Id = 24500;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Hangman);
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
@@ -33,7 +36,10 @@ internal class Hangman : RoleBase
     }
     public override bool ForcedCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (target.Is(CustomRoles.Pestilence))
+        if (target.Is(CustomRoles.NiceMini) && Mini.Age < 18)
+            return true;
+
+        if (target.IsTransformedNeutralApocalypse() || target.Is(CustomRoles.Solsticer))
             return true;
 
         if (target.Is(CustomRoles.Madmate) && !Madmate.ImpCanKillMadmate.GetBool())

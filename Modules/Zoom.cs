@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace TOHFE;
@@ -64,7 +64,7 @@ public static class Zoom
             HudManager.Instance.UICamera.orthographicSize *= size;
         }
         DestroyableSingleton<HudManager>.Instance?.ShadowQuad?.gameObject?.SetActive((reset || Camera.main.orthographicSize == 3.0f) && PlayerControl.LocalPlayer.IsAlive());
-        
+
         if (ResetButtons)
         {
             ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
@@ -78,8 +78,8 @@ public static class Zoom
 
 public static class Flag
 {
-    private static List<string> OneTimeList = [];
-    private static List<string> FirstRunList = [];
+    private static readonly List<string> OneTimeList = [];
+    private static readonly List<string> FirstRunList = [];
     public static void Run(Action action, string type, bool firstrun = false)
     {
         if (OneTimeList.Contains(type) || (firstrun && !FirstRunList.Contains(type)))

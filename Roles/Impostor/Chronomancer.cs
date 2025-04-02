@@ -1,15 +1,18 @@
-﻿using System;
+using AmongUs.GameOptions;
+using Hazel;
+using InnerNet;
+using System;
 using System.Text;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
-using AmongUs.GameOptions;
 
 namespace TOHFE.Roles.Impostor;
 
 internal class Chronomancer : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Chronomancer;
     private const int Id = 900;
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorKilling;
@@ -41,7 +44,7 @@ internal class Chronomancer : RoleBase
         SetupRoleOptions(Id, TabGroup.ImpostorRoles, CustomRoles.Chronomancer);
         KillCooldown = IntegerOptionItem.Create(Id + 10, "ChronomancerKillCooldown", new(1, 180, 1), 60, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Chronomancer])
             .SetValueFormat(OptionFormat.Seconds);
-        Dtime = FloatOptionItem.Create(Id + 11, "ChronomancerDecreaseTime", new(0.05f, 1f, 0.05f), 0.15f, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Chronomancer])
+        Dtime = FloatOptionItem.Create(Id + 11, "ChronomancerDecreaseTime", new(0.10f, 1f, 0.05f), 0.15f, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Chronomancer])
             .SetValueFormat(OptionFormat.Seconds);
         ReduceVision = FloatOptionItem.Create(Id + 12, "ChronomancerVisionMassacre", new(0.25f, 1f, 0.25f), 0.5f, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Chronomancer])
             .SetValueFormat(OptionFormat.Multiplier);
@@ -98,29 +101,29 @@ internal class Chronomancer : RoleBase
 
         return sb.ToString();
     }
-    private string GetModdedCharge()
-    {
-        var sb = new StringBuilder($"{(int)Math.Round(((double)ChargedTime / FullCharge) * 100)}% ");
-
-        return sb.ToString();
-    }
-    public void SetCooldown()
+    public override void SetKillCooldown(byte id)
     {
         if (IsInMassacre)
         {
-            Main.AllPlayerKillCooldown[_state.PlayerId] = 0.1f;
+            Main.AllPlayerKillCooldown[id] = 0.1f;
         }
         else
         {
-            Main.AllPlayerKillCooldown[_state.PlayerId] = realcooldown;
+            Main.AllPlayerKillCooldown[id] = realcooldown;
         }
-        _Player.SyncSettings();
+        _Player?.SyncSettings();
     }
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
         ChargedTime = 0;
         IsInMassacre = false;
-        _Player?.MarkDirtySettings();
+        _Player?.ResetKillCooldown();
+    }
+    public override void AfterMeetingTasks()
+    {
+        ChargedTime = 0;
+        IsInMassacre = false;
+        _Player?.ResetKillCooldown();
     }
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
@@ -133,20 +136,21 @@ internal class Chronomancer : RoleBase
         killer.SetKillCooldown();
         return true;
     }
-    public override void OnFixedUpdate(PlayerControl pc)
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
-        if (GameStates.IsMeeting) return;
+        if (!Main.IntroDestroyed) return;
 
+        var oldChargedTime = ChargedTime;
         if (LastCD != GetCharge())
         {
             LastCD = GetCharge();
-            Utils.NotifyRoles(SpecifySeer: pc, SpecifyTarget: pc);
+            Utils.NotifyRoles(SpecifySeer: player, ForceLoop: false);
         }
 
         if (ChargedTime != FullCharge
-            && now + 1 <= Utils.GetTimeStamp() && !IsInMassacre)
+            && now + 1 <= nowTime && !IsInMassacre)
         {
-            now = Utils.GetTimeStamp();
+            now = nowTime;
             ChargedTime++;
         }
         else if (IsInMassacre && ChargedTime > 0 && countnowF >= LastNowF)
@@ -158,24 +162,42 @@ internal class Chronomancer : RoleBase
         if (IsInMassacre && ChargedTime < 1)
         {
             IsInMassacre = false;
-            pc.MarkDirtySettings();
+            player.MarkDirtySettings();
+        }
+
+        if (oldChargedTime != ChargedTime)
+        {
+            SendChargedTimeRPC();
         }
 
         countnowF += Time.deltaTime;
     }
+
+    public void SendChargedTimeRPC()
+    {
+        // Cant directly write Ability Limit, create another method to send it
+        // Only send to the target to prevent logging in other's
+        var writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.None, _Player.OwnerId);
+        writer.WriteNetObject(_Player);
+        writer.Write(ChargedTime);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+
+    public override void ReceiveRPC(MessageReader reader, PlayerControl pc)
+    {
+        ChargedTime = reader.ReadInt32();
+    }
+
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
     {
         bool ismeeting = GameStates.IsMeeting || isForMeeting;
         if (seer == seen && !ismeeting)
         {
-            if (!seer.IsModClient()) return GetCharge();
-            else if (isForHud) return GetModdedCharge();
+            if (!isForHud && seer.IsModded())
+                return string.Empty;
+
+            return GetCharge();
         }
-        return "";
-    }
-    public override float SetModdedLowerText(out Color32? FaceColor)
-    {
-        FaceColor = GetPercentColor(ChargedTime);
-        return 3.8f;
+        return string.Empty;
     }
 }

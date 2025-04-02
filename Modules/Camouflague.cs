@@ -1,7 +1,6 @@
 using AmongUs.Data;
 using TOHFE.Modules;
 using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
 
 namespace TOHFE;
 
@@ -69,7 +68,7 @@ public static class Camouflage
     {
         IsCamouflage = false;
         PlayerSkins.Clear();
-        ResetSkinAfterDeathPlayers = [];
+        ResetSkinAfterDeathPlayers.Clear();
 
         IsActive = Options.CommsCamouflage.GetBool() && !(Options.DisableOnSomeMaps.GetBool() &&
             (
@@ -157,7 +156,14 @@ public static class Camouflage
                     pc.RpcRemovePet();
                 }
             }
-            Utils.NotifyRoles(NoCache: true);
+            if (Main.CurrentServerIsVanilla && Options.BypassRateLimitAC.GetBool())
+            {
+                Main.Instance.StartCoroutine(Utils.NotifyEveryoneAsync(speed: 5));
+            }
+            else
+            {
+                Utils.NotifyRoles();
+            }
         }
     }
     public static void RpcSetSkin(PlayerControl target, bool ForceRevert = false, bool RevertToDefault = false, bool GameEnd = false)
@@ -165,10 +171,10 @@ public static class Camouflage
         if (!(AmongUsClient.Instance.AmHost && (Options.CommsCamouflage.GetBool() || Camouflager.HasEnabled))) return;
         if (target == null) return;
 
-        var id = target.PlayerId;
+        var targetId = target.PlayerId;
 
         // if player dead, and Camouflage active, return
-        if (IsCamouflage && Main.PlayerStates[id].IsDead)
+        if (IsCamouflage && Main.PlayerStates[targetId].IsDead)
         {
             return;
         }
@@ -183,26 +189,30 @@ public static class Camouflage
         if (!IsCamouflage || ForceRevert)
         {
             // if player are a shapeshifter, change to the id of your current Outfit
-            if (Main.CheckShapeshift.TryGetValue(id, out var shapeshifting) && shapeshifting && !RevertToDefault)
+            if (Main.CheckShapeshift.GetValueOrDefault(targetId, false) && !RevertToDefault)
             {
-                id = Main.ShapeshiftTarget[id];
+                targetId = Main.ShapeshiftTarget[targetId];
             }
 
-            // if game not end and Doppelganger clone skins
-            if (!GameEnd && Doppelganger.HasEnabled && Doppelganger.DoppelPresentSkin.TryGetValue(id, out var playerOutfit))
+
+            bool Hasovveride = Main.OvverideOutfit.TryGetValue(targetId, out var RealOutfit);
+
+            // if game not end and Something clone skins
+            if (!GameEnd && Hasovveride)
             {
-                newOutfit = playerOutfit;
+                Logger.Info($"{RealOutfit.outfit.SkinId}", "RealOutfit Check");
+                newOutfit = RealOutfit.outfit;
             }
             else
             {
                 // if game end, set normal name
-                if (GameEnd && Doppelganger.DoppelVictim.TryGetValue(id, out var playerName))
+                if (GameEnd && Hasovveride)
                 {
-                    Utils.GetPlayerById(id)?.RpcSetName(playerName);
+                    targetId.GetPlayer()?.RpcSetName(RealOutfit.name);
                 }
 
                 // Set Outfit
-                newOutfit = PlayerSkins[id];
+                newOutfit = PlayerSkins[targetId];
             }
         }
 

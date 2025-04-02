@@ -1,7 +1,6 @@
-﻿using Hazel;
+using Hazel;
 using TOHFE.Modules;
 using TOHFE.Roles.Neutral;
-using UnityEngine;
 using static TOHFE.Options;
 
 
@@ -10,10 +9,8 @@ namespace TOHFE.Roles.Impostor;
 internal class Lightning : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Lightning;
     private const int Id = 24100;
-    private static readonly HashSet<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorConcealing;
     //==================================================================\\
@@ -36,14 +33,8 @@ internal class Lightning : RoleBase
     }
     public override void Init()
     {
-        playerIdList.Clear();
         GhostPlayer.Clear();
         RealKiller.Clear();
-    }
-    public override void Add(byte playerId)
-    {
-        playerIdList.Add(playerId);
-
     }
     private static void SendRPC(byte playerId)
     {
@@ -73,14 +64,15 @@ internal class Lightning : RoleBase
         }
     }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = KillCooldown.GetFloat();
-    
+
     public static bool IsGhost(PlayerControl player) => IsGhost(player.PlayerId);
     private static bool IsGhost(byte id) => GhostPlayer.Contains(id);
-    
+
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
         if (killer == null || target == null || !killer.Is(CustomRoles.Lightning)) return false;
         if (IsGhost(target)) return false;
+        if (target.IsTransformedNeutralApocalypse()) return false;
 
         killer.RpcGuardAndKill();
         target.RpcGuardAndKill();
@@ -105,7 +97,7 @@ internal class Lightning : RoleBase
                 if (!killer.inVent)
                     killer.RpcGuardAndKill(killer);
 
-                Utils.NotifyRoles();
+                Utils.NotifyRoles(SpecifyTarget: target);
                 Logger.Info($"{target.GetNameWithRole()} transformed into a quantum ghost", "Lightning");
             }
         }, ConvertTime.GetFloat(), "Lightning Convert Player To Ghost");
@@ -119,15 +111,15 @@ internal class Lightning : RoleBase
         RealKiller.TryAdd(killer.PlayerId, target);
         StartConvertCountDown(target, killer);
     }
-    public override void OnFixedUpdateLowLoad(PlayerControl lightning)
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
-        if (!GhostPlayer.Any()) return;
+        if (lowLoad || !GhostPlayer.Any()) return;
 
         List<byte> deList = [];
         foreach (var ghost in GhostPlayer.ToArray())
         {
-            var gs = Utils.GetPlayerById(ghost);
-            if (gs == null || !gs.IsAlive() || gs.Data.Disconnected)
+            var gs = ghost.GetPlayer();
+            if (!gs.IsAlive())
             {
                 deList.Add(gs.PlayerId);
                 continue;
@@ -136,7 +128,7 @@ internal class Lightning : RoleBase
             foreach (var pc in allAlivePlayerControls)
             {
                 var pos = gs.transform.position;
-                var dis = Vector2.Distance(pos, pc.transform.position);
+                var dis = Utils.GetDistance(pos, pc.transform.position);
                 if (dis > 0.3f) continue;
 
                 deList.Add(gs.PlayerId);
@@ -153,14 +145,13 @@ internal class Lightning : RoleBase
         {
             GhostPlayer.RemoveAll(deList.Contains);
             foreach (var gs in deList.ToArray()) SendRPC(gs);
-            Utils.NotifyRoles();
         }
     }
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
         foreach (var ghost in GhostPlayer.ToArray())
         {
-            var gs = Utils.GetPlayerById(ghost);
+            var gs = ghost.GetPlayer();
             if (gs == null) continue;
             CheckForEndVotingPatch.TryAddAfterMeetingDeathPlayers(PlayerState.DeathReason.Quantization, gs.PlayerId);
             gs.SetRealKiller(RealKiller[gs.PlayerId]);
@@ -168,13 +159,10 @@ internal class Lightning : RoleBase
         }
         GhostPlayer.Clear();
         SendRPC(byte.MaxValue);
-        Utils.NotifyRoles();
     }
 
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
     {
-        if (isForMeeting) return string.Empty;
-        target ??= seer;
         return (!seer.IsAlive() && seer != target && IsGhost(target)) || IsGhost(target) ? Utils.ColorString(Utils.GetRoleColor(CustomRoles.Lightning), "■") : string.Empty;
     }
 

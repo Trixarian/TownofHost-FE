@@ -1,6 +1,7 @@
 using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Coven;
 using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Translator;
@@ -10,15 +11,11 @@ namespace TOHFE.Roles.Impostor;
 internal class BountyHunter : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.BountyHunter;
     private const int Id = 800;
-    private static readonly HashSet<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorKilling;
     //==================================================================\\
-
-    public override Sprite GetKillButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Handoff");
 
     private static OptionItem OptionTargetChangeTime;
     private static OptionItem OptionSuccessKillCooldown;
@@ -46,15 +43,11 @@ internal class BountyHunter : RoleBase
     }
     public override void Init()
     {
-        playerIdList.Clear();
-
         Targets.Clear();
         ChangeTimer.Clear();
     }
     public override void Add(byte playerId)
     {
-        playerIdList.Add(playerId);
-
         TargetChangeTime = OptionTargetChangeTime.GetFloat();
         SuccessKillCooldown = OptionSuccessKillCooldown.GetFloat();
         FailureKillCooldown = OptionFailureKillCooldown.GetFloat();
@@ -66,11 +59,6 @@ internal class BountyHunter : RoleBase
             //CustomRoleManager.OnFixedUpdateLowLoadOthers.Add(OnFixedUpdateLowLoadOthers);
         }
     }
-    public override void Remove(byte playerId)
-    {
-        playerIdList.Remove(playerId);
-    }
-
     private static void SendRPC(byte bountyId, byte targetId)
     {
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetBountyTarget, SendOption.Reliable, -1);
@@ -83,9 +71,7 @@ internal class BountyHunter : RoleBase
     {
         byte bountyId = reader.ReadByte();
         byte targetId = reader.ReadByte();
-
         Targets[bountyId] = targetId;
-        if (ShowTargetArrow) TargetArrow.Add(bountyId, targetId);
     }
 
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
@@ -120,9 +106,9 @@ internal class BountyHunter : RoleBase
         return true;
     }
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target) => ChangeTimer.Clear();
-    public override void OnFixedUpdate(PlayerControl player)
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
-        if (!ChangeTimer.ContainsKey(player.PlayerId)) return;
+        if (!ChangeTimer.TryGetValue(player.PlayerId, out var timer)) return;
 
         if (!player.IsAlive())
             ChangeTimer.Remove(player.PlayerId);
@@ -131,12 +117,12 @@ internal class BountyHunter : RoleBase
             var targetId = GetTarget(player);
             if (targetId == byte.MaxValue) return;
 
-            if (ChangeTimer[player.PlayerId] >= TargetChangeTime)
+            if (timer >= TargetChangeTime)
             {
                 ResetTarget(player);
                 Utils.NotifyRoles(SpecifySeer: player, ForceLoop: true);
             }
-            if (ChangeTimer[player.PlayerId] >= 0)
+            if (timer >= 0)
                 ChangeTimer[player.PlayerId] += Time.fixedDeltaTime;
 
             if (Main.PlayerStates[targetId].IsDead)
@@ -168,10 +154,10 @@ internal class BountyHunter : RoleBase
         if (player.Is(CustomRoles.Lovers) && target.Is(CustomRoles.Lovers)) return false;
 
         if (target.Is(CustomRoles.Romantic)
-            && ((Romantic.BetPlayer.TryGetValue(target.PlayerId, out byte romanticPartner) && romanticPartner == player.PlayerId))) return false;
+            && Romantic.BetPlayer.TryGetValue(target.PlayerId, out byte romanticPartner) && romanticPartner == player.PlayerId) return false;
 
         if (target.Is(CustomRoles.Lawyer)
-            && (Lawyer.Target.TryGetValue(target.PlayerId, out byte lawyerTarget) && lawyerTarget == player.PlayerId) && Lawyer.TargetKnowLawyer) return false;
+            && Lawyer.TargetList.Contains(player.PlayerId) && Lawyer.TargetKnowLawyer) return false;
 
         if (player.Is(CustomRoles.Charmed)
             && (target.Is(CustomRoles.Cultist) || (target.Is(CustomRoles.Charmed) && Cultist.TargetKnowOtherTargets))) return false;
@@ -191,6 +177,9 @@ internal class BountyHunter : RoleBase
         if (player.Is(CustomRoles.Soulless)
             && target.Is(CustomRoles.CursedSoul) || target.Is(CustomRoles.Soulless)) return false;
 
+        if (player.Is(CustomRoles.Enchanted)
+            && target.IsPlayerCoven() || (target.Is(CustomRoles.Enchanted) && Ritualist.EnchantedKnowsEnchanted.GetBool())) return false;
+
         if (target.GetCustomRole().IsImpostor()
             || ((target.GetCustomRole().IsMadmate() || target.Is(CustomRoles.Madmate)) && Madmate.ImpKnowWhosMadmate.GetBool())) return false;
 
@@ -208,7 +197,7 @@ internal class BountyHunter : RoleBase
         Logger.Info($"{player.GetNameWithRole()}: reset target", "BountyHunter");
         player.RpcResetAbilityCooldown();
 
-        var cTargets = new List<PlayerControl>(Main.AllAlivePlayerControls.Where(pc => PotentialTarget(player, pc)));
+        var cTargets = new List<PlayerControl>(Main.AllAlivePlayerControls.Where(pc => PotentialTarget(player, pc) && pc.GetCustomRole() is not CustomRoles.Solsticer));
 
         if (cTargets.Count >= 2 && Targets.TryGetValue(player.PlayerId, out var nowTarget))
             cTargets.RemoveAll(x => x.PlayerId == nowTarget);
@@ -223,7 +212,7 @@ internal class BountyHunter : RoleBase
         var target = cTargets.RandomElement();
         var targetId = target.PlayerId;
         Targets[playerId] = targetId;
-        
+
         if (ShowTargetArrow) TargetArrow.Add(playerId, targetId);
         Logger.Info($"Change {player.GetNameWithRole()} target to: {target.GetNameWithRole()}", "BountyHunter");
 
@@ -233,7 +222,7 @@ internal class BountyHunter : RoleBase
     public override void SetAbilityButtonText(HudManager hud, byte playerId) => hud.AbilityButton.OverrideText(GetString("BountyHunterChangeButtonText"));
     public override void AfterMeetingTasks()
     {
-        foreach (var id in playerIdList.ToArray())
+        foreach (var id in _playerIdList.ToArray())
         {
             if (!Main.PlayerStates[id].IsDead)
             {
@@ -251,13 +240,12 @@ internal class BountyHunter : RoleBase
     }
     public override string GetSuffix(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
     {
-        if (seer == null) return string.Empty;
-        if (!seer.Is(CustomRoles.BountyHunter)) return string.Empty;
-        if (seen != null && seer.PlayerId != seen.PlayerId) return string.Empty;
-        
-        if (!ShowTargetArrow || isForMeeting) return string.Empty;
+        if (!ShowTargetArrow || isForMeeting || seer.PlayerId != seen.PlayerId) return string.Empty;
 
         var targetId = GetTarget(seer);
         return TargetArrow.GetArrows(seer, targetId);
     }
+
+    public override Sprite GetKillButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Handoff");
+    public override Sprite GetAbilityButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Timer");
 }

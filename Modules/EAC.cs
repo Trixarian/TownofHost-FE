@@ -1,7 +1,6 @@
-﻿using Hazel;
-using System;
+using Hazel;
 using InnerNet;
-using TOHFE.Modules;
+using System;
 using static TOHFE.Translator;
 
 namespace TOHFE;
@@ -35,7 +34,7 @@ internal class EAC
         // nvm, it works so im not doing more changes
 
         if (!AmongUsClient.Instance.AmHost) return false;
-        if (RoleBasisChanger.IsChangeInProgress) return false;
+        //if (RoleBasisChanger.IsChangeInProgress) return false;
         if (pc == null || reader == null) return false;
         try
         {
@@ -253,6 +252,37 @@ internal class EAC
                         // Do nothing
                     }
                     break;
+                case 119: // KN Chat
+                    try
+                    {
+                        var firstString = sr.ReadString();
+                        var secondString = sr.ReadString();
+                        sr.ReadInt32();
+
+                        var flag = string.IsNullOrEmpty(firstString) && string.IsNullOrEmpty(secondString);
+
+                        if (!flag)
+                        {
+                            Report(pc, "KN Chat RPC");
+                            HandleCheat(pc, "KN Chat RPC");
+                            Logger.Fatal($"玩家【{pc.GetClientId()}:{pc.GetRealName()}】发送KN聊天，已驳回", "EAC");
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                        // Do nothing
+                    }
+                    break;
+                case 250: // KN
+                    if (sr.BytesRemaining == 0)
+                    {
+                        Report(pc, "KN RPC");
+                        HandleCheat(pc, "KN RPC");
+                        Logger.Fatal($"玩家【{pc.GetClientId()}:{pc.GetRealName()}】发送KN RPC，已驳回", "EAC");
+                        return true;
+                    }
+                    break;
                 case unchecked((byte)420): // 164 Sicko
                     if (sr.BytesRemaining == 0)
                     {
@@ -354,6 +384,10 @@ internal class EAC
     }
     public static bool RpcUpdateSystemCheck(PlayerControl player, SystemTypes systemType, byte amount)
     {
+        if (GameStates.IsLocalGame)
+        {
+            return false;
+        }
         //Update system rpc can not get received by playercontrol.handlerpc
         var Mapid = Utils.GetActiveMapId();
         Logger.Info("Check sabotage RPC" + ", PlayerName: " + player.GetNameWithRole() + ", SabotageType: " + systemType.ToString() + ", amount: " + amount.ToString(), "EAC");
@@ -367,16 +401,14 @@ internal class EAC
 
         if (systemType == SystemTypes.Sabotage) //Normal sabotage using buttons
         {
-            //if (!player.HasImpKillButton(true))
-            //{
-            //    WarnHost();
-            //    Report(player, "Bad Sabotage A : Non Imp");
-            //    HandleCheat(player, "Bad Sabotage A : Non Imp");
-            //    Logger.Fatal($"玩家【{player.GetClientId()}:{player.GetRealName()}】Bad Sabotage A，已驳回", "EAC");
-            //    return true;
-            //}
-
-            // Disable this check since haskillbutton needs rework
+            if (!player.HasImpKillButton(true))
+            {
+                WarnHost();
+                Report(player, "Bad Sabotage A : Non Imp");
+                HandleCheat(player, "Bad Sabotage A : Non Imp");
+                Logger.Fatal($"玩家【{player.GetClientId()}:{player.GetRealName()}】Bad Sabotage A，已驳回", "EAC");
+                return true;
+            }
         } //Cheater directly send 128 systemtype rpc
         else if (systemType == SystemTypes.LifeSupp)
         {
@@ -462,8 +494,8 @@ internal class EAC
         if (!GameStates.IsInGame)
         {
             WarnHost();
-            Report(player, "Report body out of game");
-            HandleCheat(player, "Report body out of game");
+            Report(player, "Report body out of game C");
+            HandleCheat(player, "Report body out of game C");
             Logger.Fatal($"玩家【{player.GetClientId()}:{player.GetRealName()}】非游戏内开会，已驳回", "EAC");
             return true;
         }
@@ -659,7 +691,7 @@ internal class EAC
                 break;
             case 3:
                 foreach (var apc in Main.AllPlayerControls.Where(x => x.PlayerId != pc?.Data?.PlayerId).ToArray())
-                    Utils.SendMessage(string.Format(GetString("Message.NoticeByEAC"), pc?.Data?.PlayerName, text), pc.PlayerId, Utils.ColorString(Utils.GetRoleColor(CustomRoles.Impostor), GetString("MessageFromEAC")));
+                    Utils.SendMessage(string.Format(GetString("Message.NoticeByEAC"), pc?.Data?.PlayerName, text), apc.PlayerId, Utils.ColorString(Utils.GetRoleColor(CustomRoles.Impostor), GetString("MessageFromEAC")));
                 break;
             case 4:
                 if (!BanManager.TempBanWhiteList.Contains(pc.GetClient().GetHashedPuid()))

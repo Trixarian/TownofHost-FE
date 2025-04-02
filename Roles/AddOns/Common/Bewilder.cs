@@ -1,46 +1,50 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using static TOHFE.Options;
 
 namespace TOHFE.Roles.AddOns.Common;
 
-public static class Bewilder
+public class Bewilder : IAddon
 {
+    public CustomRoles Role => CustomRoles.Bewilder;
     private const int Id = 18900;
+    public AddonTypes Type => AddonTypes.Helpful;
 
     private static OptionItem BewilderVision;
-    public static OptionItem ImpCanBeBewilder;
-    public static OptionItem CrewCanBeBewilder;
-    public static OptionItem NeutralCanBeBewilder;
     private static OptionItem KillerGetBewilderVision;
 
+    private static readonly HashSet<byte> playerList = [];
     public static bool IsEnable;
 
-    public static void SetupCustomOptions()
+    public void SetupCustomOption()
     {
-        SetupAdtRoleOptions(Id, CustomRoles.Bewilder, canSetNum: true);
+        SetupAdtRoleOptions(Id, CustomRoles.Bewilder, canSetNum: true, teamSpawnOptions: true);
         BewilderVision = FloatOptionItem.Create(Id + 10, "BewilderVision", new(0f, 5f, 0.05f), 0.6f, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Bewilder])
             .SetValueFormat(OptionFormat.Multiplier);
-        ImpCanBeBewilder = BooleanOptionItem.Create(Id + 11, "ImpCanBeBewilder", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Bewilder]);
-        CrewCanBeBewilder = BooleanOptionItem.Create(Id + 12, "CrewCanBeBewilder", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Bewilder]);
-        NeutralCanBeBewilder = BooleanOptionItem.Create(Id + 13, "NeutralCanBeBewilder", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Bewilder]);
         KillerGetBewilderVision = BooleanOptionItem.Create(Id + 14, "KillerGetBewilderVision", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Bewilder]);
     }
-
-    public static void Init()
+    public void Init()
     {
         IsEnable = false;
+        playerList.Clear();
     }
-
-    public static void Add()
+    public void Add(byte playerId, bool gameIsLoading = true)
     {
+        playerList.Add(playerId);
         IsEnable = true;
     }
+    public void Remove(byte playerId)
+    {
+        playerList.Remove(playerId);
 
-    public static void ApplyVisionOptions(IGameOptions opt) 
-    { 
-        opt.SetVision(false); 
-        opt.SetFloat(FloatOptionNames.ImpostorLightMod, BewilderVision.GetFloat()); 
-        opt.SetFloat(FloatOptionNames.CrewLightMod, BewilderVision.GetFloat()); 
+        if (!playerList.Any())
+            IsEnable = false;
+    }
+
+    public static void ApplyVisionOptions(IGameOptions opt)
+    {
+        opt.SetVision(false);
+        opt.SetFloat(FloatOptionNames.ImpostorLightMod, BewilderVision.GetFloat());
+        opt.SetFloat(FloatOptionNames.CrewLightMod, BewilderVision.GetFloat());
     }
     public static void ApplyGameOptions(IGameOptions opt, PlayerControl player)
     {

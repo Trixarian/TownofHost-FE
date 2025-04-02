@@ -164,7 +164,7 @@ public class CustomRpcSender
 
         return this;
     }
-    public void SendMessage()
+    public void SendMessage(bool dispose = false)
     {
         if (currentState == State.InRootMessage) this.EndMessage();
         if (currentState != State.Ready)
@@ -176,12 +176,17 @@ public class CustomRpcSender
                 throw new InvalidOperationException(errorMsg);
         }
 
-        AmongUsClient.Instance.SendOrDisconnect(stream);
-        onSendDelegate();
+        if (!dispose)
+        {
+            AmongUsClient.Instance.SendOrDisconnect(stream);
+            onSendDelegate();
+        }
         currentState = State.Finished;
-        Logger.Info($"\"{name}\" is finished", "CustomRpcSender");
+        Logger.Info($"\"{name}\" is " + (dispose ? "disposed" : "finished"), "CustomRpcSender");
         stream.Recycle();
     }
+
+    public int Length => stream.Length;
 
     // Write
     #region PublicWriteMethods
@@ -218,7 +223,7 @@ public class CustomRpcSender
 
         return this;
     }
-
+    [Obfuscation(Exclude = true)]
     public enum State
     {
         BeforeInit = 0, //初期化前 何もできない
@@ -228,21 +233,21 @@ public class CustomRpcSender
         Finished, //送信後 何もできない
     }
 }
-
 public static class CustomRpcSenderExtensions
 {
     public static void RpcSetRole(this CustomRpcSender sender, PlayerControl player, RoleTypes role, int targetClientId = -1)
     {
         sender.AutoStartRpc(player.NetId, (byte)RpcCalls.SetRole, targetClientId)
             .Write((ushort)role)
-            .Write(false)
+            .Write(true) // canOverride
             .EndRpc();
     }
-    public static void RpcMurderPlayerV3(this CustomRpcSender sender, PlayerControl player, PlayerControl target, int targetClientId = -1)
+
+    public static void RpcSetCustomRole(this CustomRpcSender sender, byte playerId, CustomRoles role, int targetClientId = -1)
     {
-        sender.AutoStartRpc(player.NetId, (byte)RpcCalls.MurderPlayer, targetClientId)
-            .WriteNetObject(target)
-            .Write((int)ExtendedPlayerControl.ResultFlags)
+        sender.AutoStartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetCustomRole, targetClientId)
+            .Write(playerId)
+            .WritePacked((int)role)
             .EndRpc();
     }
 }

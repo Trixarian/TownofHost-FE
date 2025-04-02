@@ -12,7 +12,7 @@ public class MainMenuManagerStartPatch
 {
     public static GameObject amongUsLogo;
     public static GameObject Ambience;
-    public static SpriteRenderer TohfeLogo { get; private set; }
+    public static SpriteRenderer ToheLogo { get; private set; }
 
     private static void Postfix(MainMenuManager __instance)
     {
@@ -22,7 +22,7 @@ public class MainMenuManagerStartPatch
         var logoObject = new GameObject("titleLogo_TOHFE");
         var logoTransform = logoObject.transform;
 
-        TohfeLogo = logoObject.AddComponent<SpriteRenderer>();
+        ToheLogo = logoObject.AddComponent<SpriteRenderer>();
         logoTransform.parent = rightpanel;
         logoTransform.localPosition = new(-0.16f, 0f, 1f);
         logoTransform.localScale *= 1.2f;
@@ -95,7 +95,7 @@ public static class MainMenuManagerPatch
 {
     private static PassiveButton template;
     private static PassiveButton gitHubButton;
-    private static PassiveButton kofiButton;
+    private static PassiveButton donationButton;
     private static PassiveButton discordButton;
     private static PassiveButton websiteButton;
     //private static PassiveButton patreonButton;
@@ -108,41 +108,41 @@ public static class MainMenuManagerPatch
         // FPS
         Application.targetFrameRate = Main.UnlockFPS.Value ? 165 : 60;
 
-        // __instance.screenTint.gameObject.transform.localPosition += new Vector3(1000f, 0f);
-        // __instance.screenTint.enabled = false;
-        // __instance.rightPanelMask.SetActive(true);
+        __instance.screenTint.gameObject.transform.localPosition += new Vector3(1000f, 0f);
+        __instance.screenTint.enabled = false;
+        __instance.rightPanelMask.SetActive(true);
         // The background texture (large sprite asset)
-        // __instance.mainMenuUI.FindChild<SpriteRenderer>("BackgroundTexture").transform.gameObject.SetActive(false);
+        __instance.mainMenuUI.FindChild<SpriteRenderer>("BackgroundTexture").transform.gameObject.SetActive(false);
         // The glint on the Among Us Menu
-        // __instance.mainMenuUI.FindChild<SpriteRenderer>("WindowShine").transform.gameObject.SetActive(false);
-        // __instance.mainMenuUI.FindChild<Transform>("ScreenCover").gameObject.SetActive(false);
+        __instance.mainMenuUI.FindChild<SpriteRenderer>("WindowShine").transform.gameObject.SetActive(false);
+        __instance.mainMenuUI.FindChild<Transform>("ScreenCover").gameObject.SetActive(false);
 
-        // GameObject leftPanel = __instance.mainMenuUI.FindChild<Transform>("LeftPanel").gameObject;
-        // GameObject rightPanel = __instance.mainMenuUI.FindChild<Transform>("RightPanel").gameObject;
-        // rightPanel.gameObject.GetComponent<SpriteRenderer>().enabled = false;
-        // GameObject maskedBlackScreen = rightPanel.FindChild<Transform>("MaskedBlackScreen").gameObject;
-        // maskedBlackScreen.GetComponent<SpriteRenderer>().enabled = false;
+        GameObject leftPanel = __instance.mainMenuUI.FindChild<Transform>("LeftPanel").gameObject;
+        GameObject rightPanel = __instance.mainMenuUI.FindChild<Transform>("RightPanel").gameObject;
+        rightPanel.gameObject.GetComponent<SpriteRenderer>().enabled = false;
+        GameObject maskedBlackScreen = rightPanel.FindChild<Transform>("MaskedBlackScreen").gameObject;
+        maskedBlackScreen.GetComponent<SpriteRenderer>().enabled = false;
         //maskedBlackScreen.transform.localPosition = new Vector3(-3.345f, -2.05f); //= new Vector3(0f, 0f);
-        // maskedBlackScreen.transform.localScale = new Vector3(7.35f, 4.5f, 4f);
+        maskedBlackScreen.transform.localScale = new Vector3(7.35f, 4.5f, 4f);
 
-        // __instance.mainMenuUI.gameObject.transform.position += new Vector3(-0.2f, 0f);
+        __instance.mainMenuUI.gameObject.transform.position += new Vector3(-0.2f, 0f);
 
-        // leftPanel.gameObject.GetComponent<SpriteRenderer>().enabled = false;
-        // leftPanel.gameObject.FindChild<SpriteRenderer>("Divider").enabled = false;
-        // leftPanel.GetComponentsInChildren<SpriteRenderer>(true).Where(r => r.name == "Shine").ToList().ForEach(r => r.enabled = false);
+        leftPanel.gameObject.GetComponent<SpriteRenderer>().enabled = false;
+        leftPanel.gameObject.FindChild<SpriteRenderer>("Divider").enabled = false;
+        leftPanel.GetComponentsInChildren<SpriteRenderer>(true).Where(r => r.name == "Shine").ToList().ForEach(r => r.enabled = false);
 
-        // GameObject splashArt = new("SplashArt");
-        // splashArt.transform.position = new Vector3(0, 0f, 600f); //= new Vector3(0, 0.40f, 600f);
-        // var spriteRenderer = splashArt.AddComponent<SpriteRenderer>();
-        // string folder = "TOHFE.Resources.Background.";
-        // IRandom rand = IRandom.Instance;
-        // if (rand.Next(0, 100) < 30) folder += "PrevArtWinner";
-        // else folder += "CurrentArtWinner";
-        // var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-        // string[] fileNames = assembly.GetManifestResourceNames().Where(resourceName => resourceName.StartsWith(folder) && resourceName.EndsWith(".png")).ToArray();
-        // int choice = rand.Next(0, fileNames.Length);
+        GameObject splashArt = new("SplashArt");
+        splashArt.transform.position = new Vector3(0, 0f, 600f); //= new Vector3(0, 0.40f, 600f);
+        var spriteRenderer = splashArt.AddComponent<SpriteRenderer>();
+        string folder = "TOHFE.Resources.Background.";
+        IRandom rand = IRandom.Instance;
+        if (rand.Next(0, 100) < 30) folder += "PrevArtWinner";
+        else folder += "CurrentArtWinner";
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        string[] fileNames = assembly.GetManifestResourceNames().Where(resourceName => resourceName.StartsWith(folder) && resourceName.EndsWith(".png")).ToArray();
+        int choice = rand.Next(0, fileNames.Length);
 
-        // spriteRenderer.sprite = Utils.LoadSprite(fileNames[choice], 150f);
+        spriteRenderer.sprite = Utils.LoadSprite(fileNames[choice], 150f);
 
 
         //__instance.playLocalButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.1647f, 0f, 0.7765f);
@@ -151,90 +151,90 @@ public static class MainMenuManagerPatch
         //__instance.PlayOnlineButton.transform.position = new Vector3(0f, -0.25f, 0f);
 
 
-        // __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
-        // __instance.playButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(0.929f, 0.255f, 0.773f);
-        // Color originalColorPlayButton = __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorPlayButton * 0.5f;
-        // __instance.playButton.activeTextColor = Color.white;
-        // __instance.playButton.inactiveTextColor = Color.white;
-        // __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
+        /*    __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
+            __instance.playButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(0.929f, 0.255f, 0.773f);
+            Color originalColorPlayButton = __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorPlayButton * 0.5f;
+            __instance.playButton.activeTextColor = Color.white;
+            __instance.playButton.inactiveTextColor = Color.white;
+            __instance.playButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
 
-        // __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
-        // __instance.inventoryButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(0.929f, 0.255f, 0.773f);
-        // Color originalColorInventoryButton = __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorInventoryButton * 0.5f;
-        // __instance.inventoryButton.activeTextColor = Color.white;
-        // __instance.inventoryButton.inactiveTextColor = Color.white;
-        // __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
+            __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
+            __instance.inventoryButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(0.929f, 0.255f, 0.773f);
+            Color originalColorInventoryButton = __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorInventoryButton * 0.5f;
+            __instance.inventoryButton.activeTextColor = Color.white;
+            __instance.inventoryButton.inactiveTextColor = Color.white;
+            __instance.inventoryButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
 
-        // __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
-        // __instance.shopButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(0.929f, 0.255f, 0.773f);
-        // Color originalColorShopButton = __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorShopButton * 0.5f;
-        // __instance.shopButton.activeTextColor = Color.white;
-        // __instance.shopButton.inactiveTextColor = Color.white;
-        // __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
-
-
-
-        // __instance.newsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
-        // __instance.newsButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
-        // Color originalColorNewsButton = __instance.newsButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.newsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorNewsButton * 0.6f;
-        // __instance.newsButton.activeTextColor = Color.white;
-        // __instance.newsButton.inactiveTextColor = Color.white;
-
-        // __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
-        // __instance.myAccountButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
-        // Color originalColorMyAccount = __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorMyAccount * 0.6f;
-        // __instance.myAccountButton.activeTextColor = Color.white;
-        // __instance.myAccountButton.inactiveTextColor = Color.white;
-        // __instance.accountButtons.transform.position += new Vector3(0f, 0f, -1f);
-
-        // __instance.settingsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
-        // __instance.settingsButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
-        // Color originalColorSettingsButton = __instance.settingsButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.settingsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorSettingsButton * 0.6f;
-        // __instance.settingsButton.activeTextColor = Color.white;
-        // __instance.settingsButton.inactiveTextColor = Color.white;
+            __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
+            __instance.shopButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(0.929f, 0.255f, 0.773f);
+            Color originalColorShopButton = __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorShopButton * 0.5f;
+            __instance.shopButton.activeTextColor = Color.white;
+            __instance.shopButton.inactiveTextColor = Color.white;
+            __instance.shopButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.35f);
 
 
 
-        //__instance.creditsButton.gameObject.SetActive(false);
-        //__instance.quitButton.gameObject.SetActive(false);
+            __instance.newsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
+            __instance.newsButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
+            Color originalColorNewsButton = __instance.newsButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.newsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorNewsButton * 0.6f;
+            __instance.newsButton.activeTextColor = Color.white;
+            __instance.newsButton.inactiveTextColor = Color.white;
 
-        // __instance.quitButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
-        // __instance.quitButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
-        // Color originalColorQuitButton = __instance.quitButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.quitButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorQuitButton * 0.6f;
-        // __instance.quitButton.activeTextColor = Color.white;
-        // __instance.quitButton.inactiveTextColor = Color.white;
+            __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
+            __instance.myAccountButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
+            Color originalColorMyAccount = __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.myAccountButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorMyAccount * 0.6f;
+            __instance.myAccountButton.activeTextColor = Color.white;
+            __instance.myAccountButton.inactiveTextColor = Color.white;
+            __instance.accountButtons.transform.position += new Vector3(0f, 0f, -1f);
 
-        // __instance.creditsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
-        // __instance.creditsButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
-        // Color originalColorCreditsButton = __instance.creditsButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
-        // __instance.creditsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorCreditsButton * 0.6f;
-        // __instance.creditsButton.activeTextColor = Color.white;
-        // __instance.creditsButton.inactiveTextColor = Color.white;
+            __instance.settingsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
+            __instance.settingsButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
+            Color originalColorSettingsButton = __instance.settingsButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.settingsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorSettingsButton * 0.6f;
+            __instance.settingsButton.activeTextColor = Color.white;
+            __instance.settingsButton.inactiveTextColor = Color.white;
+
+
+
+            //__instance.creditsButton.gameObject.SetActive(false);
+            //__instance.quitButton.gameObject.SetActive(false);
+
+            __instance.quitButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
+            __instance.quitButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
+            Color originalColorQuitButton = __instance.quitButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.quitButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorQuitButton * 0.6f;
+            __instance.quitButton.activeTextColor = Color.white;
+            __instance.quitButton.inactiveTextColor = Color.white;
+
+            __instance.creditsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = new Color(0.95f, 0f, 1f);
+            __instance.creditsButton.activeSprites.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0.85f);
+            Color originalColorCreditsButton = __instance.creditsButton.inactiveSprites.GetComponent<SpriteRenderer>().color;
+            __instance.creditsButton.inactiveSprites.GetComponent<SpriteRenderer>().color = originalColorCreditsButton * 0.6f;
+            __instance.creditsButton.activeTextColor = Color.white;
+            __instance.creditsButton.inactiveTextColor = Color.white; */
 
 
 
         if (template == null) return;
 
 
-        // Ko-Fi Button
-        if (kofiButton == null)
+        // donation Button
+        if (donationButton == null)
         {
-            kofiButton = CreateButton(
-                "kofiButton",
+            donationButton = CreateButton(
+                "donationButton",
                 new(-1.8f, -1.1f, 1f),
                 new(0, 255, 255, byte.MaxValue),
                 new(75, 255, 255, byte.MaxValue),
-                () => Application.OpenURL(Main.kofiInviteUrl),
-                GetString("kofi")); //"Kofi"
+                (UnityEngine.Events.UnityAction)(() => Application.OpenURL(Main.DonationInviteUrl)),
+                GetString("SupportUs")); //"Donation"
         }
-        kofiButton.gameObject.SetActive(Main.ShowKofiButton);
+        donationButton.gameObject.SetActive(Main.ShowDonationButton);
 
         // GitHub Button
         if (gitHubButton == null)
@@ -244,7 +244,7 @@ public static class MainMenuManagerPatch
                 new(-1.8f, -1.5f, 1f),
                 new(153, 153, 153, byte.MaxValue),
                 new(209, 209, 209, byte.MaxValue),
-                () => Application.OpenURL(Main.GitHubInviteUrl),
+                (UnityEngine.Events.UnityAction)(() => Application.OpenURL(Main.GitHubInviteUrl)),
                 GetString("GitHub")); //"GitHub"
         }
         gitHubButton.gameObject.SetActive(Main.ShowGitHubButton);
@@ -257,7 +257,7 @@ public static class MainMenuManagerPatch
                 new(-1.8f, -1.9f, 1f),
                 new(88, 101, 242, byte.MaxValue),
                 new(148, 161, byte.MaxValue, byte.MaxValue),
-                () => Application.OpenURL(Main.DiscordInviteUrl),
+                (UnityEngine.Events.UnityAction)(() => Application.OpenURL(Main.DiscordInviteUrl)),
                 GetString("Discord")); //"Discord"
         }
         discordButton.gameObject.SetActive(Main.ShowDiscordButton);
@@ -270,23 +270,23 @@ public static class MainMenuManagerPatch
                 new(-1.8f, -2.3f, 1f),
                 new(251, 81, 44, byte.MaxValue),
                 new(211, 77, 48, byte.MaxValue),
-                () => Application.OpenURL(Main.WebsiteInviteUrl),
+                (UnityEngine.Events.UnityAction)(() => Application.OpenURL(Main.WebsiteInviteUrl)),
                 GetString("Website")); //"Website"
         }
         websiteButton.gameObject.SetActive(Main.ShowWebsiteButton);
 
-        // var howToPlayButton = __instance.howToPlayButton;
-        // var freeplayButton = howToPlayButton.transform.parent.Find("FreePlayButton");
+        var howToPlayButton = __instance.howToPlayButton;
+        var freeplayButton = howToPlayButton.transform.parent.Find("FreePlayButton");
 
-        // if (freeplayButton != null) freeplayButton.gameObject.SetActive(false);
+        if (freeplayButton != null) freeplayButton.gameObject.SetActive(false);
 
-        // howToPlayButton.transform.SetLocalX(0);
+        howToPlayButton.transform.SetLocalX(0);
 
     }
 
-    public static PassiveButton CreateButton(string name, Vector3 localPosition, Color32 normalColor, Color32 hoverColor, Action action, string label, Vector2? scale = null)
+    public static PassiveButton CreateButton(string name, Vector3 localPosition, Color32 normalColor, Color32 hoverColor, UnityEngine.Events.UnityAction action, string label, Vector2? scale = null)
     {
-        var button = Object.Instantiate(template, MainMenuManagerStartPatch.TohfeLogo.transform);
+        var button = Object.Instantiate(template, MainMenuManagerStartPatch.ToheLogo.transform);
         button.name = name;
         Object.Destroy(button.GetComponent<AspectPosition>());
         button.transform.localPosition = localPosition;
@@ -321,7 +321,7 @@ public static class MainMenuManagerPatch
 
         return button;
     }
-    public static void Modify(this PassiveButton passiveButton, Action action)
+    public static void Modify(this PassiveButton passiveButton, UnityEngine.Events.UnityAction action)
     {
         if (passiveButton == null) return;
         passiveButton.OnClick = new Button.ButtonClickedEvent();
@@ -357,11 +357,11 @@ public static class MainMenuManagerPatch
     [HarmonyPostfix]
     public static void OpenMenu_Postfix()
     {
-        if (MainMenuManagerStartPatch.TohfeLogo != null) MainMenuManagerStartPatch.TohfeLogo.gameObject.SetActive(false);
+        if (MainMenuManagerStartPatch.ToheLogo != null) MainMenuManagerStartPatch.ToheLogo.gameObject.SetActive(false);
     }
     [HarmonyPatch(nameof(MainMenuManager.ResetScreen)), HarmonyPostfix]
     public static void ResetScreen_Postfix()
     {
-        if (MainMenuManagerStartPatch.TohfeLogo != null) MainMenuManagerStartPatch.TohfeLogo.gameObject.SetActive(true);
+        if (MainMenuManagerStartPatch.ToheLogo != null) MainMenuManagerStartPatch.ToheLogo.gameObject.SetActive(true);
     }
 }

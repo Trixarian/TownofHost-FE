@@ -1,23 +1,23 @@
-﻿using AmongUs.GameOptions;
-using UnityEngine;
+using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Modules;
 using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using UnityEngine;
 using static TOHFE.Options;
-using static TOHFE.Utils;
 using static TOHFE.Translator;
+using static TOHFE.Utils;
 
 namespace TOHFE.Roles.Neutral;
 
 internal class Arsonist : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Arsonist;
     private const int id = 15900;
-    private static readonly HashSet<byte> PlayerIds = [];
-    public static bool HasEnabled = PlayerIds.Any();
-    
+    public override bool IsDesyncRole => true;
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
-    public override Custom_RoleType ThisRoleType => CanIgniteAnytime() ? Custom_RoleType.NeutralKilling : Custom_RoleType.NeutralBenign;
+    public override Custom_RoleType ThisRoleType => CanIgniteAnytime() ? Custom_RoleType.NeutralKilling : Custom_RoleType.NeutralEvil;
     //==================================================================\\
 
     private static OptionItem ArsonistDouseTime;
@@ -30,7 +30,6 @@ internal class Arsonist : RoleBase
     private static readonly Dictionary<(byte, byte), bool> IsDoused = [];
 
     private static byte CurrentDousingTarget = byte.MaxValue;
-    private static bool ArsonistCanIgniteAnytime = true;
 
     public override void SetupCustomOption()
     {
@@ -45,21 +44,16 @@ internal class Arsonist : RoleBase
     }
     public override void Init()
     {
-        PlayerIds.Clear();
         ArsonistTimer.Clear();
         IsDoused.Clear();
         CurrentDousingTarget = byte.MaxValue;
-        ArsonistCanIgniteAnytime = ArsonistCanIgniteAnytimeOpt.GetBool();
     }
     public override void Add(byte playerId)
     {
-        PlayerIds.Add(playerId);
-
         foreach (var ar in Main.AllPlayerControls)
             IsDoused.Add((playerId, ar.PlayerId), false);
 
-        if (!Main.ResetCamPlayerList.Contains(playerId))
-            Main.ResetCamPlayerList.Add(playerId);
+        CustomRoleManager.CheckDeadBodyOthers.Add(CheckDeadBody);
     }
 
     private static void SendCurrentDousingTargetRPC(byte arsonistId, byte targetId)
@@ -70,7 +64,7 @@ internal class Arsonist : RoleBase
         }
         else
         {
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetCurrentDousingTarget, SendOption.Reliable, -1);
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetCurrentDousingTarget, SendOption.Reliable);
             writer.Write(arsonistId);
             writer.Write(targetId);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -87,7 +81,7 @@ internal class Arsonist : RoleBase
 
     private static void SendSetDousedPlayerRPC(PlayerControl player, PlayerControl target, bool isDoused)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetDousedPlayer, SendOption.Reliable, -1);//RPCによる同期
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetDousedPlayer, SendOption.Reliable);
         writer.Write(player.PlayerId);
         writer.Write(target.PlayerId);
         writer.Write(isDoused);
@@ -103,16 +97,16 @@ internal class Arsonist : RoleBase
     }
 
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = ArsonistCooldown.GetFloat();
-    
+
     public override bool CanUseKillButton(PlayerControl pc)
         => CanIgniteAnytime() ? GetDousedPlayerCount(pc.PlayerId).Item1 < ArsonistMaxPlayersToIgnite.GetInt() : !IsDouseDone(pc);
-    
+
     public override bool CanUseImpostorVentButton(PlayerControl pc)
         => IsDouseDone(pc) || (CanIgniteAnytime() && (GetDousedPlayerCount(pc.PlayerId).Item1 >= ArsonistMinPlayersToIgnite.GetInt() || pc.inVent));
-    
+
     public override void ApplyGameOptions(IGameOptions opt, byte playerId) => opt.SetVision(false);
-    
-    public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
+
+    public override bool ForcedCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
         killer.SetKillCooldown(ArsonistDouseTime.GetFloat());
         if (!IsDoused[(killer.PlayerId, target.PlayerId)] && !ArsonistTimer.ContainsKey(killer.PlayerId))
@@ -120,11 +114,18 @@ internal class Arsonist : RoleBase
             ArsonistTimer.Add(killer.PlayerId, (target, 0f));
             NotifyRoles(SpecifySeer: killer, SpecifyTarget: target, ForceLoop: true);
             SendCurrentDousingTargetRPC(killer.PlayerId, target.PlayerId);
+            killer.RpcSetVentInteraction();
         }
         return false;
     }
-    
-    public override void OnFixedUpdate(PlayerControl player)
+    private void CheckDeadBody(PlayerControl killer, PlayerControl target, bool inMeeting)
+    {
+        if (!_Player.IsAlive() || target.PlayerId == _Player.PlayerId || inMeeting || Main.MeetingIsStarted) return;
+
+        _Player.RpcSetVentInteraction();
+        _ = new LateTask(() => { NotifyRoles(SpecifySeer: _Player, ForceLoop: false); }, 1f, $"Update name for Arsonist {_Player?.PlayerId}", shoudLog: false);
+    }
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
         if (ArsonistTimer.TryGetValue(player.PlayerId, out var arsonistTimerData))
         {
@@ -154,8 +155,8 @@ internal class Arsonist : RoleBase
                 }
                 else
                 {
-                    float range = NormalGameOptionsV08.KillDistances[Mathf.Clamp(player.Is(Reach.IsReach) ? 2 : Main.NormalOptions.KillDistance, 0, 2)] + 0.5f;
-                    float distance = Vector2.Distance(player.GetCustomPosition(), arTarget.GetCustomPosition());
+                    float range = ExtendedPlayerControl.GetKillDistances(ovverideValue: player.Is(Reach.IsReach), newValue: 2) + 0.5f;
+                    float distance = GetDistance(player.GetCustomPosition(), arTarget.GetCustomPosition());
 
                     if (distance <= range)
                     {
@@ -176,7 +177,7 @@ internal class Arsonist : RoleBase
 
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
         => ArsonistTimer.Clear();
-    
+
     public override string GetMark(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
     {
         if (seen == null) return string.Empty;
@@ -190,7 +191,7 @@ internal class Arsonist : RoleBase
         return string.Empty;
     }
 
-    public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false) 
+    public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
         => !isForMeeting && IsDouseDone(seer) ? ColorString(GetRoleColor(CustomRoles.Arsonist), GetString("EnterVentToWin")) : string.Empty;
 
     public override string GetProgressText(byte playerId, bool comms)
@@ -202,16 +203,16 @@ internal class Arsonist : RoleBase
         else
             return ColorString(GetRoleColor(CustomRoles.Arsonist).ShadeColor(0.25f), $"({doused}/{ArsonistMaxPlayersToIgnite.GetInt()})");
     }
-    
+
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
         hud.KillButton.OverrideText(GetString("ArsonistDouseButtonText"));
         hud.ImpostorVentButton.OverrideText(GetString("ArsonistVentButtonText"));
     }
-   
+
     public override Sprite ImpostorVentButtonSprite(PlayerControl player)
         => (IsDouseDone(player) || (CanIgniteAnytime() && GetDousedPlayerCount(player.PlayerId).Item1 >= ArsonistMinPlayersToIgnite.GetInt())) ? CustomButton.Get("Ignite") : null;
-    
+
     public override Sprite GetKillButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Douse");
 
     public override void OnCoEnterVent(PlayerPhysics __instance, int ventId)
@@ -250,6 +251,7 @@ internal class Arsonist : RoleBase
                     foreach (var pc in Main.AllAlivePlayerControls)
                     {
                         if (!IsDousedPlayer(__instance.myPlayer, pc)) continue;
+                        if (pc.IsTransformedNeutralApocalypse()) continue;
                         pc.KillFlash();
                         pc.SetDeathReason(PlayerState.DeathReason.Torched);
                         pc.RpcMurderPlayer(pc);
@@ -269,7 +271,7 @@ internal class Arsonist : RoleBase
         }
     }
 
-    public static bool CanIgniteAnytime() => ArsonistCanIgniteAnytime;
+    public static bool CanIgniteAnytime() => ArsonistCanIgniteAnytimeOpt == null ? false : ArsonistCanIgniteAnytimeOpt.GetBool();
 
     private static void ResetCurrentDousingTarget(byte arsonistId) => SendCurrentDousingTargetRPC(arsonistId, 255);
 

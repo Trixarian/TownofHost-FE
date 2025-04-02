@@ -1,29 +1,29 @@
-﻿namespace TOHFE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
-public static class Sleuth
+public class Sleuth : IAddon
 {
+    public CustomRoles Role => CustomRoles.Sleuth;
     private const int Id = 20100;
+    public AddonTypes Type => AddonTypes.Helpful;
 
-    public static OptionItem ImpCanBeSleuth;
-    public static OptionItem CrewCanBeSleuth;
-    public static OptionItem NeutralCanBeSleuth;
     public static OptionItem SleuthCanKnowKillerRole;
-    
-    public static Dictionary<byte, string> SleuthNotify = [];
 
-    public static void SetupCustomOptions()
+    public static readonly Dictionary<byte, string> SleuthNotify = [];
+
+    public void SetupCustomOption()
     {
-        Options.SetupAdtRoleOptions(Id, CustomRoles.Sleuth, canSetNum: true);
-        ImpCanBeSleuth = BooleanOptionItem.Create(Id + 10, "ImpCanBeSleuth", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Sleuth]);
-        CrewCanBeSleuth = BooleanOptionItem.Create(Id + 11, "CrewCanBeSleuth", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Sleuth]);
-        NeutralCanBeSleuth = BooleanOptionItem.Create(Id + 12, "NeutralCanBeSleuth", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Sleuth]);
+        Options.SetupAdtRoleOptions(Id, CustomRoles.Sleuth, canSetNum: true, teamSpawnOptions: true);
         SleuthCanKnowKillerRole = BooleanOptionItem.Create(Id + 13, "SleuthCanKnowKillerRole", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Sleuth]);
     }
 
-    public static void Init()
+    public void Init()
     {
-        SleuthNotify = [];
+        SleuthNotify.Clear();
     }
+    public void Add(byte playerId, bool gameIsLoading = true)
+    { }
+    public void Remove(byte playerId)
+    { }
     public static void Clear()
     {
         SleuthNotify.Clear();
@@ -34,12 +34,12 @@ public static class Sleuth
         if (reporter.Is(CustomRoles.Sleuth) && deadBody != null && deadBody.Object != null && !deadBody.Object.IsAlive() && reporter.PlayerId != deadBody.PlayerId)
         {
             string msg;
-            msg = string.Format(Translator.GetString("SleuthNoticeVictim"), deadBody.Object.GetRealName(), deadBody.Object.GetDisplayRoleAndSubName(deadBody.Object, false));
+            msg = string.Format(Translator.GetString("SleuthNoticeVictim"), deadBody.Object.GetRealName(), deadBody.Object.GetDisplayRoleAndSubName(deadBody.Object, false, false));
             if (SleuthCanKnowKillerRole.GetBool())
             {
                 var realKiller = deadBody.Object.GetRealKiller();
                 if (realKiller == null) msg += "；" + Translator.GetString("SleuthNoticeKillerNotFound");
-                else msg += "；" + string.Format(Translator.GetString("SleuthNoticeKiller"), realKiller.GetDisplayRoleAndSubName(realKiller, false));
+                else msg += "；" + string.Format(Translator.GetString("SleuthNoticeKiller"), realKiller.GetDisplayRoleAndSubName(realKiller, false, false));
             }
             SleuthNotify.Add(reporter.PlayerId, msg);
         }

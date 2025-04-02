@@ -1,6 +1,7 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
+using Hazel;
+using InnerNet;
 using TOHFE.Roles.Core;
-using TOHFE.Roles.Neutral;
 using static TOHFE.MeetingHudStartPatch;
 using static TOHFE.Translator;
 
@@ -9,9 +10,10 @@ namespace TOHFE.Roles.Impostor;
 internal class Blackmailer : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Blackmailer;
     private const int Id = 24600;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Blackmailer);
-    
+
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorSupport;
     //==================================================================\\
@@ -19,7 +21,7 @@ internal class Blackmailer : RoleBase
     private static OptionItem SkillCooldown;
     private static OptionItem ShowShapeshiftAnimationsOpt;
 
-    private static readonly HashSet<byte> ForBlackmailer = [];
+    private static readonly Dictionary<byte, byte> ForBlackmailer = []; // <Target, BlackMailer>
 
     public override void SetupCustomOption()
     {
@@ -32,10 +34,49 @@ internal class Blackmailer : RoleBase
     {
         ForBlackmailer.Clear();
     }
+    public override void Remove(byte playerId)
+    {
+        foreach (var item in ForBlackmailer)
+        {
+            if (item.Value == playerId)
+            {
+                ForBlackmailer.Remove(item.Key);
+                SendRPC();
+            }
+        }
+    }
+    public override void SetAbilityButtonText(HudManager hud, byte playerId)
+    {
+        hud.AbilityButton.OverrideText(GetString("BlackmailerButtonText"));
+    }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
         AURoleOptions.ShapeshifterCooldown = SkillCooldown.GetFloat();
         AURoleOptions.ShapeshifterDuration = 1f;
+    }
+    private void SendRPC(byte target = byte.MaxValue)
+    {
+        if (!AmongUsClient.Instance.AmHost) return;
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable);
+        writer.WriteNetObject(_Player);
+        writer.Write(target);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+    public override void ReceiveRPC(MessageReader reader, PlayerControl NaN)
+    {
+        var targetId = reader.ReadByte();
+
+        if (targetId == byte.MaxValue)
+        {
+            ClearBlackmaile(false);
+        }
+        else
+        {
+            if (!ForBlackmailer.ContainsKey(targetId))
+            {
+                ForBlackmailer.Add(targetId, _Player.PlayerId);
+            }
+        }
     }
     public override bool OnCheckShapeshift(PlayerControl blackmailer, PlayerControl target, ref bool resetCooldown, ref bool shouldAnimate)
     {
@@ -45,36 +86,46 @@ internal class Blackmailer : RoleBase
         blackmailer.Notify(GetString("RejectShapeshift.AbilityWasUsed"), time: 2f);
         return false;
     }
-    public override void OnShapeshift(PlayerControl blackmailer, PlayerControl target, bool IsAnimate, bool shapeshifting)
+    public override void OnShapeshift(PlayerControl shapeshifter, PlayerControl target, bool IsAnimate, bool shapeshifting)
     {
-        if (shapeshifting && IsAnimate)
-        {
-            DoBlackmaile(blackmailer, target);
-        }
+        if (!shapeshifting) return;
+
+        DoBlackmaile(shapeshifter, target);
     }
-    private static void DoBlackmaile(PlayerControl blackmailer, PlayerControl target)
+    private void DoBlackmaile(PlayerControl blackmailer, PlayerControl target)
     {
-        if (!target.IsAlive())
+        Logger.Info($"Blackmail: {blackmailer.GetRealName()} -> {target.GetRealName()}", "Blackmailer.DoBlackmaile");
+        if (ForBlackmailer.ContainsKey(target.PlayerId))
         {
-            blackmailer.Notify(Utils.ColorString(Utils.GetRoleColor(blackmailer.GetCustomRole()), GetString("NotAssassin")));
             return;
         }
 
-        ClearBlackmaile();
-        ForBlackmailer.Add(target.PlayerId);
+        if (!target.IsAlive())
+        {
+            blackmailer.Notify(Utils.ColorString(Utils.GetRoleColor(blackmailer.GetCustomRole()), GetString("TargetIsAlreadyDead")));
+            return;
+        }
+
+        ClearBlackmaile(true);
+        ForBlackmailer.Add(target.PlayerId, _Player.PlayerId);
+        SendRPC(target.PlayerId);
     }
 
     public override void AfterMeetingTasks()
     {
-        ClearBlackmaile();
+        ClearBlackmaile(true);
     }
     public override void OnCoEndGame()
     {
-        ClearBlackmaile();
+        ClearBlackmaile(false);
     }
-    private static void ClearBlackmaile() => ForBlackmailer.Clear();
-    
-    public static bool CheckBlackmaile(PlayerControl player) => HasEnabled && GameStates.IsInGame && ForBlackmailer.Contains(player.PlayerId);
+    private void ClearBlackmaile(bool sendRpc)
+    {
+        ForBlackmailer.Clear();
+        if (sendRpc) SendRPC();
+    }
+
+    public static bool CheckBlackmaile(PlayerControl player) => HasEnabled && GameStates.IsInGame && ForBlackmailer.ContainsKey(player.PlayerId);
 
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
        => isForMeeting && CheckBlackmaile(target) ? Utils.ColorString(Utils.GetRoleColor(CustomRoles.Blackmailer), "╳") : string.Empty;
@@ -84,7 +135,7 @@ internal class Blackmailer : RoleBase
         if (CheckBlackmaile(pc))
         {
             var playername = pc.GetRealName(isMeeting: true);
-            if (Doppelganger.DoppelVictim.TryGetValue(pc.PlayerId, out var doppelPlayerName)) playername = doppelPlayerName; 
+            if (Main.OvverideOutfit.TryGetValue(pc.PlayerId, out var realfit)) playername = realfit.name;
             AddMsg(string.Format(string.Format(GetString("BlackmailerDead"), playername), byte.MaxValue, Utils.ColorString(Utils.GetRoleColor(CustomRoles.Blackmailer), GetString("BlackmaileKillTitle"))));
         }
     }

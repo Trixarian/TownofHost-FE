@@ -1,23 +1,25 @@
-﻿using TOHFE.Modules;
+using TOHFE.Modules;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Impostor;
+using static TOHFE.Options;
 using static TOHFE.Translator;
 
 namespace TOHFE.Roles.AddOns.Common;
 
-public static class Oiiai
+public class Oiiai : IAddon
 {
+    public CustomRoles Role => CustomRoles.Oiiai;
     private const int Id = 25700;
     private readonly static List<byte> playerIdList = [];
     public static bool IsEnable = false;
+    public AddonTypes Type => AddonTypes.Mixed;
 
-    public static OptionItem CanBeOnCrew;
-    public static OptionItem CanBeOnImp;
-    public static OptionItem CanBeOnNeutral;
+
     private static OptionItem CanPassOn;
     private static OptionItem ChangeNeutralRole;
 
+    [Obfuscation(Exclude = true)]
     private enum ChangeRolesSelectList
     {
         Role_NoChange,
@@ -31,38 +33,50 @@ public static class Oiiai
         CustomRoles.Imitator,
     ]; //Just -1 to use this LOL
 
-    public static void SetupCustomOptions()
+    public void SetupCustomOption()
     {
-        Options.SetupAdtRoleOptions(Id, CustomRoles.Oiiai, canSetNum: true, tab: TabGroup.Addons);
-        CanBeOnImp = BooleanOptionItem.Create(Id + 11, "ImpCanBeOiiai", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Oiiai]);
-        CanBeOnCrew = BooleanOptionItem.Create(Id + 12, "CrewCanBeOiiai", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Oiiai]);
-        CanBeOnNeutral = BooleanOptionItem.Create(Id + 13, "NeutralCanBeOiiai", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Oiiai]);
-        CanPassOn = BooleanOptionItem.Create(Id + 14, "OiiaiCanPassOn", true, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Oiiai]);
-        ChangeNeutralRole = StringOptionItem.Create(Id + 15, "NeutralChangeRolesForOiiai", EnumHelper.GetAllNames<ChangeRolesSelectList>(), 1, TabGroup.Addons, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Oiiai]);
+        SetupAdtRoleOptions(Id, CustomRoles.Oiiai, canSetNum: true, tab: TabGroup.Addons, teamSpawnOptions: true);
+        CanPassOn = BooleanOptionItem.Create(Id + 14, "OiiaiCanPassOn", true, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Oiiai]);
+        ChangeNeutralRole = StringOptionItem.Create(Id + 15, "NeutralChangeRolesForOiiai", EnumHelper.GetAllNames<ChangeRolesSelectList>(), 1, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.Oiiai]);
     }
-    public static void Init()
+    public void Init()
     {
-        playerIdList.Clear();
-        Eraser.ErasedRoleStorage.Clear();
         IsEnable = false;
+        playerIdList.Clear();
     }
-    public static void Add(byte playerId)
+    public void Add(byte playerId, bool gameIsLoading = true)
     {
-        playerIdList.Add(playerId);
+        if (!playerIdList.Contains(playerId))
+            playerIdList.Add(playerId);
+
         IsEnable = true;
+    }
+    public static void PassOnKiller(byte playerId)
+    {
+        if (!playerIdList.Contains(playerId))
+            playerIdList.Add(playerId);
+        IsEnable = true;
+    }
+    public void Remove(byte playerId)
+    {
+        playerIdList.Remove(playerId);
+
+        if (!playerIdList.Any())
+            IsEnable = false;
     }
 
     public static void OnMurderPlayer(PlayerControl killer, PlayerControl target)
     {
         if (killer == null || target == null) return;
         if (killer.PlayerId == target.PlayerId) return;
-        if (killer.Is(CustomRoles.KillingMachine)) return;
+        if (killer.Is(CustomRoles.KillingMachine) || killer.IsTransformedNeutralApocalypse()) return;
+        if ((killer.Is(CustomRoles.Ghoul) || killer.Is(CustomRoles.Burst)) && !killer.IsAlive()) return;
         if (!target.Is(CustomRoles.Oiiai)) return;
         if (!CanGetOiiaied(killer)) return;
 
         if (CanPassOn.GetBool() && !playerIdList.Contains(killer.PlayerId))
         {
-            Add(killer.PlayerId);
+            PassOnKiller(killer.PlayerId);
             killer.RpcSetCustomRole(CustomRoles.Oiiai);
             Logger.Info(killer.GetNameWithRole() + " gets Oiiai addon by " + target.GetNameWithRole(), "Oiiai");
         }
@@ -79,35 +93,72 @@ public static class Oiiai
         }
 
         var killerRole = killer.GetCustomRole();
-        if (killerRole.IsTasklessCrewmate() || killerRole.IsGhostRole() || Main.TasklessCrewmate.Contains(killer.PlayerId) || CopyCat.playerIdList.Contains(killer.PlayerId) || killer.Is(CustomRoles.Stubborn))
+        if (killer.HasGhostRole() || CopyCat.playerIdList.Contains(killer.PlayerId) || killer.Is(CustomRoles.Stubborn))
         {
             Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} cannot eraser crew imp-based role", "Oiiai");
             return;
         }
-        else if (!killer.GetCustomRole().IsNeutral())
+        else if (killerRole.IsCoven() && !CovenManager.HasNecronomicon(killer))
         {
+            killer.GetRoleClass().OnRemove(killer.PlayerId);
+            killer.RpcChangeRoleBasis(CustomRoles.Amnesiac);
+            killer.RpcSetCustomRole(CustomRoles.Amnesiac);
+            Main.DesyncPlayerList.Remove(killer.PlayerId);
+            killer.GetRoleClass().OnAdd(killer.PlayerId);
+            killer.RpcSetCustomRole(CustomRoles.Enchanted);
+            Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Coven without Necronomicon.", "Oiiai");
+        }
+        else if (CovenManager.HasNecronomicon(killer))
+        {
+            // Necronomicon holder immune to Oiiai
+            Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Coven with Necronomicon.", "Oiiai");
+        }
+        else if (killerRole.IsMadmate())
+        {
+            killer.GetRoleClass().OnRemove(killer.PlayerId);
+            killer.RpcChangeRoleBasis(CustomRoles.Amnesiac);
+            killer.RpcSetCustomRole(CustomRoles.Amnesiac);
+            Main.DesyncPlayerList.Remove(killer.PlayerId);
+            killer.GetRoleClass().OnAdd(killer.PlayerId);
+            killer.RpcSetCustomRole(CustomRoles.Madmate);
+            Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Madmates assign.", "Oiiai");
+        }
+        else if (killer.Is(CustomRoles.Sidekick))
+        {
+            killer.GetRoleClass().OnRemove(killer.PlayerId);
+            killer.RpcChangeRoleBasis(CustomRoles.Amnesiac);
+            killer.RpcSetCustomRole(CustomRoles.Amnesiac);
+            Main.DesyncPlayerList.Remove(killer.PlayerId);
+            killer.GetRoleClass().OnAdd(killer.PlayerId);
+            killer.RpcSetCustomRole(CustomRoles.Recruit);
+            Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Sidekicks assign.", "Oiiai");
+        }
+        else if (!killerRole.IsNeutral())
+        {
+            var readyrole = Eraser.GetErasedRole(killer.GetCustomRole().GetRoleTypes(), killer.GetCustomRole());
             //Use eraser here LOL
-            killer.RpcSetCustomRole(Eraser.GetErasedRole(killer.GetCustomRole().GetRoleTypes(), killer.GetCustomRole()));
+            killer.GetRoleClass()?.OnRemove(killer.PlayerId);
+            killer.RpcChangeRoleBasis(readyrole);
+            killer.RpcSetCustomRole(readyrole);
+            Main.DesyncPlayerList.Remove(killer.PlayerId);
+            killer.GetRoleClass()?.OnAdd(killer.PlayerId);
             Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with eraser assign.", "Oiiai");
         }
         else
         {
-            if (killer.HasImpKillButton())
-            {
-                int changeValue = ChangeNeutralRole.GetValue();
+            int changeValue = ChangeNeutralRole.GetValue();
 
-                if (changeValue != 0)
-                {
-                    killer.RpcSetCustomRole(NRoleChangeRoles[changeValue - 1]);
-                    killer.GetRoleClass().OnAdd(killer.PlayerId);
-
-                    Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Neutrals with kill button assign.", "Oiiai");
-                }
-            }
-            else
+            if (changeValue != 0)
             {
-                killer.RpcSetCustomRole(CustomRoles.Opportunist);
-                Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Neutrals without kill button assign.", "Oiiai");
+                killer.GetRoleClass().OnRemove(killer.PlayerId);
+                killer.RpcChangeRoleBasis(NRoleChangeRoles[changeValue - 1]);
+                killer.RpcSetCustomRole(NRoleChangeRoles[changeValue - 1]);
+                Main.DesyncPlayerList.Remove(killer.PlayerId);
+                killer.GetRoleClass().OnAdd(killer.PlayerId);
+
+                killer.SyncSettings();
+
+                Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Neutrals assign.", "Oiiai");
             }
         }
         killer.ResetKillCooldown();
@@ -120,7 +171,7 @@ public static class Oiiai
     private static bool CanGetOiiaied(PlayerControl player)
     {
         if (player.GetCustomRole().IsNeutral() && ChangeNeutralRole.GetValue() == 0) return false;
-        if (player.Is(CustomRoles.Loyal)) return false;
+        if (player.Is(CustomRoles.Loyal) || player.Is(CustomRoles.Stubborn)) return false;
 
         return true;
     }

@@ -1,5 +1,6 @@
 using AmongUs.GameOptions;
 using TOHFE.Modules;
+using TOHFE.Roles.Core;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 
@@ -11,10 +12,9 @@ internal class Devourer : RoleBase
     private static readonly Dictionary<byte, NetworkedPlayerInfo.PlayerOutfit> OriginalPlayerSkins = [];
 
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Devourer;
     private const int Id = 5500;
-    private static readonly HashSet<byte> PlayerIds = [];
-    public static bool HasEnabled => PlayerIds.Any();
-    
+    public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Devourer);
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorHindering;
     //==================================================================\\
@@ -27,7 +27,7 @@ internal class Devourer : RoleBase
     private static OptionItem ShowShapeshiftAnimationsOpt;
 
     private static readonly Dictionary<byte, float> NowCooldown = [];
-    private static readonly Dictionary<byte, List<byte>> PlayerSkinsCosumed = [];
+    private static readonly Dictionary<byte, HashSet<byte>> PlayerSkinsCosumed = [];
 
     public override void SetupCustomOption()
     {
@@ -48,20 +48,17 @@ internal class Devourer : RoleBase
         PlayerSkinsCosumed.Clear();
         OriginalPlayerSkins.Clear();
         NowCooldown.Clear();
-        PlayerIds.Clear();
     }
     public override void Add(byte playerId)
     {
         PlayerSkinsCosumed.TryAdd(playerId, []);
         NowCooldown.TryAdd(playerId, DefaultKillCooldown.GetFloat());
-        PlayerIds.Add(playerId);
     }
     public override void Remove(byte playerId)
     {
         OnDevourerDied(Utils.GetPlayerById(playerId));
         PlayerSkinsCosumed.Remove(playerId);
         NowCooldown.Remove(playerId);
-        PlayerIds.Remove(playerId);
     }
 
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)

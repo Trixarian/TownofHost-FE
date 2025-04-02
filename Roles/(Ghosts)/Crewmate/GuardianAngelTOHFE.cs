@@ -1,4 +1,4 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using TOHFE.Roles.Core;
 using static TOHFE.Options;
 
@@ -7,10 +7,9 @@ namespace TOHFE.Roles._Ghosts_.Crewmate;
 internal class GuardianAngelTOHFE : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.GuardianAngelTOHFE;
     private const int Id = 20900;
-    private static readonly HashSet<byte> PlayerIds = [];
-    public static bool HasEnabled => PlayerIds.Any();
-    
+
     public override CustomRoles ThisRoleBase => CustomRoles.GuardianAngel;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.CrewmateVanillaGhosts;
     //==================================================================\\
@@ -19,7 +18,7 @@ internal class GuardianAngelTOHFE : RoleBase
     private static OptionItem ProtectDur;
     private static OptionItem ImpVis;
 
-    public static readonly Dictionary<byte, long> PlayerShield = [];
+    private readonly Dictionary<byte, long> PlayerShield = [];
     public override void SetupCustomOption()
     {
         SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.GuardianAngelTOHFE);
@@ -32,12 +31,11 @@ internal class GuardianAngelTOHFE : RoleBase
     public override void Init()
     {
         PlayerShield.Clear();
-        PlayerIds.Clear();
     }
     public override void Add(byte playerId)
     {
-        CustomRoleManager.OnFixedUpdateOthers.Add(OnOthersFixUpdate);
-        PlayerIds.Add(playerId);
+        CustomRoleManager.OnFixedUpdateOthers.Add(OnOthersFixedUpdate);
+        CustomRoleManager.CheckDeadBodyOthers.Add(CheckDeadBody);
     }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
@@ -47,20 +45,16 @@ internal class GuardianAngelTOHFE : RoleBase
     }
     public override bool OnCheckProtect(PlayerControl angel, PlayerControl target)
     {
-        if (!PlayerShield.ContainsKey(target.PlayerId))
-        {
-            PlayerShield.Add(target.PlayerId, Utils.GetTimeStamp());
-        }
-        else
-        {
-            PlayerShield[target.PlayerId] = Utils.GetTimeStamp();
-        }
+        PlayerShield[target.PlayerId] = Utils.GetTimeStamp();
         return true;
     }
-    public override void OnOtherTargetsReducedToAtoms(PlayerControl target)
+    private void CheckDeadBody(PlayerControl killer, PlayerControl target, bool inMeeting)
     {
-        if (PlayerShield.ContainsKey(target.PlayerId))
-            PlayerShield.Remove(target.PlayerId);
+        if (inMeeting) return;
+
+        var targetId = target.PlayerId;
+        if (PlayerShield.ContainsKey(targetId))
+            PlayerShield.Remove(targetId);
     }
     public override bool CheckMurderOnOthersTarget(PlayerControl killer, PlayerControl target)
     {
@@ -75,10 +69,13 @@ internal class GuardianAngelTOHFE : RoleBase
         }
         return false;
     }
-
-    private void OnOthersFixUpdate(PlayerControl player)
+    public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
-        if (PlayerShield.ContainsKey(player.PlayerId) && PlayerShield[player.PlayerId] + ProtectDur.GetInt() <= Utils.GetTimeStamp())
+        PlayerShield.Clear();
+    }
+    private void OnOthersFixedUpdate(PlayerControl player, bool lowLoad, long nowTime)
+    {
+        if (PlayerShield.TryGetValue(player.PlayerId, out var timer) && timer + ProtectDur.GetInt() <= nowTime)
         {
             PlayerShield.Remove(player.PlayerId);
         }

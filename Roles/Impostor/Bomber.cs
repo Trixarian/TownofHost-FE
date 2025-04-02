@@ -1,17 +1,16 @@
-﻿using AmongUs.GameOptions;
-using UnityEngine;
+using AmongUs.GameOptions;
 using TOHFE.Modules;
 using TOHFE.Roles.Crewmate;
+using UnityEngine;
 
 namespace TOHFE.Roles.Impostor;
 
 internal class Bomber : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Bomber;
     private const int Id = 700;
-    private static readonly HashSet<byte> Playerids = [];
-    public static bool HasEnabled => Playerids.Any();
-    
+
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorKilling;
     //==================================================================\\
@@ -44,14 +43,6 @@ internal class Bomber : RoleBase
         BomberDiesInExplosion = BooleanOptionItem.Create(Id + 7, "BomberDiesInExplosion", true, TabGroup.ImpostorRoles, false)
             .SetParent(Options.CustomRoleSpawnChances[CustomRoles.Bomber]);
     }
-    public override void Init()
-    {
-        Playerids.Clear();
-    }
-    public override void Add(byte playerId)
-    {
-        Playerids.Add(playerId);
-    }
     public override bool CanUseKillButton(PlayerControl pc) => BomberCanKill.GetBool() && pc.IsAlive();
     public override void SetKillCooldown(byte id)
     {
@@ -63,26 +54,25 @@ internal class Bomber : RoleBase
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
         AURoleOptions.ShapeshifterCooldown = BombCooldown.GetFloat();
-        AURoleOptions.ShapeshifterDuration = 2f;
     }
-    public override bool OnCheckShapeshift(PlayerControl shapeshifter, PlayerControl targetSS, ref bool resetCooldown, ref bool shouldAnimate)
+    public override void UnShapeShiftButton(PlayerControl shapeshifter)
     {
-        if (shapeshifter.PlayerId == targetSS.PlayerId) return true;
-
         var playerRole = shapeshifter.GetCustomRole();
 
         Logger.Info("The bomb went off", playerRole.ToString());
         CustomSoundsManager.RPCPlayCustomSoundAll("Boom");
 
+        _ = new Explosion(5f, 0.5f, shapeshifter.GetCustomPosition());
+
         foreach (var target in Main.AllPlayerControls)
         {
-            if (!target.IsModClient()) target.KillFlash();
+            if (!target.IsModded()) target.KillFlash();
             if (target.PlayerId == shapeshifter.PlayerId) continue;
 
-            if (!target.IsAlive() || Medic.ProtectList.Contains(target.PlayerId) || (target.Is(Custom_Team.Impostor) && ImpostorsSurviveBombs.GetBool()) || target.inVent || target.Is(CustomRoles.Pestilence) || target.Is(CustomRoles.Solsticer)) continue;
+            if (!target.IsAlive() || Medic.IsProtected(target.PlayerId) || (target.Is(Custom_Team.Impostor) && ImpostorsSurviveBombs.GetBool()) || target.inVent || target.IsTransformedNeutralApocalypse() || target.Is(CustomRoles.Solsticer)) continue;
 
             var pos = shapeshifter.transform.position;
-            var dis = Vector2.Distance(pos, target.transform.position);
+            var dis = Utils.GetDistance(pos, target.transform.position);
             if (dis > BomberRadius.GetFloat()) continue;
 
             target.SetDeathReason(PlayerState.DeathReason.Bombed);
@@ -100,11 +90,8 @@ internal class Bomber : RoleBase
                     shapeshifter.SetDeathReason(PlayerState.DeathReason.Bombed);
                     shapeshifter.RpcMurderPlayer(shapeshifter);
                 }
-                Utils.NotifyRoles();
             }, 0.3f, $"{playerRole} was suicide");
         }
-
-        return false;
     }
 
     public override void SetAbilityButtonText(HudManager hud, byte playerId)

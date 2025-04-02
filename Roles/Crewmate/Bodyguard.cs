@@ -1,5 +1,4 @@
-﻿using TOHFE.Roles.Core;
-using UnityEngine;
+using TOHFE.Roles.Core;
 using static TOHFE.Options;
 
 namespace TOHFE.Roles.Crewmate;
@@ -7,6 +6,7 @@ namespace TOHFE.Roles.Crewmate;
 internal class Bodyguard : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Bodyguard;
     private const int Id = 10300;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Bodyguard);
 
@@ -26,7 +26,7 @@ internal class Bodyguard : RoleBase
     public override bool CheckMurderOnOthersTarget(PlayerControl killer, PlayerControl target)
     {
         var bodyguard = _Player;
-        if (!bodyguard.IsAlive() || killer?.PlayerId == target.PlayerId || bodyguard.PlayerId == target.PlayerId) return false;
+        if (!bodyguard.IsAlive() || killer.PlayerId == target.PlayerId || bodyguard.PlayerId == target.PlayerId) return false;
 
         var killerRole = killer.GetCustomRole();
         // Not should kill
@@ -35,14 +35,22 @@ internal class Bodyguard : RoleBase
             or CustomRoles.Veteran
             or CustomRoles.Deputy)
             return false;
+        if (killer.IsTransformedNeutralApocalypse())
+        {
+            Logger.Info($"{bodyguard.GetRealName()} was too scared of {killer.GetRealName()}'s power, so they could not protect {target.GetRealName()}", "Bodyguard");
+        }
 
         var pos = target.transform.position;
-        var dis = Vector2.Distance(pos, bodyguard.transform.position);
+        var dis = Utils.GetDistance(pos, bodyguard.transform.position);
         if (dis > ProtectRadiusOpt.GetFloat()) return false;
 
         if (bodyguard.Is(CustomRoles.Madmate) && killer.GetCustomRole().IsImpostorTeam())
         {
             Logger.Info($"{bodyguard.GetRealName()} He was a impostor, so he chose to ignore the murder scene", "Bodyguard");
+        }
+        else if (bodyguard.Is(CustomRoles.Enchanted) && killer.GetCustomRole().IsCoven())
+        {
+            Logger.Info($"{bodyguard.GetRealName()} He was a Coven, so he chose to ignore the murder scene", "Bodyguard");
         }
         else if (bodyguard.CheckForInvalidMurdering(killer))
         {

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 
 namespace TOHFE.Modules;
@@ -6,7 +6,9 @@ namespace TOHFE.Modules;
 // https://github.com/tukasa0001/TownOfHost/blob/main/Modules/OptionSaver.cs
 public static class OptionSaver
 {
+    [Obfuscation(Exclude = true)]
     private static readonly DirectoryInfo SaveDataDirectoryInfo = new("./TOHFE-DATA/SaveData/");
+    [Obfuscation(Exclude = true)]
     private static readonly FileInfo OptionSaverFileInfo = new($"{SaveDataDirectoryInfo.FullName}/Options.json");
 
     public static void Initialize()
@@ -83,8 +85,15 @@ public static class OptionSaver
     {
         if (AmongUsClient.Instance != null && !AmongUsClient.Instance.AmHost) return;
 
-        var jsonString = JsonSerializer.Serialize(GenerateOptionsData(), new JsonSerializerOptions { WriteIndented = true, });
-        File.WriteAllText(OptionSaverFileInfo.FullName, jsonString);
+        try
+        {
+            var jsonString = JsonSerializer.Serialize(GenerateOptionsData(), new JsonSerializerOptions { WriteIndented = true, });
+            File.WriteAllText(OptionSaverFileInfo.FullName, jsonString);
+        }
+        catch (System.Exception error)
+        {
+            Logger.Error($"Error: {error}", "OptionSaver.Save");
+        }
     }
     /// <summary>Read options from json file</summary>
     public static void Load()
@@ -100,6 +109,7 @@ public static class OptionSaver
         LoadOptionsData(JsonSerializer.Deserialize<SerializableOptionsData>(jsonString));
     }
 
+    [Obfuscation(Exclude = true, ApplyToMembers = true)]
     /// <summary>Optional data suitable for json storage</summary>
     public class SerializableOptionsData
     {

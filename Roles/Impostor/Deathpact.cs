@@ -2,8 +2,8 @@ using AmongUs.GameOptions;
 using System.Data;
 using System.Text;
 using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
 using TOHFE.Roles.Neutral;
-using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
@@ -13,10 +13,9 @@ namespace TOHFE.Roles.Impostor;
 internal class Deathpact : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Deathpact;
     private const int Id = 1200;
-    private static readonly HashSet<byte> Playerids = [];
-    public static bool HasEnabled => Playerids.Any();
-    
+    public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Deathpact);
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorKilling;
     //==================================================================\\
@@ -64,13 +63,16 @@ internal class Deathpact : RoleBase
         PlayersInDeathpact.Clear();
         DeathpactTime.Clear();
         ActiveDeathpacts.Clear();
-        Playerids.Clear();
     }
     public override void Add(byte playerId)
     {
-        PlayersInDeathpact.TryAdd(playerId, []);
-        DeathpactTime.TryAdd(playerId, 0);
-        Playerids.Add(playerId);
+        PlayersInDeathpact[playerId] = [];
+        DeathpactTime[playerId] = 0;
+    }
+    public override void Remove(byte playerId)
+    {
+        PlayersInDeathpact.Remove(playerId);
+        DeathpactTime.Remove(playerId);
     }
 
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
@@ -141,7 +143,7 @@ internal class Deathpact : RoleBase
             return;
         }
 
-        if (PlayersInDeathpact.Any(a => a.Value.Any(b => b.PlayerId == player.PlayerId) && a.Value.Count == NumberOfPlayersInPact.GetInt() ))
+        if (PlayersInDeathpact.Any(a => a.Value.Any(b => b.PlayerId == player.PlayerId) && a.Value.Count == NumberOfPlayersInPact.GetInt()))
         {
             opt.SetVision(false);
             opt.SetFloat(FloatOptionNames.CrewLightMod, VisionWhileInPact.GetFloat());
@@ -149,12 +151,12 @@ internal class Deathpact : RoleBase
         }
     }
 
-    public override void OnFixedUpdate(PlayerControl player)
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
-        if (!ActiveDeathpacts.Contains(player.PlayerId)) return;
+        if (lowLoad || !ActiveDeathpacts.Contains(player.PlayerId)) return;
         if (CheckCancelDeathpact(player)) return;
 
-        if (DeathpactTime[player.PlayerId] < GetTimeStamp() && DeathpactTime[player.PlayerId] != 0)
+        if (DeathpactTime.TryGetValue(player.PlayerId, out var time) && time < nowTime && time != 0)
         {
             foreach (var playerInDeathpact in PlayersInDeathpact[player.PlayerId])
             {
@@ -179,7 +181,9 @@ internal class Deathpact : RoleBase
 
     private static bool CheckCancelDeathpact(PlayerControl deathpact)
     {
-        if (PlayersInDeathpact[deathpact.PlayerId].Any(a => a.Data.Disconnected || a.Data.IsDead))
+        if (!PlayersInDeathpact.TryGetValue(deathpact.PlayerId, out var playerList)) return false;
+
+        if (playerList.Any(a => a.Data.Disconnected || a.Data.IsDead))
         {
             ClearDeathpact(deathpact.PlayerId);
             deathpact.Notify(GetString("DeathpactAverted"));
@@ -188,12 +192,12 @@ internal class Deathpact : RoleBase
 
         bool cancelDeathpact = true;
 
-        foreach (var player in PlayersInDeathpact[deathpact.PlayerId])
+        foreach (var player in playerList)
         {
-            float range = NormalGameOptionsV08.KillDistances[Mathf.Clamp(player.Is(Reach.IsReach) ? 2 : Main.NormalOptions.KillDistance, 0, 2)] + 0.5f;
-            foreach (var otherPlayerInPact in PlayersInDeathpact[deathpact.PlayerId].Where(a => a.PlayerId != player.PlayerId).ToArray())
+            float range = ExtendedPlayerControl.GetKillDistances(ovverideValue: player.Is(Reach.IsReach), newValue: 2) + 0.5f;
+            foreach (var otherPlayerInPact in playerList.Where(a => a.PlayerId != player.PlayerId).ToArray())
             {
-                float dis = Vector2.Distance(player.transform.position, otherPlayerInPact.transform.position);
+                float dis = GetDistance(player.transform.position, otherPlayerInPact.transform.position);
                 cancelDeathpact = cancelDeathpact && (dis <= range);
             }
         }
@@ -211,24 +215,19 @@ internal class Deathpact : RoleBase
     {
         if (deathpact == null || target == null || target.Data.Disconnected) return;
         if (!target.IsAlive()) return;
-        
+        if (target.IsTransformedNeutralApocalypse()) return;
+
         target.SetDeathReason(PlayerState.DeathReason.Suicide);
         target.RpcMurderPlayer(target);
         target.SetRealKiller(deathpact);
     }
 
-    public override string GetMark(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
-    {
-        seen ??= seer;
-        if (!seer.Is(CustomRoles.Deathpact) || !IsInDeathpact(seer.PlayerId, seen)) return string.Empty;
-        return ColorString(Palette.ImpostorRed, "◀");
-    }
+    public override string GetMark(PlayerControl seer, PlayerControl seen, bool isForMeeting = false)
+        => IsInDeathpact(seer.PlayerId, seen) ? ColorString(Palette.ImpostorRed, "◀") : string.Empty;
 
-    public override string GetSuffix(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
+    public override string GetSuffix(PlayerControl seer, PlayerControl seen, bool isForMeeting = false)
     {
         if (isForMeeting || !ShowArrowsToOtherPlayersInPact.GetBool()) return string.Empty;
-
-        seen ??= seer;
         if (seer.PlayerId != seen.PlayerId) return string.Empty;
         if (!IsInActiveDeathpact(seer)) return string.Empty;
 
@@ -248,7 +247,7 @@ internal class Deathpact : RoleBase
 
     public static bool IsInActiveDeathpact(PlayerControl player)
     {
-        if (ActiveDeathpacts.Count == 0) return false;
+        if (!ActiveDeathpacts.Any() || !PlayersInDeathpact.Any()) return false;
         if (PlayersInDeathpact.Any(a => ActiveDeathpacts.Contains(a.Key) && a.Value.Any(b => b.PlayerId == player.PlayerId))) return true;
         return false;
     }
@@ -282,11 +281,11 @@ internal class Deathpact : RoleBase
 
     private static void ClearDeathpact(byte deathpact)
     {
-        if (ShowArrowsToOtherPlayersInPact.GetBool())
+        if (ShowArrowsToOtherPlayersInPact.GetBool() && PlayersInDeathpact.TryGetValue(deathpact, out var playerList))
         {
-            foreach (var player in PlayersInDeathpact[deathpact])
+            foreach (var player in playerList)
             {
-                foreach (var otherPlayerInPact in PlayersInDeathpact[deathpact].Where(a => a.PlayerId != player.PlayerId).ToArray())
+                foreach (var otherPlayerInPact in playerList.Where(a => a.PlayerId != player.PlayerId).ToArray())
                 {
                     TargetArrow.Remove(player.PlayerId, otherPlayerInPact.PlayerId);
                 }
@@ -295,7 +294,7 @@ internal class Deathpact : RoleBase
 
         DeathpactTime[deathpact] = 0;
         ActiveDeathpacts.Remove(deathpact);
-        PlayersInDeathpact[deathpact].Clear();
+        PlayersInDeathpact[deathpact] = [];
 
         if (ReduceVisionWhileInPact.GetBool())
         {
@@ -309,8 +308,8 @@ internal class Deathpact : RoleBase
         {
             if (KillDeathpactPlayersOnMeeting.GetBool())
             {
-                var deathpactPlayer = Main.AllPlayerControls.FirstOrDefault(a => a.PlayerId == deathpact);
-                if (deathpactPlayer == null || deathpactPlayer.Data.IsDead)
+                var deathpactPlayer = deathpact.GetPlayer();
+                if (!deathpactPlayer.IsAlive())
                 {
                     continue;
                 }

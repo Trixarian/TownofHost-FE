@@ -4,7 +4,7 @@ public static class DoorsReset
 {
     private static bool isEnabled = false;
     private static ResetModeList mode;
-    private static DoorsSystemType DoorsSystem => ShipStatus.Instance.Systems.TryGetValue(SystemTypes.Doors, out var system) ? system.TryCast<DoorsSystemType>() : null;
+    private static DoorsSystemType DoorsSystem => ShipStatus.Instance.Systems.TryGetValue(SystemTypes.Doors, out var system) ? system.CastFast<DoorsSystemType>() : null;
     private static readonly LogHandler logger = Logger.Handler(nameof(DoorsReset));
 
     public static void Initialize()
@@ -43,7 +43,7 @@ public static class DoorsReset
         }
     }
     /// <summary>Open all doors on the map</summary>
-    private static void OpenAllDoors()
+    public static void OpenAllDoors()
     {
         foreach (var door in ShipStatus.Instance.AllDoors)
         {
@@ -52,7 +52,7 @@ public static class DoorsReset
         DoorsSystem.IsDirty = true;
     }
     /// <summary>Close all doors on the map</summary>
-    private static void CloseAllDoors()
+    public static void CloseAllDoors()
     {
         foreach (var door in ShipStatus.Instance.AllDoors)
         {
@@ -61,7 +61,7 @@ public static class DoorsReset
         DoorsSystem.IsDirty = true;
     }
     /// <summary>Randomly opens and closes all doors on the map</summary>
-    private static void OpenOrCloseAllDoorsRandomly()
+    public static void OpenOrCloseAllDoorsRandomly()
     {
         foreach (var door in ShipStatus.Instance.AllDoors)
         {
@@ -88,6 +88,6 @@ public static class DoorsReset
         // Airship lounge toilets and Polus decontamination room doors are not closed
         return door.Room is not (SystemTypes.Lounge or SystemTypes.Decontamination);
     }
-
+    [Obfuscation(Exclude = true)]
     public enum ResetModeList { AllOpen, AllClosed, RandomByDoor, }
 }

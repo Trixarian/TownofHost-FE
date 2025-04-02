@@ -1,4 +1,4 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Neutral;
 using UnityEngine;
@@ -10,10 +10,8 @@ namespace TOHFE.Roles.Impostor;
 internal class Pitfall : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Pitfall;
     private const int Id = 5600;
-    private static readonly HashSet<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorHindering;
     //==================================================================\\
@@ -56,7 +54,6 @@ internal class Pitfall : RoleBase
     }
     public override void Init()
     {
-        playerIdList.Clear();
         Traps.Clear();
         ReducedVisionPlayers.Clear();
         DefaultSpeed = new();
@@ -65,7 +62,6 @@ internal class Pitfall : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerIdList.Add(playerId);
         DefaultSpeed = Main.AllPlayerSpeed[playerId];
 
         TrapMaxPlayerCount = TrapMaxPlayerCountOpt.GetFloat();
@@ -73,19 +69,23 @@ internal class Pitfall : RoleBase
 
         if (AmongUsClient.Instance.AmHost)
         {
-            CustomRoleManager.OnFixedUpdateLowLoadOthers.Add(OnFixedUpdateOthers);
+            CustomRoleManager.OnFixedUpdateOthers.Add(OnFixedUpdateOthers);
         }
     }
 
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
         AURoleOptions.ShapeshifterCooldown = ShapeshiftCooldown.GetFloat();
-        AURoleOptions.ShapeshifterDuration = 1f;
     }
 
-    public override bool OnCheckShapeshift(PlayerControl shapeshifter, PlayerControl target, ref bool resetCooldown, ref bool shouldAnimate)
+    public override void SetAbilityButtonText(HudManager hud, byte id) => hud.AbilityButton.OverrideText(Translator.GetString("PitfallButtonText"));
+    // public override Sprite GetAbilityButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Set Trap");
+
+    public override void UnShapeShiftButton(PlayerControl shapeshifter)
     {
-        if (shapeshifter.PlayerId == target.PlayerId) return false;
+        //if (!CheckUnshapeshift) return;
+        Logger.Info($"Triggered Pitfall Ability!!!", "Pitfall");
+
 
         // Remove inactive traps so there is room for new traps
         Traps = Traps.Where(a => a.IsActive).ToHashSet();
@@ -111,15 +111,13 @@ internal class Pitfall : RoleBase
         }
 
         shapeshifter.Notify(GetString("RejectShapeshift.AbilityWasUsed"), time: 2f);
-
-        return false;
     }
 
-    private void OnFixedUpdateOthers(PlayerControl player)
+    private void OnFixedUpdateOthers(PlayerControl player, bool lowLoad, long nowTime)
     {
-        if (Pelican.IsEaten(player.PlayerId) || !player.IsAlive()) return;
+        if (lowLoad || Pelican.IsEaten(player.PlayerId) || !player.IsAlive()) return;
 
-        if (player.GetCustomRole().IsImpostor())
+        if (player.Is(Custom_Team.Impostor))
         {
             var traps = Traps.Where(a => a.PitfallPlayerId == player.PlayerId && a.IsActive).ToArray();
             foreach (var trap in traps)
@@ -138,7 +136,7 @@ internal class Pitfall : RoleBase
                 continue;
             }
 
-            var dis = Vector2.Distance(trap.Location, position);
+            var dis = Utils.GetDistance(trap.Location, position);
             if (dis > TrapRadius.GetFloat()) continue;
 
             if (TrapFreezeTime.GetFloat() > 0)
@@ -176,6 +174,7 @@ internal class Pitfall : RoleBase
         {
             Main.AllPlayerSpeed[player.PlayerId] = DefaultSpeed;
             ReportDeadBodyPatch.CanReport[player.PlayerId] = true;
+            RPC.PlaySoundRPC(player.PlayerId, Sounds.TaskComplete);
             player.MarkDirtySettings();
         }, TrapFreezeTime.GetFloat(), "Pitfall Trap Player Freeze");
     }

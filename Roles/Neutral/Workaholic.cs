@@ -1,7 +1,7 @@
-﻿using AmongUs.GameOptions;
+using AmongUs.GameOptions;
+using static TOHFE.MeetingHudStartPatch;
 using static TOHFE.Options;
 using static TOHFE.Translator;
-using static TOHFE.MeetingHudStartPatch;
 
 //Thanks TOH_Y
 namespace TOHFE.Roles.Neutral;
@@ -9,10 +9,8 @@ namespace TOHFE.Roles.Neutral;
 internal class Workaholic : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Workaholic;
     private const int Id = 15800;
-    private static readonly HashSet<byte> PlayerIds = [];
-    public static bool HasEnabled => PlayerIds.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Engineer;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.NeutralChaos;
     //==================================================================\\
@@ -45,13 +43,9 @@ internal class Workaholic : RoleBase
     public override void Init()
     {
         WorkaholicAlive.Clear();
-        PlayerIds.Clear();
+
     }
-    public override void Add(byte playerId)
-    {
-        PlayerIds.Add(playerId);
-    }
-    
+
     public static bool OthersKnowWorka(PlayerControl target)
         => WorkaholicVisibleToEveryone.GetBool() && target.Is(CustomRoles.Workaholic);
 
@@ -62,10 +56,11 @@ internal class Workaholic : RoleBase
     }
     public override bool OnTaskComplete(PlayerControl player, int completedTaskCount, int totalTaskCount)
     {
-        var AllTasksCount = player.Data.Tasks.Count;
-        if (!((completedTaskCount) >= AllTasksCount && !(WorkaholicCannotWinAtDeath.GetBool() && !player.IsAlive()))) return true;
+        var taskState = player.GetPlayerTaskState();
+        if (!taskState.IsTaskFinished || (WorkaholicCannotWinAtDeath.GetBool() && !player.IsAlive())) return true;
 
         Logger.Info("The Workaholic task is done", "Workaholic");
+        if (CustomWinnerHolder.WinnerTeam != CustomWinner.Default) return true;
 
         if (!CustomWinnerHolder.CheckForConvertedWinner(player.PlayerId))
         {
@@ -78,9 +73,10 @@ internal class Workaholic : RoleBase
         {
             if (pc.PlayerId != player.PlayerId)
             {
-                Main.PlayerStates[pc.PlayerId].deathReason = pc.PlayerId == player.PlayerId ?
+                var deathReason = pc.PlayerId == player.PlayerId ?
                     PlayerState.DeathReason.Overtired : PlayerState.DeathReason.Ashamed;
 
+                pc.SetDeathReason(deathReason);
                 pc.RpcMurderPlayer(pc);
                 pc.SetRealKiller(player);
             }
@@ -107,6 +103,7 @@ internal class Workaholic : RoleBase
     }
     public override bool OnRoleGuess(bool isUI, PlayerControl target, PlayerControl pc, CustomRoles role, ref bool guesserSuicide)
     {
+        if (role != CustomRoles.Workaholic) return false;
         if (WorkaholicVisibleToEveryone.GetBool())
         {
             if (!isUI) Utils.SendMessage(GetString("GuessWorkaholic"), pc.PlayerId);

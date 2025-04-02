@@ -1,4 +1,6 @@
 using AmongUs.GameOptions;
+using System.Text;
+using TOHFE.Modules;
 using TOHFE.Roles.Core;
 using UnityEngine;
 using static TOHFE.Options;
@@ -8,9 +10,10 @@ namespace TOHFE.Roles.Neutral;
 internal class Maverick : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Maverick;
     private const int Id = 13200;
     public static bool HasEnabled = CustomRoleManager.HasEnabled(CustomRoles.Maverick);
-
+    public override bool IsDesyncRole => true;
     public override CustomRoles ThisRoleBase => CustomRoles.Impostor;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.NeutralBenign;
     //==================================================================\\
@@ -19,8 +22,6 @@ internal class Maverick : RoleBase
     private static OptionItem CanVent;
     private static OptionItem HasImpostorVision;
     public static OptionItem MinKillsForWin;
-
-    public int NumKills = new();
 
     public override void SetupCustomOption()
     {
@@ -34,10 +35,7 @@ internal class Maverick : RoleBase
     }
     public override void Add(byte playerId)
     {
-        NumKills = 0;
-
-        if (!Main.ResetCamPlayerList.Contains(playerId))
-            Main.ResetCamPlayerList.Add(playerId);
+        playerId.SetAbilityUseLimit(0);
     }
     public override bool CanUseKillButton(PlayerControl pc) => true;
     public override bool CanUseImpostorVentButton(PlayerControl pc) => CanVent.GetBool();
@@ -48,15 +46,17 @@ internal class Maverick : RoleBase
         int minKills = MinKillsForWin.GetInt();
         if (minKills == 0) return string.Empty;
 
-        if (Main.PlayerStates[playerId].RoleClass is not Maverick mr) return string.Empty;
-        int numKills = mr.NumKills;
+        var ProgressText = new StringBuilder();
+        int numKills = (int)playerId.GetAbilityUseLimit();
         Color color = numKills >= minKills ? Color.green : Color.red;
-        return Utils.ColorString(color, $"({numKills}/{minKills})");
+
+        ProgressText.Append(Utils.ColorString(color, $"({numKills}/{minKills})"));
+        return ProgressText.ToString();
     }
     public override void OnMurderPlayerAsKiller(PlayerControl killer, PlayerControl target, bool inMeeting, bool isSuicide)
     {
         if (isSuicide) return;
 
-        NumKills++;
+        killer.RpcIncreaseAbilityUseLimitBy(1);
     }
 }

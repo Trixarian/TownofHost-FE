@@ -1,4 +1,4 @@
-﻿namespace TOHFE;
+namespace TOHFE;
 internal class GuardAngelPatch
 {
     [HarmonyPatch(typeof(MeetingIntroAnimation), nameof(MeetingIntroAnimation.Start))]

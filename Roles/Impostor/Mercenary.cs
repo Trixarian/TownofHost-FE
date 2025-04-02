@@ -7,10 +7,8 @@ namespace TOHFE.Roles.Impostor;
 internal class Mercenary : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Mercenary;
     private const int Id = 2000;
-    public static readonly HashSet<byte> playerIdList = [];
-    public static bool HasEnabled => playerIdList.Any();
-    
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorKilling;
     //==================================================================\\
@@ -32,12 +30,10 @@ internal class Mercenary : RoleBase
     }
     public override void Init()
     {
-        playerIdList.Clear();
         SuicideTimer.Clear();
     }
     public override void Add(byte serial)
     {
-        playerIdList.Add(serial);
         OptTimeLimit = TimeLimit.GetFloat();
     }
 
@@ -74,7 +70,7 @@ internal class Mercenary : RoleBase
 
     public static void ClearSuicideTimer() => SuicideTimer.Clear();
 
-    public override void OnFixedUpdate(PlayerControl player)
+    public override void OnFixedUpdate(PlayerControl player, bool lowLoad, long nowTime, int timerLowLoad)
     {
         if (!HasKilled(player))
         {
@@ -99,6 +95,7 @@ internal class Mercenary : RoleBase
         }
     }
 
+    public override Sprite GetAbilityButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Timer");
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
         hud.AbilityButton.OverrideText(GetString("MercenarySuicideButtonText"));
@@ -106,14 +103,14 @@ internal class Mercenary : RoleBase
 
     public override void AfterMeetingTasks()
     {
-        foreach (var id in playerIdList)
+        foreach (var id in _playerIdList)
         {
             var pc = Utils.GetPlayerById(id);
-            
+
             if (pc != null && pc.IsAlive())
             {
                 pc.RpcResetAbilityCooldown();
-                
+
                 if (HasKilled(pc))
                     SuicideTimer[id] = 0f;
             }

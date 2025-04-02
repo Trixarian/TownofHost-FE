@@ -1,9 +1,12 @@
-﻿
+
+using TOHFE.Roles.Core;
+
 namespace TOHFE.Roles.Vanilla;
 
 internal class NoisemakerTOHFE : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.NoisemakerTOHFE;
     private const int Id = 6230;
     private static readonly HashSet<byte> playerIdList = [];
     public static bool HasEnabled => playerIdList.Any();
@@ -40,7 +43,7 @@ internal class NoisemakerTOHFE : RoleBase
 
         var playerRole = player.GetCustomRole();
         // When impostor alert is off, and player is desync crewamte, make impostor alert as true
-        if (playerRole.IsDesyncRole() && playerRole.IsCrewmate() && !ImpostorAlert.GetBool())
+        if (player.HasDesyncRole() && !playerRole.IsImpostorTeamV3() && !ImpostorAlert.GetBool())
         {
             AURoleOptions.NoisemakerImpostorAlert = true;
         }

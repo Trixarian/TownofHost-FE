@@ -10,6 +10,7 @@ namespace TOHFE.Roles.Impostor;
 internal class Twister : RoleBase
 {
     //===========================SETUP================================\\
+    public override CustomRoles Role => CustomRoles.Twister;
     private const int Id = 5700;
     public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Twister);
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
@@ -57,7 +58,7 @@ internal class Twister : RoleBase
             }
 
             var filtered = Main.AllAlivePlayerControls.Where(a =>
-                pc.CanBeTeleported() && a.PlayerId != pc.PlayerId && !changePositionPlayers.Contains(a.PlayerId)).ToList();
+                a.CanBeTeleported() && a.PlayerId != pc.PlayerId && !changePositionPlayers.Contains(a.PlayerId)).ToList();
 
             if (filtered.Count == 0) return;
 

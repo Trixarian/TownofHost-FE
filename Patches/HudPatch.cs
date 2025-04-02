@@ -1,14 +1,23 @@
 using System.Text;
-using System;
 using TMPro;
+using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using UnityEngine;
 using static TOHFE.Translator;
 
 namespace TOHFE;
 
+[HarmonyPatch(typeof(HudManager), nameof(HudManager.Start))]
+class HudManagerStartPatch
+{
+    public static void Postfix(HudManager __instance)
+    {
+        __instance.gameObject.AddComponent<OptionShower>().hudManager = __instance;
+    }
+}
+
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
-class HudManagerPatch
+class HudManagerUpdatePatch
 {
     public static bool ShowDebugText = false;
     public static int LastCallNotifyRolesPerSecond = 0;
@@ -25,7 +34,7 @@ class HudManagerPatch
 
         var player = PlayerControl.LocalPlayer;
         if (player == null) return;
-        //壁抜け
+        //Õúüµè£Òüæ
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             if ((!AmongUsClient.Instance.IsGameStarted || !GameStates.IsOnlineGame)
@@ -34,7 +43,7 @@ class HudManagerPatch
                 player.Collider.offset = new Vector2(0f, 127f);
             }
         }
-        //壁抜け解除
+        //Õúüµè£Òüæ×ğúÚÖñ
         if (player.Collider.offset.y == 127f)
         {
             if (!Input.GetKey(KeyCode.LeftControl) || (AmongUsClient.Instance.IsGameStarted && GameStates.IsOnlineGame))
@@ -82,40 +91,21 @@ class HudManagerPatch
                 // Set lower info text for modded players
                 if (LowerInfoText == null)
                 {
-                    LowerInfoText = UnityEngine.Object.Instantiate(__instance.KillButton.buttonLabelText);
-                    LowerInfoText.transform.parent = __instance.transform;
-                    LowerInfoText.transform.localPosition = new Vector3(0, -2f, 0);
+                    LowerInfoText = UnityEngine.Object.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform, true);
                     LowerInfoText.alignment = TextAlignmentOptions.Center;
-                    LowerInfoText.color = Palette.EnabledColor;
+                    LowerInfoText.transform.localPosition = new(0, -2f, 0);
                     LowerInfoText.overflowMode = TextOverflowModes.Overflow;
                     LowerInfoText.enableWordWrapping = false;
-                    LowerInfoText.fontSizeMin = 2.8f;
-                    LowerInfoText.fontSizeMax = 2.8f;
+                    LowerInfoText.color = Color.white;
+                    LowerInfoText.fontSize = LowerInfoText.fontSizeMax = LowerInfoText.fontSizeMin = 2.8f;
                 }
                 switch (Options.CurrentGameMode)
                 {
                     case CustomGameMode.Standard:
                         var roleClass = player.GetRoleClass();
                         LowerInfoText.text = roleClass?.GetLowerText(player, player, isForMeeting: Main.MeetingIsStarted, isForHud: true) ?? string.Empty;
-                        
 
-                        if (roleClass != null)
-                        {
-                            float size = roleClass.SetModdedLowerText(out Color32? faceColor);
-
-                            if (faceColor != null)
-                            {
-                                LowerInfoText.SetFaceColor(faceColor.Value);
-                                LowerInfoText.SetOutlineColor(new Color32(0, 0, 0, 255));
-                            }
-                            if (LowerInfoText.fontSizeMin != size)
-                            {
-                                LowerInfoText.fontSizeMin = size;
-                                LowerInfoText.fontSizeMax = size;
-                            }
-                        }
-
-                        
+                        LowerInfoText.text += "\n" + Spurt.GetSuffix(player, true, isformeeting: Main.MeetingIsStarted);
                         break;
                 }
 
@@ -137,13 +127,12 @@ class HudManagerPatch
                     __instance.KillButton.ToggleVisible(false);
                 }
 
-                bool CanUseVent = player.CanUseImpostorVentButton();
-                __instance.ImpostorVentButton.ToggleVisible(CanUseVent);
-                player.Data.Role.CanVent = CanUseVent;
+                __instance.ImpostorVentButton.ToggleVisible(player.CanUseImpostorVentButton());
+                player.Data.Role.CanVent = player.CanUseVents();
 
                 // Sometimes sabotage button was visible for non-host modded clients
-                if (!AmongUsClient.Instance.AmHost)
-                    __instance.SabotageButton.ToggleVisible(player.CanUseSabotage());
+                if (!AmongUsClient.Instance.AmHost && !player.CanUseSabotage())
+                    __instance.SabotageButton.Hide();
             }
             else
             {
@@ -222,7 +211,7 @@ class SetVentOutlinePatch
     }
 }
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.SetHudActive))]
-[HarmonyPatch(new Type[] { typeof(PlayerControl), typeof(RoleBehaviour), typeof(bool) })]
+[HarmonyPatch([typeof(PlayerControl), typeof(RoleBehaviour), typeof(bool)])]
 class SetHudActivePatch
 {
     public static bool IsActive = false;
@@ -238,9 +227,9 @@ class SetHudActivePatch
         if (GameStates.IsLobby || !isActive) return;
         if (player == null) return;
 
-        if (player.Is(CustomRoles.Oblivious) || player.Is(CustomRoles.KillingMachine))
+        if (player.Is(CustomRoles.Oblivious) || player.Is(CustomRoles.KillingMachine) || Options.CurrentGameMode != CustomGameMode.Standard)
             __instance.ReportButton.ToggleVisible(false);
-        
+
         if (player.Is(CustomRoles.Mare) && !Utils.IsActive(SystemTypes.Electrical))
             __instance.KillButton.ToggleVisible(false);
 
@@ -307,7 +296,7 @@ class TaskPanelBehaviourPatch
         // Display Description
         if (!player.GetCustomRole().IsVanilla())
         {
-            var RoleWithInfo = $"{player.GetDisplayRoleAndSubName(player, false)}:\r\n";
+            var RoleWithInfo = $"{player.GetDisplayRoleAndSubName(player, false, false)}:\r\n";
             RoleWithInfo += player.GetRoleInfo();
 
             var AllText = Utils.ColorString(player.GetRoleColor(), RoleWithInfo);
@@ -324,11 +313,11 @@ class TaskPanelBehaviourPatch
                         if ((line.StartsWith("<color=#FF1919FF>") || line.StartsWith("<color=#FF0000FF>")) && sb.Length < 1 && !line.Contains('(')) continue;
                         sb.Append(line + "\r\n");
                     }
-                    
+
                     if (sb.Length > 1)
                     {
                         var text = sb.ToString().TrimEnd('\n').TrimEnd('\r');
-                        if (!Utils.HasTasks(player.Data, false) && sb.ToString().Count(s => (s == '\n')) >= 2)
+                        if (!Utils.HasTasks(player.Data, false) && sb.ToString().Count(s => (s == '\n')) >= 1)
                             text = $"{Utils.ColorString(Utils.GetRoleColor(player.GetCustomRole()).ShadeColor(0.2f), GetString("FakeTask"))}\r\n{text}";
                         AllText += $"\r\n\r\n<size=85%>{text}</size>";
                     }
@@ -360,6 +349,27 @@ class TaskPanelBehaviourPatch
                     foreach (var id in list2.Where(x => SummaryText2.ContainsKey(x.Item2))) AllText += "\r\n" + SummaryText2[id.Item2];
 
                     AllText = $"<size=70%>{AllText}</size>";
+
+                    break;
+                case CustomGameMode.SpeedRun:
+                    var lines2 = taskText.Split("\r\n</color>\n")[0].Split("\r\n\n")[0].Split("\r\n");
+                    StringBuilder sb2 = new();
+                    foreach (var eachLine in lines2)
+                    {
+                        var line = eachLine.Trim();
+                        if ((line.StartsWith("<color=#FF1919FF>") || line.StartsWith("<color=#FF0000FF>")) && sb2.Length < 1 && !line.Contains('(')) continue;
+                        sb2.Append(line + "\r\n");
+                    }
+
+                    if (sb2.Length > 1)
+                    {
+                        var text = sb2.ToString().TrimEnd('\n').TrimEnd('\r');
+                        if (!Utils.HasTasks(player.Data, false) && sb2.ToString().Count(s => (s == '\n')) >= 1)
+                            text = $"{Utils.ColorString(Utils.GetRoleColor(player.GetCustomRole()).ShadeColor(0.2f), GetString("FakeTask"))}\r\n{text}";
+                        AllText += $"\r\n\r\n<size=85%>{text}</size>";
+                    }
+
+                    AllText += $"\r\n\r\n<size=80%>{SpeedRun.GetGameState()}</size>";
 
                     break;
             }

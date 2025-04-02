@@ -1,25 +1,26 @@
-﻿using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Crewmate;
 using static TOHFE.Options;
 
 namespace TOHFE.Roles.AddOns.Crewmate;
 
-public static class Bloodthirst
+public class Bloodthirst : IAddon
 {
+    public CustomRoles Role => CustomRoles.Bloodthirst;
     private const int Id = 21700;
+    public AddonTypes Type => AddonTypes.Mixed;
 
-    public static OptionItem ImpCanBeAutopsy;
-    public static OptionItem CrewCanBeAutopsy;
-    public static OptionItem NeutralCanBeAutopsy;
-
-    public static void SetupCustomOptions()
+    public void SetupCustomOption()
     {
         SetupAdtRoleOptions(Id, CustomRoles.Bloodthirst, canSetNum: true);
     }
-
-    public static void Add()
+    public void Init()
+    { }
+    public void Add(byte playerId, bool gameIsLoading = true)
     {
         Alchemist.AddBloodlus();
     }
+    public void Remove(byte playerId)
+    { }
 
     public static void OnTaskComplete(PlayerControl player)
     {
