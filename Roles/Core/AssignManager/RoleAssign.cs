@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Double;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Double;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
 
-namespace TOHE.Roles.Core.AssignManager;
+namespace TOHFE.Roles.Core.AssignManager;
 
 public class RoleAssign
 {
@@ -181,7 +181,7 @@ public class RoleAssign
 
         //if (Roles[RoleAssignType.Impostor].Count == 0 && !SetRoles.Values.Any(x => x.IsImpostor()))
         //{
-        //    Roles[RoleAssignType.Impostor].Add(new(CustomRoles.ImpostorTOHE, 100, optImpNum));
+        //    Roles[RoleAssignType.Impostor].Add(new(CustomRoles.ImpostorTOHFE, 100, optImpNum));
         //    Logger.Warn("Adding Vanilla Impostor", "CustomRoleSelector");
         //}
 
@@ -978,7 +978,7 @@ public class RoleAssign
         {
             while (FinalRolesList.Count < AllPlayers.Count)
             {
-                FinalRolesList.Add(CustomRoles.CrewmateTOHE);
+                FinalRolesList.Add(CustomRoles.CrewmateTOHFE);
             }
         }
 

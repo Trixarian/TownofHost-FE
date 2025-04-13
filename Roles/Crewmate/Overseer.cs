@@ -1,14 +1,14 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Neutral;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Overseer : RoleBase
 {

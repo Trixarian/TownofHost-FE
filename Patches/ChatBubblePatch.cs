@@ -1,8 +1,8 @@
 using AmongUs.GameOptions;
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 using UnityEngine;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(ChatBubble), nameof(ChatBubble.SetRight))]
 class ChatBubbleSetRightPatch

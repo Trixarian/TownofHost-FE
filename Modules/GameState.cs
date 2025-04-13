@@ -1,15 +1,15 @@
 using AmongUs.GameOptions;
 using Hazel;
 using System;
-using TOHE.Modules;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
+using TOHFE.Modules;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Utils;
+using static TOHFE.Utils;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class PlayerState(byte playerId)
 {
@@ -320,7 +320,7 @@ public class PlayerState(byte playerId)
         Execution,
         Fall,
 
-        // TOHE
+        // TOHFE
         Gambled,
         Eaten,
         Sacrifice,

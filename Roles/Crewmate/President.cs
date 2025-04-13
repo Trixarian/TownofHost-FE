@@ -1,10 +1,10 @@
 using Hazel;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using static TOHE.Options;
-using static TOHE.Translator;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class President : RoleBase
 {

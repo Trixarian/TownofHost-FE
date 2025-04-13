@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class TagManager
 {
-    private static readonly string TAGS_FILE_PATH = "./TOHE-DATA/Tags";
+    private static readonly string TAGS_FILE_PATH = "./TOHFE-DATA/Tags";
 
     public static void Init()
     {
@@ -17,13 +17,13 @@ public static class TagManager
     {
         try
         {
-            if (!Directory.Exists(@"TOHE-DATA/Tags")) Directory.CreateDirectory(@"TOHE-DATA/Tags");
-            var defaultTagMsg = GetResourcesTxt($"TOHE.Resources.Config.TagTemplate.txt");
-            if (!File.Exists(@"./TOHE-DATA/Tags/Tag_Template.txt")) // Default tag
+            if (!Directory.Exists(@"TOHFE-DATA/Tags")) Directory.CreateDirectory(@"TOHFE-DATA/Tags");
+            var defaultTagMsg = GetResourcesTxt($"TOHFE.Resources.Config.TagTemplate.txt");
+            if (!File.Exists(@"./TOHFE-DATA/Tags/Tag_Template.txt")) // Default tag
             {
-                using FileStream fs = File.Create(@"./TOHE-DATA/Tags/Tag_Template.txt");
+                using FileStream fs = File.Create(@"./TOHFE-DATA/Tags/Tag_Template.txt");
             }
-            File.WriteAllText(@"./TOHE-DATA/Tags/Tag_Template.txt", defaultTagMsg); // Overwriting default template
+            File.WriteAllText(@"./TOHFE-DATA/Tags/Tag_Template.txt", defaultTagMsg); // Overwriting default template
         }
         catch (Exception ex)
         {

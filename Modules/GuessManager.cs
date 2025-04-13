@@ -2,19 +2,19 @@ using Hazel;
 using System;
 using System.Text.RegularExpressions;
 using TMPro;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
-using TOHE.Roles.Coven;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Double;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Coven;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Double;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 public static class GuessManager
 {
@@ -927,20 +927,20 @@ public static class GuessManager
                 List<CustomRoles> listOfRoles = CustomRolesHelper.AllRoles.Where(role => !role.IsGhostRole() && (role.IsEnable() || role.RoleExist(countDead: true))).ToList();
 
                 // Always show
-                if (!listOfRoles.Contains(CustomRoles.ImpostorTOHE))
-                    listOfRoles.Add(CustomRoles.ImpostorTOHE);
+                if (!listOfRoles.Contains(CustomRoles.ImpostorTOHFE))
+                    listOfRoles.Add(CustomRoles.ImpostorTOHFE);
 
-                if (!listOfRoles.Contains(CustomRoles.ShapeshifterTOHE))
-                    listOfRoles.Add(CustomRoles.ShapeshifterTOHE);
+                if (!listOfRoles.Contains(CustomRoles.ShapeshifterTOHFE))
+                    listOfRoles.Add(CustomRoles.ShapeshifterTOHFE);
 
-                if (!listOfRoles.Contains(CustomRoles.CrewmateTOHE))
-                    listOfRoles.Add(CustomRoles.CrewmateTOHE);
+                if (!listOfRoles.Contains(CustomRoles.CrewmateTOHFE))
+                    listOfRoles.Add(CustomRoles.CrewmateTOHFE);
 
-                if (!listOfRoles.Contains(CustomRoles.ScientistTOHE))
-                    listOfRoles.Add(CustomRoles.ScientistTOHE);
+                if (!listOfRoles.Contains(CustomRoles.ScientistTOHFE))
+                    listOfRoles.Add(CustomRoles.ScientistTOHFE);
 
-                if (!listOfRoles.Contains(CustomRoles.EngineerTOHE))
-                    listOfRoles.Add(CustomRoles.EngineerTOHE);
+                if (!listOfRoles.Contains(CustomRoles.EngineerTOHFE))
+                    listOfRoles.Add(CustomRoles.EngineerTOHFE);
 
                 if (!listOfRoles.Contains(CustomRoles.Amnesiac))
                     listOfRoles.Add(CustomRoles.Amnesiac);

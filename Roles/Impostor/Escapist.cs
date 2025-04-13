@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHE.Modules;
+using TOHFE.Modules;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Escapist : RoleBase
 {

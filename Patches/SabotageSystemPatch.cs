@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
 using Hazel;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
 
-namespace TOHE;
+namespace TOHFE;
 
 //ÕÅé×Çâ
 //https://github.com/Koke1024/Town-Of-Moss/blob/main/TownOfMoss/Patches/MeltDownBoost.cs

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TOHE.Modules;
+namespace TOHFE.Modules;
 
 [Obfuscation(Exclude = true, Feature = "renaming", ApplyToMembers = true)]
 public class Dispatcher : MonoBehaviour

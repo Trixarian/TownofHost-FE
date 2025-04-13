@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHE.Modules;
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
-using static TOHE.Options;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Doppelganger : RoleBase
 {

@@ -2,10 +2,10 @@ using AmongUs.GameOptions;
 using System;
 using System.Text;
 using UnityEngine;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Telecommunication : RoleBase
 {

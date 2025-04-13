@@ -4,15 +4,15 @@ using Hazel;
 using InnerNet;
 using System;
 using System.Text;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using TOHE.Patches;
-using TOHE.Roles.Core;
-using TOHE.Roles.Core.AssignManager;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Patches;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Core.AssignManager;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.CoStartGame))]
 internal class ChangeRoleSettings
@@ -579,7 +579,7 @@ internal class StartGameHostPatch
         foreach (var target in PlayerControl.AllPlayerControls.GetFastEnumerator())
         {
             var targetRoleType = othersRole;
-            var targetCustomRole = RoleAssign.RoleResult.GetValueOrDefault(target.PlayerId, CustomRoles.CrewmateTOHE);
+            var targetCustomRole = RoleAssign.RoleResult.GetValueOrDefault(target.PlayerId, CustomRoles.CrewmateTOHFE);
 
             if (targetCustomRole.GetVNRole() is CustomRoles.Noisemaker)
                 targetRoleType = RoleTypes.Noisemaker;

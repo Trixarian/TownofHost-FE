@@ -1,10 +1,10 @@
-using TOHE.Roles.Core;
-using TOHE.Roles.Coven;
-using TOHE.Roles.Neutral;
-using static TOHE.Options;
-using static TOHE.Translator;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Coven;
+using TOHFE.Roles.Neutral;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class CopyCat : RoleBase
 {
@@ -132,7 +132,7 @@ internal class CopyCat : RoleBase
                 CustomRoles.Sunnyboy => CustomRoles.Doctor,
                 CustomRoles.Councillor => CustomRoles.Judge,
                 CustomRoles.Taskinator => CustomRoles.Benefactor,
-                CustomRoles.EvilTracker => CustomRoles.TrackerTOHE,
+                CustomRoles.EvilTracker => CustomRoles.TrackerTOHFE,
                 CustomRoles.AntiAdminer => CustomRoles.Telecommunication,
                 CustomRoles.Pursuer => CustomRoles.Deceiver,
                 CustomRoles.CursedWolf => CustomRoles.Veteran,

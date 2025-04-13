@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
 using Hazel;
 using UnityEngine;
-using TOHE.Roles.AddOns.Impostor;
-using static TOHE.Options;
+using TOHFE.Roles.AddOns.Impostor;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Crewpostor : RoleBase
 {

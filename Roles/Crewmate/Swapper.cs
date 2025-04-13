@@ -1,16 +1,16 @@
 using Hazel;
 using System;
 using System.Text.RegularExpressions;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.Core;
-using TOHE.Roles.Coven;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Coven;
 using UnityEngine;
-using static TOHE.CheckForEndVotingPatch;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.CheckForEndVotingPatch;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Swapper : RoleBase
 {

@@ -1,9 +1,9 @@
 using Hazel;
 using InnerNet;
-using TOHE.Roles.Core;
-using static TOHE.Options;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Executioner : RoleBase
 {
@@ -53,7 +53,7 @@ internal class Executioner : RoleBase
     [
         CustomRoles.Amnesiac,
         CustomRoles.Maverick,
-        CustomRoles.CrewmateTOHE,
+        CustomRoles.CrewmateTOHFE,
         CustomRoles.Celebrity,
         CustomRoles.Bodyguard,
         CustomRoles.Dictator,
@@ -63,7 +63,7 @@ internal class Executioner : RoleBase
         CustomRoles.Opportunist,
         CustomRoles.Pursuer,
         CustomRoles.Refugee,
-        CustomRoles.TrackerTOHE,
+        CustomRoles.TrackerTOHFE,
         CustomRoles.Sheriff,
         CustomRoles.Deputy,
         CustomRoles.Medic,

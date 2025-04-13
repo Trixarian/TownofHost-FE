@@ -1,14 +1,14 @@
 using Hazel;
 using System;
-using TOHE.Patches;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
+using TOHFE.Patches;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.FixedUpdate))]
 class ShipFixedUpdatePatch
@@ -237,7 +237,7 @@ class StartPatch
                     UnityEngine.Object.Destroy(Decorations.GetComponent<Console>());
                     UnityEngine.Object.Destroy(Decorations.GetComponent<BoxCollider2D>());
                     UnityEngine.Object.Destroy(Decorations.GetComponent<PassiveButton>());
-                    Decorations.GetComponent<SpriteRenderer>().sprite = Utils.LoadSprite("TOHE.Resources.Images.Dropship-Decorations.png", 100f);
+                    Decorations.GetComponent<SpriteRenderer>().sprite = Utils.LoadSprite("TOHFE.Resources.Images.Dropship-Decorations.png", 100f);
                     Decorations.transform.SetSiblingIndex(1);
                     Decorations.transform.localPosition = new(0.0709f, 0.73f);
                 }

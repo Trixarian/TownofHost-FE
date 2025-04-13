@@ -2,16 +2,16 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using System.Text;
-using TOHE.Modules;
-using TOHE.Roles.Core;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Double;
-using TOHE.Roles.Impostor;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Double;
+using TOHFE.Roles.Impostor;
 using UnityEngine;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Pelican : RoleBase
 {

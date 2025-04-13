@@ -1,10 +1,10 @@
 using Hazel;
 using System.Text;
-using TOHE.Modules;
+using TOHFE.Modules;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 internal static class FFAManager
 {

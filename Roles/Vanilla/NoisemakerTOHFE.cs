@@ -1,12 +1,12 @@
 
-using TOHE.Roles.Core;
+using TOHFE.Roles.Core;
 
-namespace TOHE.Roles.Vanilla;
+namespace TOHFE.Roles.Vanilla;
 
-internal class NoisemakerTOHE : RoleBase
+internal class NoisemakerTOHFE : RoleBase
 {
     //===========================SETUP================================\\
-    public override CustomRoles Role => CustomRoles.NoisemakerTOHE;
+    public override CustomRoles Role => CustomRoles.NoisemakerTOHFE;
     private const int Id = 6230;
     private static readonly HashSet<byte> playerIdList = [];
     public static bool HasEnabled => playerIdList.Any();
@@ -20,11 +20,11 @@ internal class NoisemakerTOHE : RoleBase
 
     public override void SetupCustomOption()
     {
-        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.NoisemakerTOHE);
+        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.NoisemakerTOHFE);
         ImpostorAlert = BooleanOptionItem.Create(Id + 2, GeneralOption.NoisemakerBase_ImpostorAlert, true, TabGroup.CrewmateRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.NoisemakerTOHE]);
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.NoisemakerTOHFE]);
         AlertDuration = IntegerOptionItem.Create(Id + 3, GeneralOption.NoisemakerBase_AlertDuration, new(1, 20, 1), 10, TabGroup.CrewmateRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.NoisemakerTOHE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.NoisemakerTOHFE])
             .SetValueFormat(OptionFormat.Seconds);
     }
 

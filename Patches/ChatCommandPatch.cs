@@ -4,27 +4,27 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using TOHE.Modules;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.Core;
-using TOHE.Roles.Core.AssignManager;
-using TOHE.Roles.Coven;
-using TOHE.Roles.Crewmate;
-using TOHE.Roles.Impostor;
-using TOHE.Roles.Neutral;
+using TOHFE.Modules;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Core.AssignManager;
+using TOHFE.Roles.Coven;
+using TOHFE.Roles.Crewmate;
+using TOHFE.Roles.Impostor;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(ChatController), nameof(ChatController.SendChat))]
 internal class ChatCommands
 {
-    private static readonly string modLogFiles = @"./TOHE-DATA/ModLogs.txt";
-    private static readonly string modTagsFiles = @"./TOHE-DATA/Tags/MOD_TAGS";
-    private static readonly string sponsorTagsFiles = @"./TOHE-DATA/Tags/SPONSOR_TAGS";
-    private static readonly string vipTagsFiles = @"./TOHE-DATA/Tags/VIP_TAGS";
+    private static readonly string modLogFiles = @"./TOHFE-DATA/ModLogs.txt";
+    private static readonly string modTagsFiles = @"./TOHFE-DATA/Tags/MOD_TAGS";
+    private static readonly string sponsorTagsFiles = @"./TOHFE-DATA/Tags/SPONSOR_TAGS";
+    private static readonly string vipTagsFiles = @"./TOHFE-DATA/Tags/VIP_TAGS";
 
     private static readonly Dictionary<char, int> Pollvotes = [];
     private static readonly Dictionary<char, string> PollQuestions = [];
@@ -387,7 +387,7 @@ internal class ChatCommands
                 //    {
                 //        break;
                 //    }
-                //    PlayerControl.LocalPlayer.RpcChangeRoleBasis(CustomRoles.PhantomTOHE);
+                //    PlayerControl.LocalPlayer.RpcChangeRoleBasis(CustomRoles.PhantomTOHFE);
                 //    break;
 
                 case "/setplayers":
@@ -1655,12 +1655,12 @@ internal class ChatCommands
             "GM(遊戲大師)" or "管理员" or "管理" or "gm" or "GM" => GetString("GM"),
             
             // 原版职业
-            "船員" or "船员" or "白板" or "天选之子" => GetString("CrewmateTOHE"),
-            "工程師" or "工程师" => GetString("EngineerTOHE"),
-            "科學家" or "科学家" => GetString("ScientistTOHE"),
-            "守護天使" or "守护天使" => GetString("GuardianAngelTOHE"),
-            "偽裝者" or "内鬼" => GetString("ImpostorTOHE"),
-            "變形者" or "变形者" => GetString("ShapeshifterTOHE"),
+            "船員" or "船员" or "白板" or "天选之子" => GetString("CrewmateTOHFE"),
+            "工程師" or "工程师" => GetString("EngineerTOHFE"),
+            "科學家" or "科学家" => GetString("ScientistTOHFE"),
+            "守護天使" or "守护天使" => GetString("GuardianAngelTOHFE"),
+            "偽裝者" or "内鬼" => GetString("ImpostorTOHFE"),
+            "變形者" or "变形者" => GetString("ShapeshifterTOHFE"),
 
             // 隱藏職業 and 隐藏职业
             "陽光開朗大男孩" or "阳光开朗大男孩" => GetString("Sunnyboy"),
@@ -2130,8 +2130,8 @@ internal class ChatCommands
             {
                 CustomRoles setrole = result.GetCustomRoleTeam() switch
                 {
-                    Custom_Team.Impostor => CustomRoles.ImpostorTOHE,
-                    _ => CustomRoles.CrewmateTOHE
+                    Custom_Team.Impostor => CustomRoles.ImpostorTOHFE,
+                    _ => CustomRoles.CrewmateTOHFE
 
                 };
                 RoleAssign.SetRoles[pid] = setrole;
@@ -3163,11 +3163,6 @@ internal class ChatCommands
                     if (args.Length > 1)
                         Utils.SendMessage(args.Skip(1).Join(delimiter: " "), title: $"<color={Main.ModColor}>{GetString("MessageFromDev")} ~ <size=1.25>{player.GetRealName(clientData: true)}</size></color>");
                 }
-                else if (player.FriendCode.IsDevUser() && !dbConnect.IsBooster(player.FriendCode))
-                {
-                    if (args.Length > 1)
-                        Utils.SendMessage(args.Skip(1).Join(delimiter: " "), title: $"<color=#4bc9b0>{GetString("MessageFromSponsor")} ~ <size=1.25>{player.GetRealName(clientData: true)}</size></color>");
-                }
                 else if (Utils.IsPlayerModerator(player.FriendCode) || TagManager.CanUseSayCommand(player.FriendCode))
                 {
                     if (!TagManager.CanUseSayCommand(player.FriendCode) && (Options.ApplyModeratorList.GetValue() == 0 || Options.AllowSayCommand.GetBool() == false))
@@ -3659,7 +3654,7 @@ internal class UpdateCharCountPatch
     public static void Postfix(FreeChatInputField __instance)
     {
         int length = __instance.textArea.text.Length;
-        __instance.charCountText.SetText(length <= 0 ? GetString("ThankYouForUsingTOHE") : $"{length}/{__instance.textArea.characterLimit}");
+        __instance.charCountText.SetText(length <= 0 ? GetString("ThankYouForUsingTOHFE") : $"{length}/{__instance.textArea.characterLimit}");
         __instance.charCountText.enableWordWrapping = false;
         if (length < (AmongUsClient.Instance.AmHost ? 888 : 444))
             __instance.charCountText.color = Color.black;

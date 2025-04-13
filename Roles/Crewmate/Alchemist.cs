@@ -1,14 +1,14 @@
 using AmongUs.GameOptions;
 using Hazel;
 using System.Text;
-using TOHE.Modules;
-using TOHE.Roles.Core;
-using TOHE.Roles.Neutral;
+using TOHFE.Modules;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
+using static TOHFE.Options;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Alchemist : RoleBase
 {

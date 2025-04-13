@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Coven;
+namespace TOHFE.Roles.Coven;
 
 internal class Conjurer : CovenManager
 {

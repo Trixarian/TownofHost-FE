@@ -1,7 +1,7 @@
-using TOHE.Roles.Core;
-using static TOHE.Translator;
+using TOHFE.Roles.Core;
+using static TOHFE.Translator;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 internal class Revenant : RoleBase
 {
     //===========================SETUP================================\\

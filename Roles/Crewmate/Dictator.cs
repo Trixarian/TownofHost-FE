@@ -1,13 +1,13 @@
 using Hazel;
 using System;
-using TOHE.Modules.ChatManager;
-using TOHE.Roles.Core;
+using TOHFE.Modules.ChatManager;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Crewmate;
+namespace TOHFE.Roles.Crewmate;
 
 internal class Dictator : RoleBase
 {

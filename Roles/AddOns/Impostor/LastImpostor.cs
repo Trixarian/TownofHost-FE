@@ -1,7 +1,7 @@
-using TOHE.Roles.Core;
-using TOHE.Roles.Impostor;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Impostor;
 
-namespace TOHE.Roles.AddOns.Impostor;
+namespace TOHFE.Roles.AddOns.Impostor;
 
 public class LastImpostor : IAddon
 {

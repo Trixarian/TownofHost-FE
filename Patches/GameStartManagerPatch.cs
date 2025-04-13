@@ -3,12 +3,12 @@ using AmongUs.GameOptions;
 using InnerNet;
 using System;
 using TMPro;
-using TOHE.Patches;
+using TOHFE.Patches;
 using UnityEngine;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 using Object = UnityEngine.Object;
 
-namespace TOHE;
+namespace TOHFE;
 
 [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Update))]
 public static class GameStartManagerMinPlayersPatch

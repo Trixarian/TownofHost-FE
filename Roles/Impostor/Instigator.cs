@@ -1,7 +1,7 @@
-using TOHE.Modules;
-using static TOHE.Options;
+using TOHFE.Modules;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Instigator : RoleBase
 {

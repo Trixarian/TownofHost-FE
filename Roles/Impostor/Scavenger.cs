@@ -1,4 +1,4 @@
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Scavenger : RoleBase
 {

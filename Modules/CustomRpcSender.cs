@@ -4,7 +4,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using InnerNet;
 using System;
 
-namespace TOHE;
+namespace TOHFE;
 
 public class CustomRpcSender
 {

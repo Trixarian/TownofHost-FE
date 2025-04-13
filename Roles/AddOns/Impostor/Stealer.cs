@@ -1,6 +1,6 @@
-using static TOHE.Options;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.AddOns.Impostor;
+namespace TOHFE.Roles.AddOns.Impostor;
 
 public class Stealer : IAddon
 {

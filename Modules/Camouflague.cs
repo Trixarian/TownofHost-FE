@@ -1,8 +1,8 @@
 using AmongUs.Data;
-using TOHE.Modules;
-using TOHE.Roles.Impostor;
+using TOHFE.Modules;
+using TOHFE.Roles.Impostor;
 
-namespace TOHE;
+namespace TOHFE;
 
 static class PlayerOutfitExtension
 {

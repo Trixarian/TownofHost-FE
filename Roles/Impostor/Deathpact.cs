@@ -1,14 +1,14 @@
 using AmongUs.GameOptions;
 using System.Data;
 using System.Text;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
-using TOHE.Roles.Neutral;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
+using TOHFE.Roles.Neutral;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Deathpact : RoleBase
 {
@@ -238,7 +238,7 @@ internal class Deathpact : RoleBase
         {
             foreach (var otherPlayerInPact in deathpact.Value.Where(a => a.PlayerId != seer.PlayerId).ToArray())
             {
-                arrows.Append(ColorString(GetRoleColor(CustomRoles.CrewmateTOHE), TargetArrow.GetArrows(seer, otherPlayerInPact.PlayerId)));
+                arrows.Append(ColorString(GetRoleColor(CustomRoles.CrewmateTOHFE), TargetArrow.GetArrows(seer, otherPlayerInPact.PlayerId)));
             }
         }
 

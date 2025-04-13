@@ -1,9 +1,9 @@
 using Hazel;
 using InnerNet;
 using System;
-using static TOHE.Translator;
+using static TOHFE.Translator;
 
-namespace TOHE;
+namespace TOHFE;
 
 internal class EAC
 {

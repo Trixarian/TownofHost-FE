@@ -1,12 +1,12 @@
 using Hazel;
-using TOHE.Roles.AddOns.Common;
-using TOHE.Roles.Core;
+using TOHFE.Roles.AddOns.Common;
+using TOHFE.Roles.Core;
 using UnityEngine;
-using static TOHE.Options;
-using static TOHE.Translator;
-using static TOHE.Utils;
+using static TOHFE.Options;
+using static TOHFE.Translator;
+using static TOHFE.Utils;
 
-namespace TOHE.Roles.Neutral;
+namespace TOHFE.Roles.Neutral;
 
 internal class Revolutionist : RoleBase
 {

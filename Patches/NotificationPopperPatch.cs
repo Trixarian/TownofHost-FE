@@ -1,7 +1,7 @@
 using Hazel;
 using UnityEngine;
 
-namespace TOHE.Patches;
+namespace TOHFE.Patches;
 
 [HarmonyPatch(typeof(NotificationPopper), nameof(NotificationPopper.Awake))]
 public class NotificationPopperAwakePatch

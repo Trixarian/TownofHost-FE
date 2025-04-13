@@ -1,7 +1,7 @@
-using TOHE.Roles.Core;
-using static TOHE.Options;
+using TOHFE.Roles.Core;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.AddOns.Common;
+namespace TOHFE.Roles.AddOns.Common;
 
 public class Prohibited : IAddon
 {

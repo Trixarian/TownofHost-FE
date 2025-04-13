@@ -1,6 +1,6 @@
-using static TOHE.Options;
+using static TOHFE.Options;
 
-namespace TOHE.Roles.AddOns.Crewmate;
+namespace TOHFE.Roles.AddOns.Crewmate;
 
 public class Lazy : IAddon
 {

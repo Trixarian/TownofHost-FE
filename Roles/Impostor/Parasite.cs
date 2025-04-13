@@ -1,6 +1,6 @@
 using AmongUs.GameOptions;
 
-namespace TOHE.Roles.Impostor;
+namespace TOHFE.Roles.Impostor;
 
 internal class Parasite : RoleBase
 {

@@ -1,11 +1,11 @@
 using System;
-using TOHE.Modules;
-using TOHE.Roles.AddOns;
-using TOHE.Roles.AddOns.Impostor;
-using TOHE.Roles.Core;
+using TOHFE.Modules;
+using TOHFE.Roles.AddOns;
+using TOHFE.Roles.AddOns.Impostor;
+using TOHFE.Roles.Core;
 using UnityEngine;
 
-namespace TOHE;
+namespace TOHFE;
 
 [Obfuscation(Exclude = true)]
 [Flags]
@@ -16,7 +16,7 @@ public enum CustomGameMode
 
     SpeedRun = 0x04,
 
-    HidenSeekTOHE = 0x08, // HidenSeekTOHE must be after other game modes
+    HidenSeekTOHFE = 0x08, // HidenSeekTOHFE must be after other game modes
     All = int.MaxValue
 }
 
@@ -53,7 +53,7 @@ public static class Options
             1 => CustomGameMode.FFA,
 
             2 => CustomGameMode.SpeedRun,
-            3 => CustomGameMode.HidenSeekTOHE, // HidenSeekTOHE must be after other game modes
+            3 => CustomGameMode.HidenSeekTOHFE, // HidenSeekTOHFE must be after other game modes
             _ => CustomGameMode.Standard
         };
     public static readonly string[] gameModes =
@@ -63,7 +63,7 @@ public static class Options
 
         "SpeedRun",
 
-        "Hide&SeekTOHE", // HidenSeekTOHE must be after other game modes
+        "Hide&SeekTOHFE", // HidenSeekTOHFE must be after other game modes
     ];
 
 
@@ -1326,14 +1326,14 @@ public static class Options
 
         // Hide & Seek
         TextOptionItem.Create(10000055, "MenuTitle.Hide&Seek", TabGroup.ModSettings)
-            .SetGameMode(CustomGameMode.HidenSeekTOHE)
+            .SetGameMode(CustomGameMode.HidenSeekTOHFE)
             .SetColor(Color.red);
 
         // Num impostors in Hide & Seek
         NumImpostorsHnS = IntegerOptionItem.Create(60891, "NumImpostorsHnS", new(1, 3, 1), 1, TabGroup.ModSettings, false)
             .SetHeader(true)
             .SetColor(Color.red)
-            .SetGameMode(CustomGameMode.HidenSeekTOHE)
+            .SetGameMode(CustomGameMode.HidenSeekTOHFE)
             .SetValueFormat(OptionFormat.Players);
 
 
