@@ -1,7 +1,7 @@
 ﻿using Hazel;
 using System;
 
-namespace TOHFE.Modules;
+namespace TOHE.Modules;
 
 public static class AbilityUseManager
 {

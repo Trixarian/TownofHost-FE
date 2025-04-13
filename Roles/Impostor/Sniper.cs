@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
 using Hazel;
 using System.Text;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Sniper : RoleBase
 {
