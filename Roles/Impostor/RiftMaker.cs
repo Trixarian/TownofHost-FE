@@ -1,12 +1,12 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Modules;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class RiftMaker : RoleBase
 {

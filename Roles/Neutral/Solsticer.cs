@@ -1,13 +1,13 @@
 using AmongUs.GameOptions;
 using Hazel;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using InnerNet;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Solsticer : RoleBase
 {
@@ -93,7 +93,6 @@ internal class Solsticer : RoleBase
         var taskState = player.GetPlayerTaskState();
         if (taskState.IsTaskFinished)
         {
-            CustomSoundsManager.RPCPlayCustomSoundAll("Congrats");
             CustomWinnerHolder.ResetAndSetWinner(CustomWinner.Solsticer);
             CustomWinnerHolder.WinnerIds.Add(player.PlayerId);
         }
@@ -237,7 +236,9 @@ internal class Solsticer : RoleBase
     public void ResetTasks(PlayerControl pc)
     {
         SetShortTasksToAdd();
-        pc.RpcResetTasks(); //Let taskassign patch decide the tasks
+        var taskState = pc.GetPlayerTaskState();
+        pc.Data.RpcSetTasks(new Il2CppStructArray<byte>(0)); //Let taskassign patch decide the tasks
+        taskState.CompletedTasksCount = 0;
         pc.RpcGuardAndKill();
         pc.Notify(GetString("SolsticerTasksReset"));
         Main.AllPlayerControls.Do(x => TargetArrow.Remove(x.PlayerId, pc.PlayerId));

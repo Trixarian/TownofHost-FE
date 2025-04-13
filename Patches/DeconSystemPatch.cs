@@ -1,4 +1,4 @@
-namespace TOHFE.Patches;
+namespace TOHE.Patches;
 
 [HarmonyPatch(typeof(DeconSystem), nameof(DeconSystem.UpdateSystem))]
 public static class DeconSystemUpdateSystemPatch
@@ -12,7 +12,7 @@ public static class DeconSystemUpdateSystemPatch
             // Temp decon time
             var deconTime = Utils.GetActiveMapName() switch
             {
-                MapNames.MiraHQ => Options.DecontaminationTimeOnMiraHQ.GetFloat(),
+                MapNames.Mira => Options.DecontaminationTimeOnMiraHQ.GetFloat(),
                 MapNames.Polus => Options.DecontaminationTimeOnPolus.GetFloat(),
                 _ => 3f,
             };

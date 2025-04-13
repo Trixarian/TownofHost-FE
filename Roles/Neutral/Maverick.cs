@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
-using System.Text;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using Hazel;
+using InnerNet;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Maverick : RoleBase
 {
@@ -23,6 +23,8 @@ internal class Maverick : RoleBase
     private static OptionItem HasImpostorVision;
     public static OptionItem MinKillsForWin;
 
+    public int NumKills;
+
     public override void SetupCustomOption()
     {
         SetupSingleRoleOptions(Id, TabGroup.NeutralRoles, CustomRoles.Maverick, 1, zeroOne: false);
@@ -35,7 +37,7 @@ internal class Maverick : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(0);
+        NumKills = 0;
     }
     public override bool CanUseKillButton(PlayerControl pc) => true;
     public override bool CanUseImpostorVentButton(PlayerControl pc) => CanVent.GetBool();
@@ -46,17 +48,30 @@ internal class Maverick : RoleBase
         int minKills = MinKillsForWin.GetInt();
         if (minKills == 0) return string.Empty;
 
-        var ProgressText = new StringBuilder();
-        int numKills = (int)playerId.GetAbilityUseLimit();
+        if (Main.PlayerStates[playerId].RoleClass is not Maverick mr) return string.Empty;
+        int numKills = mr.NumKills;
         Color color = numKills >= minKills ? Color.green : Color.red;
-
-        ProgressText.Append(Utils.ColorString(color, $"({numKills}/{minKills})"));
-        return ProgressText.ToString();
+        return Utils.ColorString(color, $"({numKills}/{minKills})");
     }
     public override void OnMurderPlayerAsKiller(PlayerControl killer, PlayerControl target, bool inMeeting, bool isSuicide)
     {
         if (isSuicide) return;
 
-        killer.RpcIncreaseAbilityUseLimitBy(1);
+        NumKills++;
+        SendRPC();
+    }
+
+    public void SendRPC()
+    {
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId,
+            (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
+        writer.WriteNetObject(_Player);
+        writer.Write((byte)NumKills);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+
+    public override void ReceiveRPC(MessageReader reader, PlayerControl pc)
+    {
+        NumKills = reader.ReadByte();
     }
 }

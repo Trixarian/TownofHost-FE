@@ -1,8 +1,8 @@
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Innocent : RoleBase
 {
@@ -58,7 +58,7 @@ internal class Innocent : RoleBase
             if (isMeetingHud)
             {
                 if (DecidedWinner) name += string.Format(GetString("ExiledInnocentTargetAddBelow"));
-                else name = string.Format(GetString("ExiledInnocentTargetInOneLine"), Main.LastVotedPlayer, Utils.GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, false, true));
+                else name = string.Format(GetString("ExiledInnocentTargetInOneLine"), Main.LastVotedPlayer, Utils.GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, true));
             }
             else
             {

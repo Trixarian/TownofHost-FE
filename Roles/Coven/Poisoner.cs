@@ -1,9 +1,9 @@
-using TOHFE.Roles.AddOns.Common;
+using TOHE.Roles.AddOns.Common;
 using UnityEngine;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class Poisoner : CovenManager
 {
@@ -118,7 +118,7 @@ internal class Poisoner : CovenManager
     private static void KillPoisoned(PlayerControl poisoner, PlayerControl target, bool isButton = false)
     {
         if (poisoner == null || target == null || target.Data.Disconnected) return;
-        if (target.IsAlive() && !target.IsTransformedNeutralApocalypse())
+        if (target.IsAlive())
         {
             target.SetDeathReason(PlayerState.DeathReason.Poison);
             target.RpcMurderPlayer(target);
@@ -166,7 +166,7 @@ internal class Poisoner : CovenManager
         if (pc == null) return false;
         if (IsRoleblocked(pc.PlayerId))
         {
-            if (pc.GetCustomRole() is
+            if (pc.GetCustomRole() is 
                 CustomRoles.SerialKiller or
                 CustomRoles.Pursuer or
                 CustomRoles.Deputy or

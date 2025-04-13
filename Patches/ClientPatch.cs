@@ -1,9 +1,9 @@
 using InnerNet;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.MakePublic))]
 internal class MakePublicPatch
@@ -96,6 +96,7 @@ internal class RunLoginPatch
         if (!EOSManager.Instance.loginFlowFinished) return;
 
         var friendcode = EOSManager.Instance.friendCode;
+        Main.Instance.StartCoroutine(dbConnect.Init());
         if (friendcode == null || friendcode == "")
         {
             EOSManager.Instance.attemptAuthAgain = true;
@@ -104,7 +105,7 @@ internal class RunLoginPatch
         }
         try
         {
-            if (Main.canaryRelease || Main.fullRelease)
+            if (Main.canaryRelease ||  Main.fullRelease)
                 ModUpdater.ShowAvailableUpdate();
         }
         catch (System.Exception error)

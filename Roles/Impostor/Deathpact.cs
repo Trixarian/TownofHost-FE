@@ -1,21 +1,21 @@
 using AmongUs.GameOptions;
 using System.Data;
 using System.Text;
-using TOHFE.Roles.AddOns.Common;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Neutral;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Roles.AddOns.Common;
+using TOHE.Roles.Neutral;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Deathpact : RoleBase
 {
     //===========================SETUP================================\\
     public override CustomRoles Role => CustomRoles.Deathpact;
     private const int Id = 1200;
-    public static bool HasEnabled => CustomRoleManager.HasEnabled(CustomRoles.Deathpact);
+
     public override CustomRoles ThisRoleBase => CustomRoles.Shapeshifter;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.ImpostorKilling;
     //==================================================================\\
@@ -194,7 +194,7 @@ internal class Deathpact : RoleBase
 
         foreach (var player in playerList)
         {
-            float range = ExtendedPlayerControl.GetKillDistances(ovverideValue: player.Is(Reach.IsReach), newValue: 2) + 0.5f;
+            float range = NormalGameOptionsV08.KillDistances[Mathf.Clamp(player.Is(Reach.IsReach) ? 2 : Main.NormalOptions.KillDistance, 0, 2)] + 0.5f;
             foreach (var otherPlayerInPact in playerList.Where(a => a.PlayerId != player.PlayerId).ToArray())
             {
                 float dis = GetDistance(player.transform.position, otherPlayerInPact.transform.position);
@@ -215,7 +215,6 @@ internal class Deathpact : RoleBase
     {
         if (deathpact == null || target == null || target.Data.Disconnected) return;
         if (!target.IsAlive()) return;
-        if (target.IsTransformedNeutralApocalypse()) return;
 
         target.SetDeathReason(PlayerState.DeathReason.Suicide);
         target.RpcMurderPlayer(target);
@@ -238,7 +237,7 @@ internal class Deathpact : RoleBase
         {
             foreach (var otherPlayerInPact in deathpact.Value.Where(a => a.PlayerId != seer.PlayerId).ToArray())
             {
-                arrows.Append(ColorString(GetRoleColor(CustomRoles.CrewmateTOHFE), TargetArrow.GetArrows(seer, otherPlayerInPact.PlayerId)));
+                arrows.Append(ColorString(GetRoleColor(CustomRoles.CrewmateTOHE), TargetArrow.GetArrows(seer, otherPlayerInPact.PlayerId)));
             }
         }
 

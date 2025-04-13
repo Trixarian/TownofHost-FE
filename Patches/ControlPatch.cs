@@ -1,11 +1,11 @@
 using System;
 using System.Text;
-using TOHFE.Modules;
-using TOHFE.Patches;
+using TOHE.Modules;
+using TOHE.Patches;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(ControllerManager), nameof(ControllerManager.Update))]
 internal class ControllerManagerUpdatePatch
@@ -55,7 +55,7 @@ internal class ControllerManagerUpdatePatch
             //    _ = new LateTask(SetResolutionManager.Postfix, 0.01f, "Fix Button Position");
             //}
 
-            // Show Role info
+            //Show role info
             if (Input.GetKeyDown(KeyCode.F1) && GameStates.IsInGame && Options.CurrentGameMode == CustomGameMode.Standard)
             {
                 try
@@ -65,7 +65,7 @@ internal class ControllerManagerUpdatePatch
                     var sb = new StringBuilder();
                     sb.Append(GetString(role.ToString()) + Utils.GetRoleMode(role) + lp.GetRoleInfo(true));
                     //if (Options.CustomRoleSpawnChances.TryGetValue(role, out var opt))
-                    //Utils.ShowChildrenSettings(Options.CustomRoleSpawnChances[role], ref sb, command: true);
+                    //    Utils.ShowChildrenSettings(Options.CustomRoleSpawnChances[role], ref sb, command: true);
                     HudManager.Instance.ShowPopUp(sb.ToString() + "<size=0%>tohe</size>");
                 }
                 catch (Exception ex)
@@ -74,7 +74,7 @@ internal class ControllerManagerUpdatePatch
                     throw;
                 }
             }
-            // Show Add-on info
+            // Show add-ons info
             if (Input.GetKeyDown(KeyCode.F2) && GameStates.IsInGame && Options.CurrentGameMode == CustomGameMode.Standard)
             {
                 try
@@ -141,7 +141,7 @@ internal class ControllerManagerUpdatePatch
                     Utils.ThrowException(ex);
                 }
             }
-            // Changing the resolution
+            //Changing the resolution
             if (GetKeysDown(KeyCode.F11, KeyCode.LeftAlt))
             {
                 resolutionIndex++;
@@ -195,7 +195,7 @@ internal class ControllerManagerUpdatePatch
             }
 
             // ############################################################################################################
-            // ================================================= Only Host ================================================
+            // ================================================= Only host ================================================
             // ############################################################################################################
             if (!AmongUsClient.Instance.AmHost) return;
 
@@ -213,7 +213,7 @@ internal class ControllerManagerUpdatePatch
                 }
             }
 
-            // Search Bar in Menu "Press Enter" alternative function
+            //Search Bar In Menu "Press Enter" alternative function
             if (GetKeysDown(KeyCode.Return) && GameSettingMenuPatch.Instance != null && GameSettingMenuPatch.Instance.isActiveAndEnabled == true)
             {
                 GameSettingMenuPatch._SearchForOptions?.Invoke();
@@ -280,11 +280,11 @@ internal class ControllerManagerUpdatePatch
                 Utils.ShowActiveSettings();
             }
 
-            // Reset all TOHFE Settings to Default
+            // Reset All TOHE Setting To Default
             if (GameStates.IsLobby && GetKeysDown(KeyCode.LeftControl, KeyCode.LeftShift, KeyCode.Return, KeyCode.Delete))
             {
                 OptionItem.AllOptions.ToArray().Where(x => x.Id > 0).Do(x => x.SetValueNoRpc(x.DefaultValue));
-                Logger.SendInGame(GetString("RestTOHFESetting"));
+                Logger.SendInGame(GetString("RestTOHESetting"));
             }
 
             // Host kill self
@@ -315,7 +315,7 @@ internal class ControllerManagerUpdatePatch
             }
 
             // ############################################################################################################
-            // ========================================== Only Host and in Debug ==========================================
+            // ========================================== Only host and in debug ==========================================
             // ############################################################################################################
             if (!DebugModeManager.IsDebugMode) return;
 
@@ -324,7 +324,7 @@ internal class ControllerManagerUpdatePatch
                 CriticalErrorManager.SetCriticalError("Test AntiBlackout", true);
             }
 
-            // Kill Flash
+            // Kill flash
             if (GetKeysDown(KeyCode.Return, KeyCode.F, KeyCode.LeftShift))
             {
                 Utils.FlashColor(new(1f, 0f, 0f, 0.3f));
@@ -346,7 +346,7 @@ internal class ControllerManagerUpdatePatch
                 ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Doors, 82);
             }
 
-            // Set Kill Cooldown to 0 seconds
+            // Set kill cooldown to 0 seconds
             if (GetKeysDown(KeyCode.Return, KeyCode.K, KeyCode.LeftShift) && GameStates.IsInGame)
             {
                 PlayerControl.LocalPlayer.SetKillTimer(0f);
@@ -373,7 +373,7 @@ internal class ControllerManagerUpdatePatch
                 DestroyableSingleton<HudManager>.Instance.Notifier.AddDisconnectMessage($"VisibleTaskCount has been changed to {Main.VisibleTasksCount}");
             }
 
-            // All players enter Vent
+            // All players enter vent
             if (Input.GetKeyDown(KeyCode.C) && !GameStates.IsLobby)
             {
                 foreach (var pc in PlayerControl.AllPlayerControls)
@@ -382,7 +382,7 @@ internal class ControllerManagerUpdatePatch
                 }
             }
 
-            // All players exit Vent
+            // All players exit vent
             if (Input.GetKeyDown(KeyCode.B))
             {
                 foreach (var pc in PlayerControl.AllPlayerControls)
@@ -391,7 +391,7 @@ internal class ControllerManagerUpdatePatch
                 }
             }
 
-            // Teleport all players to the Host
+            // Teleport all players to the host
             if (GetKeysDown(KeyCode.LeftShift, KeyCode.V, KeyCode.Return) && !GameStates.IsLobby && PlayerControl.LocalPlayer.FriendCode.GetDevUser().DeBug)
             {
                 Vector2 pos = PlayerControl.LocalPlayer.NetTransform.transform.position;
@@ -405,7 +405,7 @@ internal class ControllerManagerUpdatePatch
                 }
             }
 
-            // Clear Vent
+            // Clear vent
             if (Input.GetKeyDown(KeyCode.N))
             {
                 VentilationSystem.Update(VentilationSystem.Operation.StartCleaning, 0);

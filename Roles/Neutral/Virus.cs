@@ -1,13 +1,13 @@
 using AmongUs.GameOptions;
 using System;
-using TOHFE.Modules;
-using TOHFE.Roles.AddOns.Crewmate;
-using TOHFE.Roles.Core;
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.AddOns.Crewmate;
+using TOHE.Roles.Core;
+using UnityEngine;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Virus : RoleBase
 {
@@ -63,7 +63,7 @@ internal class Virus : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(InfectMax.GetInt());
+        AbilityLimit = InfectMax.GetInt();
     }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = KillCooldown.GetFloat();
     public override void OnOthersMeetingHudStart(PlayerControl pc)
@@ -75,7 +75,7 @@ internal class Virus : RoleBase
     public override void ApplyGameOptions(IGameOptions opt, byte playerId) => opt.SetVision(ImpostorVision.GetBool());
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (killer.GetAbilityUseLimit() < 1) return true;
+        if (AbilityLimit < 1) return true;
         InfectedBodies.Add(target.PlayerId);
         return true;
     }
@@ -83,9 +83,10 @@ internal class Virus : RoleBase
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
         if (target == null || !InfectedBodies.Contains(target.PlayerId)) return;
-        if (_Player == null || !reporter.CanBeInfected()) return;
+        if (reporter == null || !reporter.CanBeInfected()) return;
 
-        _Player.RpcRemoveAbilityUse();
+        AbilityLimit--;
+        SendSkillRPC();
 
         if (KillInfectedPlayerAfterMeeting.GetBool())
         {
@@ -117,7 +118,7 @@ internal class Virus : RoleBase
         foreach (var infectedId in InfectedPlayer)
         {
             var infected = infectedId.GetPlayer();
-            if (virus.IsAlive() && infected != null && !infected.IsTransformedNeutralApocalypse())
+            if (virus.IsAlive() && infected != null)
             {
                 if (!Main.AfterMeetingDeathPlayers.ContainsKey(infectedId))
                 {
@@ -154,6 +155,8 @@ internal class Virus : RoleBase
         if (seer.Is(CustomRoles.Contagious) && target.Is(CustomRoles.Contagious) && TargetKnowOtherTarget.GetBool()) return Main.roleColors[CustomRoles.Virus];
         return "";
     }
+    public override string GetProgressText(byte id, bool coooms) => Utils.ColorString(AbilityLimit >= 1 ? Utils.GetRoleColor(CustomRoles.Virus).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})");
+
 }
 public static class VirusPlayerControls
 {
@@ -161,6 +164,6 @@ public static class VirusPlayerControls
     {
         return true && !pc.Is(CustomRoles.Virus) && !pc.Is(CustomRoles.Contagious) && !pc.Is(CustomRoles.Loyal)
             && !pc.Is(CustomRoles.Admired) && !pc.Is(CustomRoles.Enchanted) && !pc.Is(CustomRoles.Cultist) && !pc.Is(CustomRoles.Infectious) && !pc.Is(CustomRoles.Specter)
-            && !(pc.GetCustomSubRoles().Contains(CustomRoles.Hurried) && !Hurried.CanBeConverted.GetBool()) && !(CovenManager.HasNecronomicon(pc.PlayerId) && pc.Is(CustomRoles.CovenLeader));
+            && !(pc.GetCustomSubRoles().Contains(CustomRoles.Hurried) && !Hurried.CanBeConverted.GetBool());
     }
 }

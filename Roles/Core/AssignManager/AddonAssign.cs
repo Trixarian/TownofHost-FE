@@ -1,7 +1,7 @@
 using System;
-using TOHFE.Roles.AddOns.Impostor;
+using TOHE.Roles.AddOns.Impostor;
 
-namespace TOHFE.Roles.Core.AssignManager;
+namespace TOHE.Roles.Core.AssignManager;
 
 public static class AddonAssign
 {
@@ -31,7 +31,7 @@ public static class AddonAssign
 
     public static void StartSelect()
     {
-        if (Options.CurrentGameMode != CustomGameMode.Standard) return;
+        if (Options.CurrentGameMode == CustomGameMode.FFA) return;
 
         AddonRolesList.Clear();
         foreach (var cr in CustomRolesHelper.AllRoles)
@@ -46,7 +46,7 @@ public static class AddonAssign
     }
     public static void StartSortAndAssign()
     {
-        if (Options.CurrentGameMode != CustomGameMode.Standard) return;
+        if (Options.CurrentGameMode == CustomGameMode.FFA) return;
 
         var rd = IRandom.Instance;
         List<CustomRoles> addonsList = [];

@@ -1,4 +1,4 @@
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Bard : RoleBase
 {

@@ -2,12 +2,12 @@ using Hazel;
 using InnerNet;
 using System;
 using System.Text;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Modules;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 // Ported from: https://github.com/tukasa0001/TownOfHost/blob/main/Roles/Impostor/EvilHacker.cs
 internal class EvilHacker : RoleBase

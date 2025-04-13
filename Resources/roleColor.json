@@ -5,12 +5,12 @@
   "GuardianAngel": "#77e6d1",
   "Noisemaker": "#9100E3",
   "Tracker": "#1BB313",
-  "CrewmateTOHFE": "#8cffff",
-  "EngineerTOHFE": "#FF6A00",
-  "ScientistTOHFE": "#8ee98e",
-  "GuardianAngelTOHFE": "#77e6d1",
-  "NoisemakerTOHFE": "#9100E3",
-  "TrackerTOHFE": "#1BB313",
+  "CrewmateTOHE": "#8cffff",
+  "EngineerTOHE": "#FF6A00",
+  "ScientistTOHE": "#8ee98e",
+  "GuardianAngelTOHE": "#77e6d1",
+  "NoisemakerTOHE": "#9100E3",
+  "TrackerTOHE": "#1BB313",
   "EvilMini": "#FF1919",
   "NiceMini": "#edc240",
   "Mini": "#dddddd",
@@ -245,7 +245,5 @@
   "Sloth": "#376db8",
   "Eavesdropper": "#ffe6bf",
   "Shocker": "#CCCC00",
-  "Revenant": "#cc9329",
-  "Runner": "#fffb00",
-  "Requiter": "#ffc0cb"
+  "Revenant": "#cc9329"
 }

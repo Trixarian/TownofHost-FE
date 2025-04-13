@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
 using Hazel;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
 
-namespace TOHFE.Patches;
+namespace TOHE.Patches;
 
 [HarmonyPatch(typeof(PlayerControl))]
 public static class PhantomRolePatch

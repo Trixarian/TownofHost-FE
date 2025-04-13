@@ -1,13 +1,14 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Double;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using TOHE.Roles.Double;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
 
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Shroud : RoleBase
 {
@@ -123,7 +124,7 @@ internal class Shroud : RoleBase
             {
                 var min = targetDistance.OrderBy(c => c.Value).FirstOrDefault();
                 var target = min.Key.GetPlayer();
-                var KillRange = ExtendedPlayerControl.GetKillDistances();
+                var KillRange = NormalGameOptionsV08.KillDistances[Mathf.Clamp(Main.NormalOptions.KillDistance, 0, 2)];
                 if (min.Value <= KillRange && !shroud.inVent && !shroud.inMovingPlat && !target.inVent && !target.inMovingPlat)
                 {
                     if (shroud.RpcCheckAndMurder(target, true))
@@ -158,7 +159,6 @@ internal class Shroud : RoleBase
         {
             PlayerControl shrouded = shroudedId.GetPlayer();
             if (!shrouded.IsAlive()) continue;
-            if (shrouded.IsTransformedNeutralApocalypse()) continue;
 
             shrouded.SetDeathReason(PlayerState.DeathReason.Shrouded);
             shrouded.RpcMurderPlayer(shrouded);

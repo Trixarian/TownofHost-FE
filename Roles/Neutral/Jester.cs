@@ -1,9 +1,9 @@
 using AmongUs.GameOptions;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Jester : RoleBase
 {
@@ -66,7 +66,7 @@ internal class Jester : RoleBase
             {
                 if (RevealJesterUponEjection.GetBool())
                 {
-                    name = string.Format(Translator.GetString("ExiledJester"), Main.LastVotedPlayer, Utils.GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, false, true));
+                    name = string.Format(Translator.GetString("ExiledJester"), Main.LastVotedPlayer, Utils.GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, true));
                     DecidedWinner = true;
                 }
             }

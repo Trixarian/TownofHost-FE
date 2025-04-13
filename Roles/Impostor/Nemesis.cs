@@ -1,13 +1,13 @@
 using AmongUs.GameOptions;
 using Hazel;
-using TOHFE.Modules;
-using TOHFE.Roles.Double;
+using TOHE.Modules;
+using TOHE.Roles.Double;
 using UnityEngine;
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Nemesis : RoleBase
 {
@@ -34,7 +34,7 @@ internal class Nemesis : RoleBase
                 .SetValueFormat(OptionFormat.Players);
         PreventSeeRolesBeforeSkillUsedUp = BooleanOptionItem.Create(Id + 14, "PreventSeeRolesBeforeSkillUsedUp", true, TabGroup.ImpostorRoles, false)
             .SetParent(CustomRoleSpawnChances[CustomRoles.Nemesis]);
-        LegacyNemesis = BooleanOptionItem.Create(Id + 11, "UseLegacyVersion", false, TabGroup.ImpostorRoles, false)
+        LegacyNemesis = BooleanOptionItem.Create(Id + 11, "LegacyNemesis", false, TabGroup.ImpostorRoles, false)
                 .SetParent(CustomRoleSpawnChances[CustomRoles.Nemesis]);
         NemesisShapeshiftCD = FloatOptionItem.Create(Id + 12, GeneralOption.ShapeshifterBase_ShapeshiftCooldown, new(1f, 180f, 1f), 15f, TabGroup.ImpostorRoles, false)
                 .SetParent(LegacyNemesis)
@@ -91,7 +91,7 @@ internal class Nemesis : RoleBase
             bool canSeeRoles = PreventSeeRolesBeforeSkillUsedUp.GetBool();
             string text = GetString("PlayerIdList");
             foreach (var npc in Main.AllAlivePlayerControls)
-                text += $"\n{npc.PlayerId} → " + (canSeeRoles ? $"({npc.GetDisplayRoleAndSubName(npc, false, false)}) " : string.Empty) + npc.GetRealName();
+                text += $"\n{npc.PlayerId} → " + (canSeeRoles ? $"({npc.GetDisplayRoleAndSubName(npc, false)}) " : string.Empty) + npc.GetRealName();
             Utils.SendMessage(text, pc.PlayerId);
             return true;
         }
@@ -192,6 +192,7 @@ internal class Nemesis : RoleBase
         NemesisMsgCheck(pc, $"/rv {PlayerId}", true);
     }
 
+    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = CheckCanUseKillButton() ? DefaultKillCooldown : 300f;
     public override bool CanUseKillButton(PlayerControl pc) => CheckCanUseKillButton();
 
     public static bool CheckCanUseKillButton()

@@ -1,10 +1,11 @@
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Roles.AddOns.Common;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static UnityEngine.ParticleSystem.PlaybackState;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class ChiefOfPolice : RoleBase
 {
@@ -42,12 +43,12 @@ internal class ChiefOfPolice : RoleBase
 
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(1);
+        AbilityLimit = 1;
     }
 
-    public override bool CanUseKillButton(PlayerControl pc) => pc.GetAbilityUseLimit() > 0;
+    public override bool CanUseKillButton(PlayerControl pc) => AbilityLimit > 0;
 
-    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = id.GetAbilityUseLimit() > 0 ? SkillCooldown.GetFloat() : 999f;
+    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = AbilityLimit > 0 ? SkillCooldown.GetFloat() : 999f;
 
     public override bool KnowRoleTarget(PlayerControl seer, PlayerControl target)
     {
@@ -62,8 +63,7 @@ internal class ChiefOfPolice : RoleBase
 
     public override bool ForcedCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (killer.GetAbilityUseLimit() < 1) return false;
-
+        if (AbilityLimit < 1) return false;
         bool suidice = false;
         bool isSuccess = false;
 
@@ -75,7 +75,7 @@ internal class ChiefOfPolice : RoleBase
             }
             else
             {
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
                 killer.RpcGuardAndKill(target);
                 killer.ResetKillCooldown();
                 killer.SetKillCooldown();
@@ -102,7 +102,7 @@ internal class ChiefOfPolice : RoleBase
             {
                 suidice = true;
             }
-            else if (target.Is(CustomRoles.Zombie) || target.Is(CustomRoles.EvilMini) || target.Is(CustomRoles.Loyal))
+            if (target.Is(CustomRoles.Zombie) || target.Is(CustomRoles.EvilMini) || target.Is(CustomRoles.Loyal))
             {
                 suidice = true;
             }
@@ -114,7 +114,7 @@ internal class ChiefOfPolice : RoleBase
                 }
                 else
                 {
-                    killer.RpcRemoveAbilityUse();
+                    AbilityLimit--;
                     killer.RpcGuardAndKill(target);
                     killer.ResetKillCooldown();
                     killer.SetKillCooldown();
@@ -140,7 +140,7 @@ internal class ChiefOfPolice : RoleBase
 
         if (suidice && SuidiceWhenTargetNotKiller.GetBool())
         {
-            killer.RpcRemoveAbilityUse();
+            AbilityLimit--;
             killer.SetDeathReason(PlayerState.DeathReason.Misfire);
             killer.SetRealKiller(killer);
             killer.RpcMurderPlayer(killer);
@@ -165,11 +165,14 @@ internal class ChiefOfPolice : RoleBase
             Utils.NotifyRoles(killer);
         }
 
+        SendSkillRPC();
         return false;
     }
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
         hud.KillButton.OverrideText(GetString("ChiefOfPoliceKillButtonText"));
     }
-    public override Sprite GetKillButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("CoPKill");
+
+    public override string GetProgressText(byte playerId, bool commns)
+    => !commns ? Utils.ColorString(AbilityLimit > 0 ? Utils.GetRoleColor(CustomRoles.ChiefOfPolice).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})") : "";
 }

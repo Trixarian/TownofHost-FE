@@ -1,9 +1,9 @@
-using TOHFE.Modules;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Modules;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Rebirth : IAddon
 {

@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
 using Hazel;
-using System.Text;
-using TOHFE.Roles.Core;
+using InnerNet;
+using TOHE.Roles.Core;
 using UnityEngine;
 
-namespace TOHFE;
+namespace TOHE;
 
 public abstract class RoleBase
 {
@@ -15,6 +15,7 @@ public abstract class RoleBase
     public List<byte> _playerIdList => Main.PlayerStates.Values.Where(x => x.MainRole == _state.MainRole).Select(x => x.PlayerId).Cast<byte>().ToList();
 #pragma warning restore IDE1006
 
+    public float AbilityLimit { get; set; } = -100;
     public virtual bool IsEnable { get; set; } = false;
     public bool HasVoted = false;
     public virtual bool IsExperimental => false;
@@ -30,12 +31,6 @@ public abstract class RoleBase
     public void OnAdd(byte playerid) // The player with the class executes this
     {
         _state = Main.PlayerStates.GetValueOrDefault(playerid);
-
-        if (_state == null)
-        {
-            Logger.Warn($"Player state {playerid} is null", "RoleBase.OnAdd");
-        }
-
         try
         {
             CustomRoleManager.RoleClass.FirstOrDefault(r => r.Key == _state.MainRole).Value.IsEnable = true;
@@ -158,7 +153,7 @@ public abstract class RoleBase
     /// <summary>
     /// Other Player complete a marked task
     /// </summary>
-    public virtual void OnOthersTaskComplete(PlayerControl pc, PlayerTask task, bool playerIsOverridden, PlayerControl realPlayer)
+    public virtual void OnOthersTaskComplete(PlayerControl pc, PlayerTask task)
     { }
     /// <summary>
     /// The Role's tasks are needed for a task win
@@ -436,13 +431,7 @@ public abstract class RoleBase
     public virtual string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false) => string.Empty;
     public virtual string GetSuffix(PlayerControl seer, PlayerControl seen, bool isForMeeting = false) => string.Empty;
     [Obfuscation(Exclude = true)]
-    public virtual string GetProgressText(byte playerId, bool comms)
-    {
-        var sb = new StringBuilder();
-        sb.Append(Utils.GetTaskCount(playerId, comms));
-        sb.Append(Utils.GetAbilityUseLimitDisplay(playerId, sb.Length <= 0));
-        return sb.ToString();
-    }
+    public virtual string GetProgressText(byte playerId, bool comms) => string.Empty;
 
     // IMPORTANT note about otherIcons: 
     // These are only called once in the method, so object attributes are banned (as 99.99% of roles only want the method to run once)
@@ -456,9 +445,22 @@ public abstract class RoleBase
     public virtual string PlayerKnowTargetColor(PlayerControl seer, PlayerControl target) => string.Empty;
     public virtual bool OthersKnowTargetRoleColor(PlayerControl seer, PlayerControl target) => false;
 
-
+    public void OnReceiveRPC(MessageReader reader)
+    {
+        float Limit = reader.ReadSingle();
+        AbilityLimit = Limit;
+    }
+    public void SendSkillRPC()
+    {
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
+        writer.WriteNetObject(_Player);
+        writer.Write(AbilityLimit);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
     public virtual void ReceiveRPC(MessageReader reader, PlayerControl pc)
-    { }
+    {
+        OnReceiveRPC(reader); // Default implementation
+    }
 
     [Obfuscation(Exclude = true)]
     public enum GeneralOption

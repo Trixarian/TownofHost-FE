@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Jackal : RoleBase
 {
@@ -107,12 +107,11 @@ internal class Jackal : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(0);
+        AbilityLimit = 0;
         hasConverted = false;
-
         if (Playerids.Count == 0 || RestoreLimitOnNewJackal.GetBool())
         {
-            playerId.SetAbilityUseLimit(CanRecruitSidekick.GetBool() ? SidekickRecruitLimitOpt.GetInt() : 0);
+            AbilityLimit = CanRecruitSidekick.GetBool() ? SidekickRecruitLimitOpt.GetInt() : 0;
         }
 
         if (!Playerids.Contains(playerId))
@@ -120,6 +119,7 @@ internal class Jackal : RoleBase
 
         if (AmongUsClient.Instance.AmHost)
         {
+            SendSkillRPC();
             CustomRoleManager.CheckDeadBodyOthers.Add(OthersPlayersDead);
             if (_Player.Is(CustomRoles.Recruit))
             {
@@ -148,7 +148,7 @@ internal class Jackal : RoleBase
 
         return false;
     }
-    private bool CanRecruit() => _Player?.GetAbilityUseLimit() > 0;
+    private bool CanRecruit() => AbilityLimit > 0;
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
         if (CanRecruit())
@@ -209,8 +209,7 @@ internal class Jackal : RoleBase
         switch (SidekickAssignMode.GetInt())
         {
             case 1: // Only SideKick
-
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
 
                 Logger.Info($"Jackal {killer.GetNameWithRole()} assigned SideKick to {target.GetNameWithRole()}", "Jackal");
 
@@ -237,7 +236,7 @@ internal class Jackal : RoleBase
                     return true;
                 }
 
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
                 Logger.Info($"Jackal {killer.GetNameWithRole()} assigned Recruit to {target.GetNameWithRole()}", "Jackal");
                 target.RpcSetCustomRole(CustomRoles.Recruit);
 
@@ -266,7 +265,7 @@ internal class Jackal : RoleBase
                 {
                     target.RpcSetCustomRole(CustomRoles.Recruit);
                 }
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
 
                 killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Jackal), GetString("GangsterSuccessfullyRecruited")));
                 target.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Jackal), GetString("BeRecruitedByJackal")));
@@ -282,10 +281,13 @@ internal class Jackal : RoleBase
                 break;
         }
 
-        Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()} - Recruit limit:{killer.GetAbilityUseLimit()}", "Jackal");
+        SendSkillRPC();
+        if (AbilityLimit < 1)
+            HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
+
+        Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()} - Recruit limit:{AbilityLimit}", "Jackal");
 
         return false;
-
         /*
         if (target.Is(CustomRoles.Jackal)) return false;
         if (!CanRecruitSidekick.GetBool() || AbilityLimit < 1) return true;
@@ -294,7 +296,8 @@ internal class Jackal : RoleBase
         {
             if (CanBeSidekick(target))
             {
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
+                SendSkillRPC();
                 
                 target.GetRoleClass()?.OnRemove(target.PlayerId);
                 target.RpcSetCustomRole(CustomRoles.Sidekick);
@@ -317,6 +320,10 @@ internal class Jackal : RoleBase
                 target.SetKillCooldown();
 
                 Logger.Info($"Target: {target.GetRealName()} : {target.GetCustomRole()} => {CustomRoles.Sidekick}", "Assign Sidekick");
+                
+                if (AbilityLimit < 0)
+                    HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
+
                 Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()} - Recruit limit:{AbilityLimit}", "Jackal");
                 return false;
             }
@@ -325,7 +332,8 @@ internal class Jackal : RoleBase
         {
             if (!target.GetCustomRole().IsNeutral() && !target.Is(CustomRoles.Sidekick) && !target.Is(CustomRoles.Recruit) && !target.Is(CustomRoles.Loyal) && !target.Is(CustomRoles.Admired))
             {
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
+                SendSkillRPC();
                 target.RpcSetCustomRole(CustomRoles.Recruit);
 
                 Utils.NotifyRoles(SpecifySeer: killer, SpecifyTarget: target, ForceLoop: true);
@@ -345,10 +353,16 @@ internal class Jackal : RoleBase
                 target.SetKillCooldown();
 
                 Logger.Info($"Target: {target.GetRealName()} = {target.GetCustomRole()} => {CustomRoles.Recruit}", "Assign Recruit");
+                
+                if (AbilityLimit < 0)
+                    HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
+
                 Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()} - Recruit limit:{AbilityLimit}", "Jackal");
                 return false;
             }
         }
+        if (AbilityLimit < 0)
+            HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
         
         Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()} - Recruit limit:{AbilityLimit}", "Jackal");
         return true;
@@ -361,7 +375,7 @@ internal class Jackal : RoleBase
         return pc != null && !pc.Is(CustomRoles.Sidekick) && !pc.Is(CustomRoles.Recruit)
             && !pc.Is(CustomRoles.Loyal) && !pc.Is(CustomRoles.Admired) && !pc.Is(CustomRoles.Rascal) && !pc.Is(CustomRoles.Madmate)
             && !pc.Is(CustomRoles.Charmed) && !pc.Is(CustomRoles.Infected) && !pc.Is(CustomRoles.Paranoia)
-            && !pc.Is(CustomRoles.Contagious) && !pc.Is(CustomRoles.Enchanted) && pc.GetCustomRole().IsAbleToBeSidekicked() && !(CovenManager.HasNecronomicon(pc.PlayerId) && pc.Is(CustomRoles.CovenLeader));
+            && !pc.Is(CustomRoles.Contagious) && !pc.Is(CustomRoles.Enchanted) && pc.GetCustomRole().IsAbleToBeSidekicked();
     }
 
     public override void OnMurderPlayerAsTarget(PlayerControl killer, PlayerControl target, bool inMeeting, bool isSuidice)
@@ -442,9 +456,13 @@ internal class Jackal : RoleBase
             OnMurderPlayerAsTarget(_Player, _Player, true, false);
         }
     }
+    private string GetRecruitLimit()
+        => Utils.ColorString(CanRecruit()
+            ? Utils.GetRoleColor(CustomRoles.Jackal).ShadeColor(0.25f)
+            : Color.gray, $"({AbilityLimit})");
 
     public override string GetProgressText(byte playerId, bool comms)
-        => CanRecruitSidekick.GetBool() ? Utils.GetAbilityUseLimitDisplay(playerId, true) : string.Empty;
+        => CanRecruitSidekick.GetBool() ? GetRecruitLimit() : "";
 
     public override bool CheckMurderOnOthersTarget(PlayerControl killer, PlayerControl target)
     {
@@ -490,12 +508,18 @@ internal class Sidekick : RoleBase
     }
     public override void Add(byte playerId)
     {
+
         Main.PlayerStates[playerId].taskState.hasTasks = false;
-        playerId.SetAbilityUseLimit(0);
+        AbilityLimit = 0;
 
         if (Jackal.RestoreLimitOnNewJackal.GetBool())
         {
-            playerId.SetAbilityUseLimit(Jackal.SidekickRecruitLimitOpt.GetInt());
+            AbilityLimit = Jackal.SidekickRecruitLimitOpt.GetInt();
+        }
+
+        if (AmongUsClient.Instance.AmHost)
+        {
+            SendSkillRPC();
         }
     }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = Jackal.KillCooldownSK.GetFloat();
@@ -503,7 +527,10 @@ internal class Sidekick : RoleBase
     public override bool CanUseKillButton(PlayerControl player) => Jackal.SidekickCanKillWhenJackalAlive.GetBool() || !CustomRoles.Jackal.RoleExist();
     public override bool CanUseImpostorVentButton(PlayerControl player) => Jackal.CanVentSK.GetBool();
     public override bool CanUseSabotage(PlayerControl player) => Jackal.CanUseSabotageSK.GetBool();
-    public override string GetProgressText(byte playerId, bool comms) => string.Empty;
+    public override string GetProgressText(byte playerId, bool comms)
+    {
+        return "";
+    }
 
     //public override bool KnowRoleTarget(PlayerControl seer, PlayerControl target) => SidekickKnowRole(target);
     //public override string PlayerKnowTargetColor(PlayerControl seer, PlayerControl target) => SidekickKnowRole(target) ? Main.roleColors[CustomRoles.Jackal] : string.Empty;

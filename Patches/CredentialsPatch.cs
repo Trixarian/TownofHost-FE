@@ -1,10 +1,10 @@
 using System.Text;
 using TMPro;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(PingTracker), nameof(PingTracker.Update))]
 class PingTrackerUpdatePatch
@@ -146,22 +146,22 @@ class VersionShowerStartPatch
         var buildtype = "";
 
 #if RELEASE
-            Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Frens Network</color>";
+            Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Enhanced Network</color>";
             buildtype = "Release";
 #endif
 
 #if CANARY
         Main.credentialsText += $"\r\n<color=#ffc0cb>Canary:</color><color=#f34c50>{ThisAssembly.Git.Branch}</color>(<color=#ffc0cb>{ThisAssembly.Git.Commit}</color>)";
-        Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Frens Network</color>";
+        Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Enhanced Network</color>";
         buildtype = "Canary";
 #endif
 
 #if DEBUG
         Main.credentialsText += $"\r\n<color=#ffc0cb>Debug:</color><color=#f34c50>{ThisAssembly.Git.Branch}</color>(<color=#ffc0cb>{ThisAssembly.Git.Commit}</color>)";
-        Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Frens Network</color>";
+        Main.credentialsText += $"\r\n<color=#a54aff>By <color=#f34c50>The Enhanced Network</color>";
         buildtype = "Debug";
 #endif
-        Logger.Info($"v{Main.PluginVersion}, {buildtype}:{ThisAssembly.Git.Branch}:({ThisAssembly.Git.Commit}), link [{ThisAssembly.Git.RepositoryUrl}], dirty: [{ThisAssembly.Git.IsDirty}]", "TOHFE version");
+        Logger.Info($"v{Main.PluginVersion}, {buildtype}:{ThisAssembly.Git.Branch}:({ThisAssembly.Git.Commit}), link [{ThisAssembly.Git.RepositoryUrl}], dirty: [{ThisAssembly.Git.IsDirty}]", "TOHE version");
 
         if (Main.IsAprilFools)
             Main.credentialsText = $"<color=#00bfff>Town Of Host</color> v11.45.14";

@@ -1,12 +1,12 @@
 
 using AmongUs.GameOptions;
 
-namespace TOHFE.Roles.Vanilla;
+namespace TOHE.Roles.Vanilla;
 
-internal class ScientistTOHFE : RoleBase
+internal class ScientistTOHE : RoleBase
 {
     //===========================SETUP================================\\
-    public override CustomRoles Role => CustomRoles.ScientistTOHFE;
+    public override CustomRoles Role => CustomRoles.ScientistTOHE;
     private const int Id = 6200;
     public override CustomRoles ThisRoleBase => CustomRoles.Scientist;
     public override Custom_RoleType ThisRoleType => Custom_RoleType.CrewmateVanilla;
@@ -17,12 +17,12 @@ internal class ScientistTOHFE : RoleBase
 
     public override void SetupCustomOption()
     {
-        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.ScientistTOHFE);
+        Options.SetupRoleOptions(Id, TabGroup.CrewmateRoles, CustomRoles.ScientistTOHE);
         BatteryCooldown = IntegerOptionItem.Create(Id + 2, GeneralOption.ScientistBase_BatteryCooldown, new(1, 250, 1), 15, TabGroup.CrewmateRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ScientistTOHFE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ScientistTOHE])
             .SetValueFormat(OptionFormat.Seconds);
         BatteryDuration = IntegerOptionItem.Create(Id + 3, GeneralOption.ScientistBase_BatteryDuration, new(1, 250, 1), 5, TabGroup.CrewmateRoles, false)
-            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ScientistTOHFE])
+            .SetParent(Options.CustomRoleSpawnChances[CustomRoles.ScientistTOHE])
             .SetValueFormat(OptionFormat.Seconds);
     }
 

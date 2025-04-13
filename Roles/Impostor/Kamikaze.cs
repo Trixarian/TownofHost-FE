@@ -1,12 +1,12 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Double;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using TOHE.Roles.Double;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Kamikaze : RoleBase
 {
@@ -20,7 +20,6 @@ internal class Kamikaze : RoleBase
 
     private static OptionItem KillCooldown;
     private static OptionItem OptMaxMarked;
-    private static OptionItem CanKillTNA;
 
     private readonly HashSet<byte> KamikazedList = [];
 
@@ -29,14 +28,13 @@ internal class Kamikaze : RoleBase
         SetupRoleOptions(Id, TabGroup.ImpostorRoles, CustomRoles.Kamikaze);
         KillCooldown = FloatOptionItem.Create(Id + 10, GeneralOption.KillCooldown, new(0f, 180f, 2.5f), 25f, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Kamikaze])
             .SetValueFormat(OptionFormat.Seconds);
-        OptMaxMarked = IntegerOptionItem.Create(Id + 11, "KamikazeMaxMarked", new(1, 14, 1), 14, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Kamikaze])
+        OptMaxMarked = IntegerOptionItem.Create(Id + 11, "KamikazeMaxMarked", new(1, 14, 1), 14, TabGroup.ImpostorRoles, false).SetParent(Options.CustomRoleSpawnChances[CustomRoles.Kamikaze])
            .SetValueFormat(OptionFormat.Times);
-        CanKillTNA = BooleanOptionItem.Create(Id + 12, "CanKillTNA", false, TabGroup.ImpostorRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Kamikaze]);
 
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(OptMaxMarked.GetInt());
+        AbilityLimit = OptMaxMarked.GetInt();
 
         // Double Trigger
         var pc = Utils.GetPlayerById(playerId);
@@ -58,13 +56,14 @@ internal class Kamikaze : RoleBase
 
         return killer.CheckDoubleTrigger(target, () =>
         {
-            if (killer.GetAbilityUseLimit() >= 1 && !KamikazedList.Contains(target.PlayerId))
+            if (AbilityLimit >= 1 && !KamikazedList.Contains(target.PlayerId))
             {
                 KamikazedList.Add(target.PlayerId);
                 killer.RpcGuardAndKill(killer);
                 killer.SetKillCooldown(KillCooldown.GetFloat());
                 Utils.NotifyRoles(SpecifySeer: killer);
-                killer.RpcRemoveAbilityUse();
+                AbilityLimit--;
+                SendRPC();
             }
             else
             {
@@ -82,7 +81,6 @@ internal class Kamikaze : RoleBase
         {
             var pc = Utils.GetPlayerById(BABUSHKA);
             if (!pc.IsAlive()) continue;
-            if (pc.IsTransformedNeutralApocalypse() && !CanKillTNA.GetBool()) continue;
 
             pc.SetDeathReason(PlayerState.DeathReason.Targeted);
             if (!inMeeting)
@@ -122,10 +120,11 @@ internal class Kamikaze : RoleBase
         CheckForEndVotingPatch.TryAddAfterMeetingDeathPlayers(PlayerState.DeathReason.Targeted, [.. deathList]);
     }
 
-    private void SendRPC()
+    public void SendRPC()
     {
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable);
         writer.WriteNetObject(_Player);
+        writer.Write(AbilityLimit);
         writer.WritePacked(KamikazedList.Count);
         foreach (var playerId in KamikazedList)
         {
@@ -136,6 +135,7 @@ internal class Kamikaze : RoleBase
 
     public override void ReceiveRPC(MessageReader reader, PlayerControl pc)
     {
+        AbilityLimit = reader.ReadSingle();
         var count = reader.ReadPackedInt32();
         KamikazedList.Clear();
         if (count > 0)
@@ -146,5 +146,8 @@ internal class Kamikaze : RoleBase
             }
         }
     }
+
+    public override string GetProgressText(byte playerId, bool comms)
+        => Utils.ColorString(AbilityLimit >= 1 ? Utils.GetRoleColor(CustomRoles.Kamikaze).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})");
 }
 

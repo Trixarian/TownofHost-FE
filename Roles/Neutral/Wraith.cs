@@ -2,12 +2,12 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using System.Text;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Wraith : RoleBase
 {
@@ -50,7 +50,7 @@ internal class Wraith : RoleBase
     private void SendRPC(PlayerControl pc)
     {
         if (!pc.IsNonHostModdedClient()) return;
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, ExtendedPlayerControl.RpcSendOption, pc.GetClientId());
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, pc.GetClientId());
         writer.WriteNetObject(_Player);//SetWraithTimer
         writer.Write((InvisTime.TryGetValue(pc.PlayerId, out var x) ? x : -1).ToString());
         writer.Write((lastTime.TryGetValue(pc.PlayerId, out var y) ? y : -1).ToString());

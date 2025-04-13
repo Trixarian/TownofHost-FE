@@ -1,15 +1,15 @@
 using AmongUs.GameOptions;
 using Hazel;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using System;
-using TOHFE.Modules;
-using TOHFE.Roles.AddOns.Impostor;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
+using TOHE.Roles.AddOns.Impostor;
+using TOHE.Roles.Core;
+using TOHE.Roles.Impostor;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Utils;
+using static TOHE.Utils;
 
-namespace TOHFE;
+namespace TOHE;
 
 public class PlayerState(byte playerId)
 {
@@ -131,8 +131,8 @@ public class PlayerState(byte playerId)
 
             //Some role may be bugged for this, need further testing.
             Logger.Info($"{pc.GetNameWithRole()} previously was {GetRoleName(preMainRole)}, reassign tasks!", "PlayerState.SetMainRole");
-
-            pc.RpcResetTasks();
+            pc.Data.RpcSetTasks(new Il2CppStructArray<byte>(0));
+            InitTask(pc);
 
             if (!Main.UnShapeShifter.Contains(pc.PlayerId) && pc.GetRoleClass()?.ThisRoleBase == CustomRoles.Shapeshifter && Utils.IsMethodOverridden(pc.GetRoleClass(), "UnShapeShiftButton"))
             {
@@ -320,7 +320,7 @@ public class PlayerState(byte playerId)
         Execution,
         Fall,
 
-        // TOHFE
+        // TOHE
         Gambled,
         Eaten,
         Sacrifice,
@@ -422,7 +422,6 @@ public class TaskState
         }
 
         hasTasks = true;
-        CompletedTasksCount = 0;
         AllTasksCount = player.Data.Tasks.Count;
 
         Logger.Info($"{player.GetNameWithRole().RemoveHtmlTags()}: TaskCounts = {CompletedTasksCount}/{AllTasksCount}", "TaskState.Init");
@@ -443,12 +442,6 @@ public class TaskState
         if (player.Is(CustomRoles.Solsticer) && !AmongUsClient.Instance.AmHost) return;
 
         CompletedTasksCount++;
-
-        if (player.IsAlive() && Main.IntroDestroyed)
-        {
-            float add = GetSettingNameAndValueForRole(player.GetCustomRole(), "AbilityUseGainWithEachTaskCompleted");
-            if (Math.Abs(add - float.MaxValue) > 0.5f && add > 0) player.RpcIncreaseAbilityUseLimitBy(add);
-        }
 
         // Display only up to the adjusted task amount
         CompletedTasksCount = Math.Min(AllTasksCount, CompletedTasksCount);
@@ -481,7 +474,7 @@ public static class GameStates
     public static bool IsNormalGame => GameOptionsManager.Instance.CurrentGameOptions.GameMode is GameModes.Normal or GameModes.NormalFools;
     public static bool IsHideNSeek => GameOptionsManager.Instance.CurrentGameOptions.GameMode is GameModes.HideNSeek or GameModes.SeekFools;
     public static bool SkeldIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Skeld;
-    public static bool MiraHQIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.MiraHQ;
+    public static bool MiraHQIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Mira;
     public static bool PolusIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Polus;
     public static bool DleksIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Dleks;
     public static bool AirshipIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Airship;
@@ -500,7 +493,7 @@ public static class GameStates
             const string Domain = "among.us";
 
             // From Reactor.gg
-            return ServerManager.Instance.CurrentRegion?.CastFast<StaticHttpRegionInfo>() is { } regionInfo &&
+            return ServerManager.Instance.CurrentRegion?.TryCast<StaticHttpRegionInfo>() is { } regionInfo &&
                    regionInfo.PingServer.EndsWith(Domain, StringComparison.Ordinal) &&
                    regionInfo.Servers.All(serverInfo => serverInfo.Ip.EndsWith(Domain, StringComparison.Ordinal));
         }

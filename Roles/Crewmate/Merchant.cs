@@ -1,8 +1,8 @@
-using TOHFE.Roles.AddOns;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.AddOns;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Merchant : RoleBase
 {
@@ -169,9 +169,11 @@ internal class Merchant : RoleBase
 
             PlayerControl target = AllAlivePlayer.RandomElement();
 
-            target.RpcSetCustomRole(addon, false, false);
+            target.RpcSetCustomRole(addon);
             target.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Merchant), GetString("MerchantAddonSell")));
             player.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Merchant), GetString("MerchantAddonDelivered")));
+
+            target.AddInSwitchAddons(target, addon);
 
             addonsSold[player.PlayerId] += 1;
         }

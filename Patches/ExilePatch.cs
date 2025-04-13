@@ -1,32 +1,19 @@
 using AmongUs.Data;
 using System;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Neutral;
+using TOHE.Roles.Core;
+using TOHE.Roles.Neutral;
 
-namespace TOHFE;
+namespace TOHE;
 
 class ExileControllerWrapUpPatch
 {
     public static NetworkedPlayerInfo AntiBlackout_LastExiled;
-    [HarmonyPatch(typeof(ExileController), nameof(ExileController.Begin))]
-    class ExileControllerBeginPatch
-    {
-        // This patch is to show exile string for modded players
-        public static void Postfix(ExileController __instance, [HarmonyArgument(0)] ExileController.InitProperties init)
-        {
-            if (Options.CurrentGameMode is CustomGameMode.Standard && init != null && init.outfit != null)
-                __instance.completeString = CheckForEndVotingPatch.TempExileMsg;
-            // TempExileMsg for client is sent in RpcClose
-        }
-    }
-
     [HarmonyPatch(typeof(ExileController), nameof(ExileController.WrapUp))]
     class BaseExileControllerPatch
     {
         public static void Prefix()
         {
             CheckAndDoRandomSpawn();
-            CheckForEndVotingPatch.TempExiledPlayer = null;
         }
         public static void Postfix(ExileController __instance)
         {
@@ -76,7 +63,7 @@ class ExileControllerWrapUpPatch
             RandomSpawn.SpawnMap spawnMap = Utils.GetActiveMapName() switch
             {
                 MapNames.Skeld => new RandomSpawn.SkeldSpawnMap(),
-                MapNames.MiraHQ => new RandomSpawn.MiraHQSpawnMap(),
+                MapNames.Mira => new RandomSpawn.MiraHQSpawnMap(),
                 MapNames.Polus => new RandomSpawn.PolusSpawnMap(),
                 MapNames.Dleks => new RandomSpawn.DleksSpawnMap(),
                 MapNames.Fungle => new RandomSpawn.FungleSpawnMap(),
@@ -89,7 +76,7 @@ class ExileControllerWrapUpPatch
     {
         if (AntiBlackout.BlackOutIsActive) exiled = AntiBlackout_LastExiled;
 
-        // Still not springing up in Airship
+        // Still not springing up in airships
         if (!GameStates.AirshipIsActive)
         {
             foreach (var state in Main.PlayerStates.Values)
@@ -132,7 +119,7 @@ class ExileControllerWrapUpPatch
         {
             player.GetRoleClass()?.OnPlayerExiled(player, exiled);
 
-            // Check for remove Pet
+            // Check for remove pet
             player.RpcRemovePet();
 
             // Set UnShift after meeting
@@ -142,12 +129,12 @@ class ExileControllerWrapUpPatch
         Main.MeetingIsStarted = false;
         Main.MeetingsPassed++;
 
-        Utils.CountAlivePlayers(sendLog: true, checkGameEnd: Options.CurrentGameMode == CustomGameMode.Standard);
+        Utils.CountAlivePlayers(sendLog: true, checkGameEnd: Options.CurrentGameMode is CustomGameMode.Standard);
     }
 
     private static void WrapUpFinalizer(NetworkedPlayerInfo exiled)
     {
-        // Even if an exception occurs in WrapUpPostfix, this is the only part that will be executed reliably
+        // Even if an exception occurs in WrapUpPostfix, this is the only part that will be executed reliably.
         if (AmongUsClient.Instance.AmHost)
         {
             _ = new LateTask(() =>
@@ -159,12 +146,12 @@ class ExileControllerWrapUpPatch
                 AntiBlackout.SetRealPlayerRoles();
 
                 if (AntiBlackout.BlackOutIsActive && // State in which the expulsion target is overwritten (need not be executed if the expulsion target is not overwritten)
-                    exiled != null && // Exiled is not null
+                    exiled != null && // exiled is not null
                     exiled.Object != null) //exiled.Object is not null
                 {
                     exiled.Object.RpcExileV2();
                 }
-            }, Options.CurrentGameMode is CustomGameMode.Standard ? 0.5f : 1.4f, "Restore IsDead Task");
+            }, 0.5f, "Restore IsDead Task");
 
             _ = new LateTask(AntiBlackout.ResetAfterMeeting, 0.6f, "ResetAfterMeeting");
 
@@ -201,7 +188,7 @@ class ExileControllerWrapUpPatch
                 }
                 else
                 {
-                    Utils.NotifyRoles();
+                    Utils.DoNotifyRoles();
                 }
 
                 Main.LastMeetingEnded = Utils.TimeStamp;
@@ -209,7 +196,7 @@ class ExileControllerWrapUpPatch
         }
 
         //This should happen shortly after the Exile Controller wrap up finished for clients
-        //For Certain Laggy clients 0.8f delay is still not enough. The finish time can differ
+        //For Certain Laggy clients 0.8f delay is still not enough. The finish time can differ.
         //If the delay is too long, it will influence other normal players' view
 
         GameStates.AlreadyDied |= !Utils.IsAllAlive;

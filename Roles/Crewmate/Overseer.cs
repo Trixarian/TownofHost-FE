@@ -1,14 +1,14 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.AddOns.Common;
-using TOHFE.Roles.Neutral;
+using TOHE.Roles.AddOns.Common;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Overseer : RoleBase
 {
@@ -108,7 +108,7 @@ internal class Overseer : RoleBase
 
     private static void SendTimerRPC(byte RpcType, byte overseertId, PlayerControl target = null, float timer = 0)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetOverseerTimer, ExtendedPlayerControl.RpcSendOption);
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetOverseerTimer, SendOption.Reliable, -1);
         writer.Write(RpcType);
         writer.Write(overseertId);
         if (target != null && RpcType == 1)
@@ -225,7 +225,7 @@ internal class Overseer : RoleBase
             else
             {
 
-                float range = ExtendedPlayerControl.GetKillDistances(ovverideValue: player.Is(Reach.IsReach), newValue: 2) + 0.5f;
+                float range = NormalGameOptionsV08.KillDistances[Mathf.Clamp(player.Is(Reach.IsReach) ? 2 : Main.NormalOptions.KillDistance, 0, 2)] + 0.5f;
                 float dis = GetDistance(player.GetCustomPosition(), farTarget.GetCustomPosition());
                 if (dis <= range)
                 {

@@ -4,10 +4,10 @@ using InnerNet;
 using System;
 using System.Text;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Chronomancer : RoleBase
 {

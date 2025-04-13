@@ -1,10 +1,11 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using Hazel;
+using TOHE.Roles.Core;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Spiritcaller : RoleBase
 {
@@ -58,7 +59,7 @@ internal class Spiritcaller : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(SpiritMax.GetInt());
+        AbilityLimit = SpiritMax.GetInt();
         ProtectTimeStamp = 0;
 
         if (AmongUsClient.Instance.AmHost)
@@ -75,12 +76,28 @@ internal class Spiritcaller : RoleBase
     {
         if (!target.GetCustomRole().IsAbleToBeSidekicked() && !target.GetCustomRole().IsImpostor())
         {
-            if (killer.GetAbilityUseLimit() < 1) return true;
+            if (AbilityLimit < 1) return true;
 
-            killer.RpcRemoveAbilityUse();
+            AbilityLimit--;
+            SendSkillRPC();
+
             target.RpcSetCustomRole(CustomRoles.EvilSpirit);
 
-            Utils.SendMessage(GetString("SpiritcallerNoticeMessage"), target.PlayerId, GetString("SpiritcallerNoticeTitle"));
+            var writer = CustomRpcSender.Create("SpiritCallerSendMessage", SendOption.None);
+            writer.StartMessage(target.GetClientId());
+            writer.StartRpc(target.NetId, (byte)RpcCalls.SetName)
+                .Write(target.Data.NetId)
+                .Write(GetString("SpiritcallerNoticeTitle"))
+                .EndRpc();
+            writer.StartRpc(target.NetId, (byte)RpcCalls.SendChat)
+                .Write(GetString("SpiritcallerNoticeMessage"))
+                .EndRpc();
+            writer.StartRpc(target.NetId, (byte)RpcCalls.SetName)
+                .Write(target.Data.NetId)
+                .Write(target.Data.PlayerName)
+                .EndRpc();
+            writer.EndMessage();
+            writer.SendMessage();
         }
         return true;
     }
@@ -102,6 +119,8 @@ internal class Spiritcaller : RoleBase
             player?.MarkDirtySettings();
         }
     }
+
+    public override string GetProgressText(byte PlayerId, bool comms) => Utils.ColorString(AbilityLimit >= 1 ? Utils.GetRoleColor(CustomRoles.Spiritcaller) : Color.gray, $"({AbilityLimit})");
 
     public static void HauntPlayer(PlayerControl target)
     {

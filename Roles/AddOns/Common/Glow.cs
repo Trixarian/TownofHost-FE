@@ -1,7 +1,7 @@
 using AmongUs.GameOptions;
-using static TOHFE.Options;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Glow : IAddon
 {
@@ -84,7 +84,7 @@ public class Glow : IAddon
             MarkedOnce[player.PlayerId] = false;
             return;
         }
-        var prevList = InRadius.GetValueOrDefault(player.PlayerId);
+        var prevList = InRadius[player.PlayerId];
         InRadius[player.PlayerId] = Main.AllAlivePlayerControls
             .Where(target => target != null
                 && !target.Is(CustomRoles.Glow)
@@ -92,7 +92,7 @@ public class Glow : IAddon
             .Select(target => target.PlayerId)
             .ToHashSet();
 
-        if (!MarkedOnce.GetValueOrDefault(player.PlayerId) || (!prevList.SetEquals(InRadius.GetValueOrDefault(player.PlayerId, []))))
+        if (!MarkedOnce[player.PlayerId] || (!prevList.SetEquals(InRadius[player.PlayerId])))
         {
             MarkedOnce[player.PlayerId] = true;
             Utils.MarkEveryoneDirtySettings();

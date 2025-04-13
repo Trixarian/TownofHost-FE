@@ -1,16 +1,16 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Modules;
-using TOHFE.Roles.AddOns;
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Double;
-using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Modules;
+using TOHE.Roles.AddOns;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Double;
+using TOHE.Roles.Impostor;
+using TOHE.Roles.Neutral;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class MoonDancer : CovenManager
 {
@@ -228,11 +228,9 @@ internal class MoonDancer : CovenManager
                 continue;
             }
 
-            player.CheckConflictedAddOnsFromList(ref addons);
-
             var addon = addons.RandomElement();
-            var helpful = GroupedAddons[AddonTypes.Helpful].Where(addons.Contains).ToList();
-            var harmful = GroupedAddons[AddonTypes.Harmful].Where(addons.Contains).ToList();
+            var helpful = GroupedAddons[AddonTypes.Helpful].Where(x => addons.Contains(x)).ToList();
+            var harmful = GroupedAddons[AddonTypes.Harmful].Where(x => addons.Contains(x)).ToList();
             if (player.GetCustomRole().IsCovenTeam() || (player.Is(CustomRoles.Lovers) && md.Is(CustomRoles.Lovers)))
             {
                 if (helpful.Count <= 0)
@@ -253,12 +251,9 @@ internal class MoonDancer : CovenManager
                 }
                 addon = harmful.RandomElement();
             }
-
-            if (addon != 0) // not default value
-            {
-                player.RpcSetCustomRole(addon, false, false);
-                Logger.Info("Addon Passed.", "MoonDancer");
-            }
+            player.RpcSetCustomRole(addon);
+            player.AddInSwitchAddons(player, addon);
+            Logger.Info("Addon Passed.", "MoonDancer");
         }
         BatonPassList[md.PlayerId].Clear();
     }
@@ -294,17 +289,6 @@ internal class MoonDancer : CovenManager
             pc.SetRealKiller(moonDancer);
             pc.RpcExileV2();
             pc.SetDeathReason(PlayerState.DeathReason.BlastedOff);
-        }
-    }
-    public override void SetAbilityButtonText(HudManager hud, byte playerId)
-    {
-        if (HasNecronomicon(playerId))
-        {
-            hud.KillButton.OverrideText(GetString("MoonDancerNecroKillButton"));
-        }
-        else
-        {
-            hud.KillButton.OverrideText(GetString("MoonDancerKillButton"));
         }
     }
 }

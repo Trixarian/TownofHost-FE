@@ -1,10 +1,10 @@
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Coven;
-using TOHFE.Roles.Neutral;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using TOHE.Roles.Coven;
+using TOHE.Roles.Neutral;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class CopyCat : RoleBase
 {
@@ -69,7 +69,7 @@ internal class CopyCat : RoleBase
             {
                 if (!pc.HasGhostRole())
                 {
-                    pc.RpcSetCustomRole(CustomRoles.CopyCat, false, false);
+                    pc.RpcSetCustomRole(CustomRoles.CopyCat);
                 }
                 continue;
             }
@@ -82,10 +82,10 @@ internal class CopyCat : RoleBase
                 {
                     pc.GetRoleClass()?.OnRemove(pc.PlayerId);
                     pc.RpcChangeRoleBasis(CustomRoles.CopyCat);
-                    pc.RpcSetCustomRole(CustomRoles.CopyCat, false, false);
+                    pc.RpcSetCustomRole(CustomRoles.CopyCat, checkAddons: false);
                     foreach (var addon in OldAddons[pc.PlayerId])
                     {
-                        pc.RpcSetCustomRole(addon, false, false);
+                        pc.RpcSetCustomRole(addon, checkAddons: false);
                     }
                 }
             }
@@ -118,7 +118,7 @@ internal class CopyCat : RoleBase
         {
             role = role switch
             {
-                CustomRoles.Stealth or CustomRoles.Medusa => CustomRoles.Grenadier,
+                CustomRoles.Stealth => CustomRoles.Grenadier,
                 CustomRoles.TimeThief => CustomRoles.TimeManager,
                 CustomRoles.Consigliere => CustomRoles.Overseer,
                 CustomRoles.Mercenary => CustomRoles.Addict,
@@ -132,10 +132,10 @@ internal class CopyCat : RoleBase
                 CustomRoles.Sunnyboy => CustomRoles.Doctor,
                 CustomRoles.Councillor => CustomRoles.Judge,
                 CustomRoles.Taskinator => CustomRoles.Benefactor,
-                CustomRoles.EvilTracker => CustomRoles.TrackerTOHFE,
+                CustomRoles.EvilTracker => CustomRoles.TrackerTOHE,
                 CustomRoles.AntiAdminer => CustomRoles.Telecommunication,
                 CustomRoles.Pursuer => CustomRoles.Deceiver,
-                CustomRoles.CursedWolf => CustomRoles.Veteran,
+                CustomRoles.CursedWolf or CustomRoles.Jinx => CustomRoles.Veteran,
                 CustomRoles.Swooper or CustomRoles.Wraith => CustomRoles.Chameleon,
                 CustomRoles.Vindicator or CustomRoles.Pickpocket => CustomRoles.Mayor,
                 CustomRoles.Opportunist or CustomRoles.BloodKnight or CustomRoles.Wildling => CustomRoles.Guardian,
@@ -149,9 +149,7 @@ internal class CopyCat : RoleBase
                 CustomRoles.Sacrifist => CustomRoles.Alchemist,
                 CustomRoles.MoonDancer => CustomRoles.Merchant,
                 CustomRoles.Ritualist => CustomRoles.Admirer,
-                CustomRoles.Jinx => CustomRoles.Crusader,
                 CustomRoles.Trickster or CustomRoles.Illusionist => CustomRolesHelper.AllRoles.Where(role => role.IsEnable() && !role.IsAdditionRole() && role.IsCrewmate() && !BlackList(role)).ToList().RandomElement(),
-                CustomRoles.Instigator => CustomRoles.Requiter,
                 _ => role
             };
         }
@@ -160,7 +158,7 @@ internal class CopyCat : RoleBase
             if (role != CustomRoles.CopyCat)
             {
                 killer.RpcChangeRoleBasis(role);
-                killer.RpcSetCustomRole(role, false, false);
+                killer.RpcSetCustomRole(role, checkAddons: false);
                 killer.GetRoleClass()?.OnAdd(killer.PlayerId);
                 killer.SyncSettings();
                 Dictionary<byte, List<CustomRoles>> CurrentAddons = new();

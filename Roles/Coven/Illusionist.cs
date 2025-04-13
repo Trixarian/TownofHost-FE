@@ -2,13 +2,13 @@
 using Hazel;
 using InnerNet;
 using System;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Roles.Core;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class Illusionist : CovenManager
 {
@@ -49,7 +49,7 @@ internal class Illusionist : CovenManager
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(MaxIllusions.GetInt());
+        AbilityLimit = MaxIllusions.GetInt();
         IllusionedPlayers[playerId] = [];
         GetPlayerById(playerId)?.AddDoubleTrigger();
         CustomRoleManager.CheckDeadBodyOthers.Add(OnPlayerDead);
@@ -59,6 +59,7 @@ internal class Illusionist : CovenManager
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
         writer.WriteNetObject(_Player);
         writer.Write(player.PlayerId);
+        writer.Write(AbilityLimit);
         writer.Write(target.PlayerId);
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
@@ -66,6 +67,7 @@ internal class Illusionist : CovenManager
     {
         byte playerId = reader.ReadByte();
 
+        AbilityLimit = reader.ReadSingle();
         IllusionedPlayers[playerId].Add(reader.ReadByte());
     }
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
@@ -86,18 +88,18 @@ internal class Illusionist : CovenManager
     private void SetIllusioned(PlayerControl killer, PlayerControl target)
     {
         IllusionedPlayers[killer.PlayerId].Add(target.PlayerId);
-        killer.RpcRemoveAbilityUse();
+        AbilityLimit--;
         SendRPC(killer, target);
-
         killer.ResetKillCooldown();
         killer.SetKillCooldown();
     }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = IllusionCooldown.GetFloat();
     public override bool CanUseKillButton(PlayerControl pc) => true;
-
+    public override string GetProgressText(byte playerId, bool comms)
+        => ColorString(AbilityLimit >= 1 ? GetRoleColor(CustomRoles.Illusionist).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})");
     private static PlayerState.DeathReason ChangeRandomDeath()
     {
-        PlayerState.DeathReason[] deathReasons = [.. EnumHelper.GetAllValues<PlayerState.DeathReason>()];
+        PlayerState.DeathReason[] deathReasons = EnumHelper.GetAllValues<PlayerState.DeathReason>().ToArray();
         if (deathReasons.Length == 0 || !deathReasons.Contains(PlayerState.DeathReason.Kill)) deathReasons.AddItem(PlayerState.DeathReason.Kill);
         var random = IRandom.Instance;
         int randomIndex = random.Next(deathReasons.Length);
@@ -143,7 +145,7 @@ internal class Illusionist : CovenManager
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
     {
         if (_Player == null) return string.Empty;
-        if ((IsCovIllusioned(target.PlayerId) || IsNonCovIllusioned(target.PlayerId)) && ((seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId) || !seer.IsAlive()))
+        if ((IsCovIllusioned(target.PlayerId) || IsNonCovIllusioned(target.PlayerId)) && seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId)
         {
             return ColorString(GetRoleColor(CustomRoles.Illusionist), "ø");
         }

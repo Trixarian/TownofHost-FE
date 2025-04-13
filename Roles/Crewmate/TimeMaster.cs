@@ -1,13 +1,13 @@
 using AmongUs.GameOptions;
 using System;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using System.Text;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class TimeMaster : RoleBase
 {
@@ -23,6 +23,7 @@ internal class TimeMaster : RoleBase
     private static OptionItem TimeMasterSkillCooldown;
     private static OptionItem TimeMasterSkillDuration;
     private static OptionItem TimeMasterMaxUses;
+    private static OptionItem TimeMasterAbilityUseGainWithEachTaskCompleted;
 
     private static readonly Dictionary<byte, Vector2> TimeMasterBackTrack = [];
     private static readonly Dictionary<byte, int> TimeMasterNum = [];
@@ -49,12 +50,21 @@ internal class TimeMaster : RoleBase
     public override void Add(byte playerId)
     {
         TimeMasterNum.TryAdd(playerId, 0);
-        playerId.SetAbilityUseLimit(TimeMasterMaxUses.GetInt());
+        AbilityLimit = TimeMasterMaxUses.GetInt();
     }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
         AURoleOptions.EngineerCooldown = TimeMasterSkillCooldown.GetFloat();
         AURoleOptions.EngineerInVentMaxTime = 1;
+    }
+    public override bool OnTaskComplete(PlayerControl player, int completedTaskCount, int totalTaskCount)
+    {
+        if (player.IsAlive())
+        {
+            AbilityLimit += TimeMasterAbilityUseGainWithEachTaskCompleted.GetFloat();
+            SendSkillRPC();
+        }
+        return true;
     }
     public override void SetAbilityButtonText(HudManager hud, byte id)
     {
@@ -93,9 +103,10 @@ internal class TimeMaster : RoleBase
     }
     public override void OnEnterVent(PlayerControl pc, Vent currentVent)
     {
-        if (pc.GetAbilityUseLimit() >= 1)
+        if (AbilityLimit >= 1)
         {
-            pc.RpcRemoveAbilityUse();
+            AbilityLimit -= 1;
+            SendSkillRPC();
 
             TimeMasterInProtect.Remove(pc.PlayerId);
             TimeMasterInProtect.Add(pc.PlayerId, GetTimeStamp());
@@ -131,6 +142,23 @@ internal class TimeMaster : RoleBase
         {
             pc.Notify(GetString("OutOfAbilityUsesDoMoreTasks"));
         }
+    }
+    public override string GetProgressText(byte playerId, bool comms)
+    {
+        var ProgressText = new StringBuilder();
+        var taskState6 = Main.PlayerStates?[playerId].TaskState;
+        Color TextColor6;
+        var TaskCompleteColor6 = Color.green;
+        var NonCompleteColor6 = Color.yellow;
+        var NormalColor6 = taskState6.IsTaskFinished ? TaskCompleteColor6 : NonCompleteColor6;
+        TextColor6 = comms ? Color.gray : NormalColor6;
+        string Completed6 = comms ? "?" : $"{taskState6.CompletedTasksCount}";
+        Color TextColor61;
+        if (AbilityLimit < 1) TextColor61 = Color.red;
+        else TextColor61 = Color.white;
+        ProgressText.Append(ColorString(TextColor6, $"({Completed6}/{taskState6.AllTasksCount})"));
+        ProgressText.Append(ColorString(TextColor61, $" <color=#ffffff>-</color> {Math.Round(AbilityLimit, 1)}"));
+        return ProgressText.ToString();
     }
     public override Sprite GetAbilityButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Time Master");
 }

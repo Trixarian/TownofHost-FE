@@ -1,10 +1,11 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Double;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Double;
+using UnityEngine;
 
-namespace TOHFE.Roles.Neutral;
+using static TOHE.Options;
+using static TOHE.Translator;
+
+namespace TOHE.Roles.Neutral;
 
 internal class Infectious : RoleBase
 {
@@ -26,6 +27,8 @@ internal class Infectious : RoleBase
     private static OptionItem CanVent;
     private static OptionItem DoubleClickKill;
 
+    private static int BiteLimit;
+
     public override void SetupCustomOption()
     {
         SetupSingleRoleOptions(Id, TabGroup.NeutralRoles, CustomRoles.Infectious, 1, zeroOne: false);
@@ -41,12 +44,12 @@ internal class Infectious : RoleBase
     }
     public override void Init()
     {
+        BiteLimit = 0;
         PlayerIds.Clear();
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(BiteMax.GetInt());
-
+        BiteLimit = BiteMax.GetInt();
         if (!PlayerIds.Contains(playerId))
             PlayerIds.Add(playerId);
 
@@ -57,14 +60,14 @@ internal class Infectious : RoleBase
     public override void ApplyGameOptions(IGameOptions opt, byte playerId) => opt.SetVision(HasImpostorVision.GetBool());
 
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = BiteCooldown.GetFloat();
-    public override bool CanUseKillButton(PlayerControl player) => player.GetAbilityUseLimit() >= 1;
+    public override bool CanUseKillButton(PlayerControl player) => BiteLimit >= 1;
     public override bool CanUseImpostorVentButton(PlayerControl pc) => CanVent.GetBool();
 
     private static bool InfectOrMurder(PlayerControl killer, PlayerControl target)
     {
         if (CanBeBitten(target))
         {
-            killer.RpcRemoveAbilityUse();
+            BiteLimit--;
             target.RpcSetCustomRole(CustomRoles.Infected);
 
             Utils.NotifyRoles(SpecifySeer: killer, SpecifyTarget: target, ForceLoop: true);
@@ -83,29 +86,37 @@ internal class Infectious : RoleBase
             target.RpcGuardAndKill(target);
             Logger.Info("设置职业:" + target?.Data?.PlayerName + " = " + target.GetCustomRole().ToString() + " + " + CustomRoles.Infected.ToString(), "Assign " + CustomRoles.Infected.ToString());
 
-            if (killer.GetAbilityUseLimit() < 0)
+            if (BiteLimit < 0)
             {
                 HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
             }
 
+            Logger.Info($"{killer.GetNameWithRole()} : 剩余{BiteLimit}次招募机会", "Infectious");
             return true;
         }
 
-        if (!CanBeBitten(target) && !target.Is(CustomRoles.Infected) && !target.IsTransformedNeutralApocalypse())
+        if (!CanBeBitten(target) && !target.Is(CustomRoles.Infected))
         {
             killer.RpcMurderPlayer(target);
         }
 
+        if (BiteLimit < 0)
+        {
+            HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
+        }
+
         killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Infectious), GetString("InfectiousInvalidTarget")));
 
+        Logger.Info($"{killer.GetNameWithRole()} : 剩余{BiteLimit}次招募机会", "Infectious");
         return false;
     }
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
+        if (target.IsTransformedNeutralApocalypse()) return true;
         if (target.Is(CustomRoles.Infectious)) return true;
         if (target.Is(CustomRoles.SerialKiller)) return true;
 
-        if (killer.GetAbilityUseLimit() <= 0) return false;
+        if (BiteLimit < 1) return false;
         if (Mini.Age < 18 && (target.Is(CustomRoles.NiceMini) || target.Is(CustomRoles.EvilMini)))
         {
             killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Cultist), GetString("CantRecruit")));
@@ -114,6 +125,7 @@ internal class Infectious : RoleBase
         if (DoubleClickKill.GetBool())
         {
             bool check = killer.CheckDoubleTrigger(target, () => { InfectOrMurder(killer, target); });
+            //Logger.Warn("VALUE OF CHECK IS")
             if (check)
             {
                 killer.RpcMurderPlayer(target);
@@ -154,6 +166,9 @@ internal class Infectious : RoleBase
         if (TargetKnowOtherTarget.GetBool() && player.Is(CustomRoles.Infected) && target.Is(CustomRoles.Infected)) return true;
         return false;
     }
+
+    public override string GetProgressText(byte playerid, bool cooms) => Utils.ColorString(BiteLimit >= 1 ? Utils.GetRoleColor(CustomRoles.Infectious).ShadeColor(0.25f) : Color.gray, $"({BiteLimit})");
+
     public static bool CanBeBitten(PlayerControl pc)
     {
         return pc != null && (pc.GetCustomRole().IsCrewmate()
@@ -164,13 +179,10 @@ internal class Infectious : RoleBase
             && !pc.Is(CustomRoles.Loyal)
             && !pc.Is(CustomRoles.Cultist)
             && !pc.Is(CustomRoles.Enchanted)
-            && !pc.Is(CustomRoles.Infectious) && !pc.Is(CustomRoles.Virus) && !pc.IsTransformedNeutralApocalypse() && !(CovenManager.HasNecronomicon(pc.PlayerId) && pc.Is(CustomRoles.CovenLeader));
+            && !pc.Is(CustomRoles.Infectious) && !pc.Is(CustomRoles.Virus);
     }
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
-        if (playerId.GetAbilityUseLimit() > 0)
-            hud.KillButton.OverrideText(GetString("InfectiousKillButtonText"));
-        else
-            hud.KillButton.OverrideText($"{GetString("KillButtonText")}");
+        hud.KillButton.OverrideText(GetString("InfectiousKillButtonText"));
     }
 }

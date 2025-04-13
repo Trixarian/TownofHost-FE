@@ -1,12 +1,12 @@
 using AmongUs.GameOptions;
-using System.Text;
-using TOHFE.Modules;
+using Hazel;
+using InnerNet;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Vector : RoleBase
 {
@@ -22,6 +22,8 @@ internal class Vector : RoleBase
     private static OptionItem VectorVentCD;
     private static OptionItem VectorInVentMaxTime;
 
+    private static readonly Dictionary<byte, int> VectorVentCount = [];
+
     public override void SetupCustomOption()
     {
         SetupRoleOptions(Id, TabGroup.NeutralRoles, CustomRoles.Vector);
@@ -35,18 +37,32 @@ internal class Vector : RoleBase
             .SetParent(CustomRoleSpawnChances[CustomRoles.Vector])
             .SetValueFormat(OptionFormat.Seconds);
     }
+    public override void Init()
+    {
+        VectorVentCount.Clear();
+
+    }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(0);
+        VectorVentCount[playerId] = 0;
+
+    }
+    private void SendRPC()
+    {
+        if (!_Player.IsNonHostModdedClient()) return;
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, _Player.GetClientId());
+        writer.WriteNetObject(_Player);
+        writer.WritePacked(VectorVentCount[_Player.PlayerId]);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+    public override void ReceiveRPC(MessageReader reader, PlayerControl pc)
+    {
+        int count = reader.ReadPackedInt32();
+        VectorVentCount[_Player.PlayerId] = count;
     }
     public override string GetProgressText(byte playerId, bool comms)
     {
-        var ProgressText = new StringBuilder();
-        var TextColor = GetRoleColor(CustomRoles.Vector).ShadeColor(0.25f);
-
-        ProgressText.Append(GetTaskCount(playerId, comms));
-        ProgressText.Append(ColorString(TextColor, ColorString(Color.white, " - ") + $"({playerId.GetAbilityUseLimit()}/{VectorVentNumWin.GetInt()})"));
-        return ProgressText.ToString();
+        return ColorString(GetRoleColor(CustomRoles.Vector).ShadeColor(0.25f), $"({(VectorVentCount.TryGetValue(playerId, out var count) ? count : 0)}/{VectorVentNumWin.GetInt()})");
     }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
@@ -55,27 +71,37 @@ internal class Vector : RoleBase
     }
     public override void OnEnterVent(PlayerControl pc, Vent vent)
     {
-        pc.RpcIncreaseAbilityUseLimitBy(1);
-        NotifyRoles(SpecifySeer: pc, ForceLoop: false);
-        pc.RPCPlayCustomSound("MarioJump");
+        VectorVentCount[pc.PlayerId]++;
+        SendRPC();
+        NotifyRoles(SpecifySeer: pc);
 
-        var count = pc.GetAbilityUseLimit();
-        Logger.Info($"Vent count {count}", "Vector");
+        Logger.Info($"Vent count {VectorVentCount[pc.PlayerId]}", "Vector");
 
-        if (count >= VectorVentNumWin.GetInt())
+        if (VectorVentCount[pc.PlayerId] >= VectorVentNumWin.GetInt())
         {
             if (!CustomWinnerHolder.CheckForConvertedWinner(pc.PlayerId))
             {
-                pc.RPCPlayCustomSound("MarioCoin");
                 CustomWinnerHolder.ResetAndSetWinner(CustomWinner.Vector);
                 CustomWinnerHolder.WinnerIds.Add(pc.PlayerId);
             }
         }
     }
+    //public override void OnFixedUpdateLowLoad(PlayerControl player)
+    //{
+    //    if (VectorVentCount[player.PlayerId] >= VectorVentNumWin.GetInt())
+    //    {
+    //        VectorVentCount[player.PlayerId] = VectorVentNumWin.GetInt();
+    //        if (!CustomWinnerHolder.CheckForConvertedWinner(player.PlayerId))
+    //        {
+    //            CustomWinnerHolder.ResetAndSetWinner(CustomWinner.Vector);
+    //            CustomWinnerHolder.WinnerIds.Add(player.PlayerId);
+    //        }
+    //    }
+    //}
     public override Sprite GetAbilityButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Happy");
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
         hud.AbilityButton.OverrideText(GetString("VectorVentButtonText"));
-        hud.AbilityButton.SetUsesRemaining(VectorVentNumWin.GetInt() - (int)playerId.GetAbilityUseLimit());
+        hud.AbilityButton.SetUsesRemaining(VectorVentNumWin.GetInt() - (VectorVentCount.TryGetValue(PlayerControl.LocalPlayer.PlayerId, out var mx) ? mx : 0));
     }
 }

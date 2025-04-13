@@ -1,13 +1,14 @@
+using AmongUs.GameOptions;
 using Hazel;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Double;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using TOHE.Roles.Double;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Puppeteer : RoleBase
 {
@@ -112,7 +113,7 @@ internal class Puppeteer : RoleBase
 
             foreach (var target in Main.AllAlivePlayerControls)
             {
-                if (target.PlayerId != puppet.PlayerId && !(target.Is(Custom_Team.Impostor) || target.IsTransformedNeutralApocalypse()))
+                if (target.PlayerId != puppet.PlayerId && !(target.Is(Custom_Team.Impostor) || target.Is(CustomRoles.Pestilence)))
                 {
                     dis = Utils.GetDistance(puppeteerPos, target.transform.position);
                     targetDistance.Add(target.PlayerId, dis);
@@ -123,7 +124,7 @@ internal class Puppeteer : RoleBase
             {
                 var min = targetDistance.OrderBy(c => c.Value).FirstOrDefault();
                 var target = Utils.GetPlayerById(min.Key);
-                var KillRange = ExtendedPlayerControl.GetKillDistances();
+                var KillRange = NormalGameOptionsV08.KillDistances[Mathf.Clamp(Main.NormalOptions.KillDistance, 0, 2)];
 
                 if (min.Value <= KillRange && puppet.CanMove && target.CanMove)
                 {
@@ -139,7 +140,7 @@ internal class Puppeteer : RoleBase
                         //Utils.NotifyRoles(SpecifySeer: puppet);
                         Utils.NotifyRoles(SpecifySeer: Utils.GetPlayerById(puppeteerId), SpecifyTarget: puppet, ForceLoop: true);
 
-                        if (!puppet.IsTransformedNeutralApocalypse() && PuppeteerDoubleKills.GetBool())
+                        if (!puppet.Is(CustomRoles.Pestilence) && PuppeteerDoubleKills.GetBool())
                         {
                             puppet.SetDeathReason(PlayerState.DeathReason.Drained);
                             puppet.RpcMurderPlayer(puppet);

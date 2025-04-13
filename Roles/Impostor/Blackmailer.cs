@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Blackmailer : RoleBase
 {
@@ -85,12 +85,6 @@ internal class Blackmailer : RoleBase
         DoBlackmaile(blackmailer, target);
         blackmailer.Notify(GetString("RejectShapeshift.AbilityWasUsed"), time: 2f);
         return false;
-    }
-    public override void OnShapeshift(PlayerControl shapeshifter, PlayerControl target, bool IsAnimate, bool shapeshifting)
-    {
-        if (!shapeshifting) return;
-
-        DoBlackmaile(shapeshifter, target);
     }
     private void DoBlackmaile(PlayerControl blackmailer, PlayerControl target)
     {

@@ -1,10 +1,10 @@
-using TOHFE.Modules;
-using TOHFE.Roles.Double;
+using Hazel;
+using TOHE.Roles.Double;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class CursedSoul : RoleBase
 {
@@ -23,6 +23,8 @@ internal class CursedSoul : RoleBase
     private static OptionItem CanCurseNeutral;
     private static OptionItem CanCurseCoven;
 
+    private int CurseLimit;
+
     public override void SetupCustomOption()
     {
         SetupSingleRoleOptions(Id, TabGroup.NeutralRoles, CustomRoles.CursedSoul, 1, zeroOne: false);
@@ -36,16 +38,35 @@ internal class CursedSoul : RoleBase
         CanCurseNeutral = BooleanOptionItem.Create(Id + 16, "CursedSoulCanCurseNeutral", false, TabGroup.NeutralRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.CursedSoul]);
         CanCurseCoven = BooleanOptionItem.Create(Id + 17, "CursedSoulCanCurseCoven", false, TabGroup.NeutralRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.CursedSoul]);
     }
+    public override void Init()
+    {
+        CurseLimit = CurseMax.GetInt();
+    }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(CurseMax.GetInt());
+        CurseLimit = CurseMax.GetInt();
     }
-    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = id.GetAbilityUseLimit() >= 1 ? CurseCooldown.GetFloat() + (CurseMax.GetInt() - id.GetAbilityUseLimit()) * CurseCooldownIncrese.GetFloat() : 300f;
-    public override bool CanUseKillButton(PlayerControl player) => player.GetAbilityUseLimit() >= 1;
+
+    private void SendRPC()
+    {
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetCursedSoulCurseLimit, SendOption.Reliable, -1);
+        writer.Write(_state.PlayerId);
+        writer.Write(CurseLimit);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+    public static void ReceiveRPC(MessageReader reader)
+    {
+        var pID = reader.ReadByte();
+        if (Main.PlayerStates[pID].RoleClass is CursedSoul cs)
+            cs.CurseLimit = reader.ReadInt32();
+    }
+
+    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = CurseLimit >= 1 ? CurseCooldown.GetFloat() + (CurseMax.GetInt() - CurseLimit) * CurseCooldownIncrese.GetFloat() : 300f;
+    public override bool CanUseKillButton(PlayerControl player) => CurseLimit >= 1;
 
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (killer.GetAbilityUseLimit() < 1) return false;
+        if (CurseLimit < 1) return false;
         if (Mini.Age < 18 && (target.Is(CustomRoles.NiceMini) || target.Is(CustomRoles.EvilMini)))
         {
             killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Cultist), GetString("CantRecruit")));
@@ -53,7 +74,8 @@ internal class CursedSoul : RoleBase
         }
         if (CanBeSoulless(target))
         {
-            killer.RpcRemoveAbilityUse();
+            CurseLimit--;
+            SendRPC();
             target.RpcSetCustomRole(CustomRoles.Soulless);
 
             killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.CursedSoul), GetString("CursedSoulSoullessPlayer")));
@@ -68,10 +90,12 @@ internal class CursedSoul : RoleBase
             if (!DisableShieldAnimations.GetBool())
                 killer.RpcGuardAndKill(target);
 
-            Logger.Info($"{target?.Data?.PlayerName} = {target.GetCustomRole()} + {CustomRoles.Soulless}", $"Assign {CustomRoles.Soulless}");
+            Logger.Info("设置职业:" + target?.Data?.PlayerName + " = " + target.GetCustomRole().ToString() + " + " + CustomRoles.Soulless.ToString(), "Assign " + CustomRoles.Soulless.ToString());
+            Logger.Info($"{killer.GetNameWithRole()} : 剩余{CurseLimit}次魅惑机会", "CursedSoul");
             return false;
         }
         killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.CursedSoul), GetString("CursedSoulInvalidTarget")));
+        Logger.Info($"{killer.GetNameWithRole()} : 剩余{CurseLimit}次魅惑机会", "CursedSoul");
         return false;
     }
     public override bool KnowRoleTarget(PlayerControl player, PlayerControl target)
@@ -80,11 +104,12 @@ internal class CursedSoul : RoleBase
     public override string PlayerKnowTargetColor(PlayerControl seer, PlayerControl target)
         => KnowRoleTarget(seer, target) ? Main.roleColors[CustomRoles.Soulless] : string.Empty;
 
+    public override string GetProgressText(byte id, bool cooms) => Utils.ColorString(CurseLimit >= 1 ? Utils.GetRoleColor(CustomRoles.CursedSoul) : Color.gray, $"({CurseLimit})");
     private static bool CanBeSoulless(PlayerControl pc)
     {
         return pc != null && (pc.GetCustomRole().IsCrewmate() || pc.GetCustomRole().IsImpostor() ||
             (CanCurseNeutral.GetBool() && pc.GetCustomRole().IsNeutral()) ||
-            (CanCurseCoven.GetBool() && pc.GetCustomRole().IsCoven())) && !pc.Is(CustomRoles.Soulless) && !pc.Is(CustomRoles.Admired) && !pc.Is(CustomRoles.Enchanted) && !pc.Is(CustomRoles.Loyal) && !(CovenManager.HasNecronomicon(pc.PlayerId) && pc.Is(CustomRoles.CovenLeader));
+            (CanCurseCoven.GetBool() && pc.GetCustomRole().IsCoven())) && !pc.Is(CustomRoles.Soulless) && !pc.Is(CustomRoles.Admired) && !pc.Is(CustomRoles.Enchanted) && !pc.Is(CustomRoles.Loyal);
     }
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {

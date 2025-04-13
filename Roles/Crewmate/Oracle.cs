@@ -1,11 +1,15 @@
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Coven;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using Hazel;
+using InnerNet;
+using System;
+using System.Text;
+using TOHE.Roles.Core;
+using TOHE.Roles.Coven;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Oracle : RoleBase
 {
@@ -19,9 +23,11 @@ internal class Oracle : RoleBase
 
     private static OptionItem CheckLimitOpt;
     private static OptionItem FailChance;
+    private static OptionItem OracleAbilityUseGainWithEachTaskCompleted;
     private static OptionItem ChangeRecruitTeam;
 
     private readonly HashSet<byte> DidVote = [];
+    private static readonly Dictionary<byte, float> TempCheckLimit = [];
 
     public override void SetupCustomOption()
     {
@@ -39,9 +45,38 @@ internal class Oracle : RoleBase
             .SetParent(CustomRoleSpawnChances[CustomRoles.Oracle]);
 
     }
+    public override void Init()
+    {
+        TempCheckLimit.Clear();
+    }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(CheckLimitOpt.GetFloat());
+        AbilityLimit = CheckLimitOpt.GetFloat();
+    }
+    public void SendRPC(byte playerId, bool isTemp = false)
+    {
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
+        writer.WriteNetObject(_Player);
+        writer.Write(playerId);
+        writer.Write(isTemp);
+        if (!isTemp) writer.Write(AbilityLimit);
+        else writer.Write(TempCheckLimit[playerId]);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+    public override void ReceiveRPC(MessageReader reader, PlayerControl NaN)
+    {
+        byte pid = reader.ReadByte();
+        bool isTemp = reader.ReadBoolean();
+        if (!isTemp)
+        {
+            float checkLimit = reader.ReadSingle();
+            AbilityLimit = checkLimit;
+        }
+        else
+        {
+            float tempLimit = reader.ReadSingle();
+            TempCheckLimit[pid] = tempLimit;
+        }
     }
     public override bool CheckVote(PlayerControl player, PlayerControl target)
     {
@@ -49,19 +84,18 @@ internal class Oracle : RoleBase
         if (DidVote.Contains(player.PlayerId)) return true;
         DidVote.Add(player.PlayerId);
 
-        var abilityUse = player.GetAbilityUseLimit();
-        if (abilityUse < 1)
+        if (AbilityLimit < 1)
         {
             SendMessage(GetString("OracleCheckReachLimit"), player.PlayerId, ColorString(GetRoleColor(CustomRoles.Oracle), GetString("OracleCheckMsgTitle")));
             return true;
         }
 
-        player.RpcRemoveAbilityUse();
-        abilityUse--;
+        AbilityLimit -= 1;
+        SendRPC(player.PlayerId);
 
         if (player.PlayerId == target.PlayerId)
         {
-            SendMessage(GetString("OracleCheckSelfMsg") + "\n\n" + string.Format(GetString("OracleCheckLimit"), abilityUse), player.PlayerId, ColorString(GetRoleColor(CustomRoles.Oracle), GetString("OracleCheckMsgTitle")));
+            SendMessage(GetString("OracleCheckSelfMsg") + "\n\n" + string.Format(GetString("OracleCheckLimit"), AbilityLimit), player.PlayerId, ColorString(GetRoleColor(CustomRoles.Oracle), GetString("OracleCheckMsgTitle")));
             return true;
         }
 
@@ -72,8 +106,8 @@ internal class Oracle : RoleBase
                 bool targetIsVM = false;
                 if (target.Is(CustomRoles.VoodooMaster) && VoodooMaster.Dolls[target.PlayerId].Count > 0)
                 {
-                    target = GetPlayerById(VoodooMaster.Dolls[target.PlayerId].Where(x => x.GetPlayer().IsAlive()).ToList().RandomElement());
-                    SendMessage(string.Format(GetString("VoodooMasterTargetInMeeting"), target.GetRealName()), Utils.GetPlayerListByRole(CustomRoles.VoodooMaster).First().PlayerId);
+                    target = Utils.GetPlayerById(VoodooMaster.Dolls[target.PlayerId].Where(x => Utils.GetPlayerById(x).IsAlive()).ToList().RandomElement());
+                    Utils.SendMessage(string.Format(GetString("VoodooMasterTargetInMeeting"), target.GetRealName()), Utils.GetPlayerListByRole(CustomRoles.VoodooMaster).First().PlayerId);
                     targetIsVM = true;
                 }
                 var targetName = target.GetRealName();
@@ -134,13 +168,43 @@ internal class Oracle : RoleBase
                 msg = string.Format(GetString("OracleCheck." + text), targetName);
             }
 
-            SendMessage(GetString("OracleCheck") + "\n" + msg + "\n\n" + string.Format(GetString("OracleCheckLimit"), abilityUse), player.PlayerId, ColorString(GetRoleColor(CustomRoles.Oracle), GetString("OracleCheckMsgTitle")));
+            SendMessage(GetString("OracleCheck") + "\n" + msg + "\n\n" + string.Format(GetString("OracleCheckLimit"), AbilityLimit), player.PlayerId, ColorString(GetRoleColor(CustomRoles.Oracle), GetString("OracleCheckMsgTitle")));
             SendMessage(GetString("VoteHasReturned"), player.PlayerId, title: ColorString(GetRoleColor(CustomRoles.Oracle), string.Format(GetString("VoteAbilityUsed"), GetString("Oracle"))));
             return false;
         }
     }
+    public override bool OnTaskComplete(PlayerControl player, int completedTaskCount, int totalTaskCount)
+    {
+        if (player.IsAlive())
+        {
+            AbilityLimit += OracleAbilityUseGainWithEachTaskCompleted.GetFloat();
+            SendRPC(player.PlayerId);
+        }
+        return true;
+    }
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo tagret)
     {
         DidVote.Clear();
+
+        TempCheckLimit[_state.PlayerId] = AbilityLimit;
+        SendRPC(_state.PlayerId, isTemp: true);
+
+    }
+    public override string GetProgressText(byte playerId, bool comms)
+    {
+        var ProgressText = new StringBuilder();
+        var taskState9 = Main.PlayerStates?[playerId].TaskState;
+        Color TextColor9;
+        var TaskCompleteColor9 = Color.green;
+        var NonCompleteColor9 = Color.yellow;
+        var NormalColor9 = taskState9.IsTaskFinished ? TaskCompleteColor9 : NonCompleteColor9;
+        TextColor9 = comms ? Color.gray : NormalColor9;
+        string Completed9 = comms ? "?" : $"{taskState9.CompletedTasksCount}";
+        Color TextColor91;
+        if (AbilityLimit < 1) TextColor91 = Color.red;
+        else TextColor91 = Color.white;
+        ProgressText.Append(ColorString(TextColor9, $"({Completed9}/{taskState9.AllTasksCount})"));
+        ProgressText.Append(ColorString(TextColor91, $" <color=#ffffff>-</color> {Math.Round(AbilityLimit, 1)}"));
+        return ProgressText.ToString();
     }
 }

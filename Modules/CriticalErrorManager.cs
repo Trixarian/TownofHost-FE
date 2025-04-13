@@ -1,7 +1,7 @@
 using Hazel;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Modules;
+namespace TOHE.Modules;
 
 public static class CriticalErrorManager
 {

@@ -2,12 +2,13 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using System.Text;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Roles.Core;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
+using static UnityEngine.GraphicsBuffer;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Baker : RoleBase
 {
@@ -24,7 +25,6 @@ internal class Baker : RoleBase
     public static OptionItem FamineStarveCooldown;
     private static OptionItem BTOS2Baker;
     private static OptionItem TransformNoMoreBread;
-    private static OptionItem RegenBread;
     public static OptionItem CanVent;
     private static byte BreadID = 0;
 
@@ -46,7 +46,6 @@ internal class Baker : RoleBase
         BTOS2Baker = BooleanOptionItem.Create(Id + 12, "BakerBreadGivesEffects", true, TabGroup.NeutralRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Baker]);
         TransformNoMoreBread = BooleanOptionItem.Create(Id + 13, "BakerTransformNoMoreBread", true, TabGroup.NeutralRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Baker]);
         CanVent = BooleanOptionItem.Create(Id + 14, "BakerCanVent", true, TabGroup.NeutralRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Baker]);
-        RegenBread = BooleanOptionItem.Create(Id + 15, "BakerRegenBread", true, TabGroup.NeutralRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Baker]);
     }
     public override void Init()
     {
@@ -175,18 +174,11 @@ internal class Baker : RoleBase
     }
     private void OnPlayerDead(PlayerControl killer, PlayerControl deadPlayer, bool inMeeting)
     {
-        foreach (var playerId in BreadList.Keys.ToList())
+        foreach (var playerId in BreadList.Keys.ToArray())
         {
-            var baker = GetPlayerById(playerId);
-            if (HasBread(playerId, deadPlayer.PlayerId))
+            if (deadPlayer.PlayerId == playerId)
             {
-                BreadList[playerId].Remove(deadPlayer.PlayerId);
-                Logger.Info($"{deadPlayer.GetNameWithRole()} died, remove them from BreadList", "Baker");
-                if (RegenBread.GetBool())
-                {
-                    CanUseAbility = true;
-                    baker.Notify(string.Format(GetString("BakerBreadDied"), deadPlayer.GetRealName()));
-                }
+                BreadList[playerId].Remove(playerId);
             }
         }
     }

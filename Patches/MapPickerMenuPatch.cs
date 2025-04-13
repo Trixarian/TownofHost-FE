@@ -1,23 +1,20 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-namespace TOHFE.Patches;
+namespace TOHE.Patches;
 
 // Thanks: https://github.com/SubmergedAmongUs/Submerged/blob/4a5a6b47cbed526670ae4b7eae76acd7c42e35de/Submerged/UI/Patches/MapSelectButtonPatches.cs#L49
 class CreateOptionsPickerPatch
 {
     public static bool SetDleks = false;
     private static MapSelectButton DleksButton;
-    [HarmonyPatch]
+    [HarmonyPatch(typeof(GameOptionsMapPicker))]
     public static class GameOptionsMapPickerPatch
     {
-        [HarmonyPatch(typeof(GameOptionsMapPicker), nameof(GameOptionsMapPicker.SetupMapButtons))]
+        [HarmonyPatch(nameof(GameOptionsMapPicker.Initialize))]
         [HarmonyPostfix]
         [Obfuscation(Exclude = true)]
-        public static void Postfix_Initialize(CreateGameMapPicker __instance)
+        public static void Postfix_Initialize(GameOptionsMapPicker __instance)
         {
-            if (SceneManager.GetActiveScene().name == "FindAGame") return;
-
             int DleksPos = 3;
 
             MapSelectButton[] AllMapButton = __instance.transform.GetComponentsInChildren<MapSelectButton>();
@@ -29,11 +26,7 @@ class CreateOptionsPickerPatch
                 dlekS_ehT.transform.SetSiblingIndex(DleksPos + 2);
                 MapSelectButton dlekS_ehT_MapButton = dlekS_ehT.GetComponent<MapSelectButton>();
                 DleksButton = dlekS_ehT_MapButton;
-                foreach (var icon in dlekS_ehT_MapButton.MapIcon)
-                {
-                    if (icon == null || icon.transform == null) continue;
-                    icon.flipX = true;
-                }
+                dlekS_ehT_MapButton.MapIcon.transform.localScale = new Vector3(-1f, 1f, 1f);
                 dlekS_ehT_MapButton.Button.OnClick.RemoveAllListeners();
                 dlekS_ehT_MapButton.Button.OnClick.AddListener((UnityEngine.Events.UnityAction)(() =>
                 {
@@ -55,8 +48,8 @@ class CreateOptionsPickerPatch
                     //__instance.MapImage.transform.localScale = new Vector3(-1f, 1f, 1f);
                     //__instance.MapName.transform.localScale = new Vector3(-1f, 1f, 1f);
 
-                    __instance.MapImage.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner.png", 100f);
-                    __instance.MapName.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner-Wordart.png", 100f);
+                    __instance.MapImage.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner.png", 100f);
+                    __instance.MapName.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner-Wordart.png", 100f);
                 }));
 
                 for (int i = DleksPos; i < AllMapButton.Length; i++)
@@ -79,8 +72,8 @@ class CreateOptionsPickerPatch
                         //__instance.MapImage.transform.localScale = new Vector3(-1f, 1f, 1f);
                         //__instance.MapName.transform.localScale = new Vector3(-1f, 1f, 1f);
 
-                        __instance.MapImage.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner.png", 100f);
-                        __instance.MapName.sprite = Utils.LoadSprite($"TOHFE.Resources.Images.DleksBanner-Wordart.png", 100f);
+                        __instance.MapImage.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner.png", 100f);
+                        __instance.MapName.sprite = Utils.LoadSprite($"TOHE.Resources.Images.DleksBanner-Wordart.png", 100f);
                     }
                     else
                     {
@@ -90,14 +83,12 @@ class CreateOptionsPickerPatch
             }
         }
 
-        [HarmonyPatch(typeof(GameOptionsMapPicker), nameof(GameOptionsMapPicker.FixedUpdate))]
+        [HarmonyPatch(nameof(GameOptionsMapPicker.FixedUpdate))]
         [HarmonyPrefix]
         [Obfuscation(Exclude = true)]
         public static bool Prefix_FixedUpdate(GameOptionsMapPicker __instance)
         {
             if (__instance == null) return true;
-
-            if (__instance.MapName == null) return false;
 
             if (DleksButton != null)
             {
@@ -112,14 +103,7 @@ class CreateOptionsPickerPatch
             }
 
             if (__instance.selectedMapId == 3)
-            {
-                if (SceneManager.GetActiveScene().name == "FindAGame")
-                {
-                    __instance.SelectMap(0);
-                    SetDleks = false;
-                }
                 return false;
-            }
 
             return true;
         }

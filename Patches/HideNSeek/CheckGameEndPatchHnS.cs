@@ -1,4 +1,4 @@
-namespace TOHFE.Patches.HideNSeek;
+namespace TOHE.Patches.HideNSeek;
 
 [HarmonyPatch(typeof(LogicGameFlowHnS), nameof(LogicGameFlowHnS.CheckEndCriteria))]
 class GameEndCheckerForHnS

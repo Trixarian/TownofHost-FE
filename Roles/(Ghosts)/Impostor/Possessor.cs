@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles._Ghosts_.Impostor;
+namespace TOHE.Roles._Ghosts_.Impostor;
 
 internal class Possessor : RoleBase
 {
@@ -113,7 +113,7 @@ internal class Possessor : RoleBase
                             checkPos = Utils.GetDistance(_Player.GetCustomPosition(), allPlayers.GetCustomPosition());
                         }
                     }
-                    if (checkPos >= FocusRange.GetFloat() && !target.IsTransformedNeutralApocalypse())
+                    if (checkPos >= FocusRange.GetFloat())
                     {
                         target.SetDeathReason(PlayerState.DeathReason.Curse);
                         target.RpcMurderPlayer(target);

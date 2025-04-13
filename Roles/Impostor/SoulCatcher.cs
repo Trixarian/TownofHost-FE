@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class SoulCatcher : RoleBase
 {

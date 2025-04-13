@@ -1,9 +1,9 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Altruist : RoleBase
 {

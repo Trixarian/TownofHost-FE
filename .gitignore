@@ -5,6 +5,9 @@
 /.vscode
 /.idea
 
+token.env
 FodyWeavers.xsd
-TOHFE.sln
+TOHE.sln
 .vscode/settings.json
+/token.env
+token.env

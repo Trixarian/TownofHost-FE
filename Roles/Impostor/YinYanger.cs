@@ -1,10 +1,10 @@
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class YinYanger : RoleBase
 {
@@ -90,7 +90,7 @@ internal class YinYanger : RoleBase
         var (yin, yang) = Yanged[player.PlayerId];
         if (!yin || !yang) return;
 
-        if (GetDistance(yin.GetCustomPosition(), yang.GetCustomPosition()) < 1.5f && !(yin.IsTransformedNeutralApocalypse() || yang.IsTransformedNeutralApocalypse()))
+        if (GetDistance(yin.GetCustomPosition(), yang.GetCustomPosition()) < 1.5f)
         {
             yin.SetDeathReason(PlayerState.DeathReason.Equilibrium);
             yin.RpcMurderPlayer(yang);

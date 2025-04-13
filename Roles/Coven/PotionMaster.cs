@@ -2,11 +2,11 @@ using Hazel;
 using InnerNet;
 using System.Text;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class PotionMaster : CovenManager
 {
@@ -122,7 +122,7 @@ internal class PotionMaster : CovenManager
     }
 
     public static bool IsReveal(byte seer, byte target) => RevealList[seer].Contains(target);
-    private static void SetRitual(PlayerControl killer, PlayerControl target)
+    private void SetRitual(PlayerControl killer, PlayerControl target)
     {
         switch (PotionMode)
         {
@@ -244,7 +244,7 @@ internal class PotionMaster : CovenManager
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
     {
         if (_Player == null) return string.Empty;
-        if (IsBarriered(seer.PlayerId, target.PlayerId) && ((seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId) || !seer.IsAlive()))
+        if (IsBarriered(seer.PlayerId, target.PlayerId) && seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId)
         {
             return ColorString(GetRoleColor(CustomRoles.PotionMaster), "✚");
         }

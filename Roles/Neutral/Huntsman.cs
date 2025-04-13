@@ -2,12 +2,12 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using System;
-using TOHFE.Roles.AddOns.Impostor;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.AddOns.Impostor;
+using TOHE.Roles.Core;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Huntsman : RoleBase
 {

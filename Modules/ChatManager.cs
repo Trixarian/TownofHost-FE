@@ -3,11 +3,11 @@ using Hazel;
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using TOHFE.Roles.Impostor;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Impostor;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Modules.ChatManager
+namespace TOHE.Modules.ChatManager
 {
     public class ChatManager
     {

@@ -1,9 +1,9 @@
-using TOHFE.Modules;
-using TOHFE.Roles.AddOns.Common;
+using TOHE.Modules;
+using TOHE.Roles.AddOns.Common;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Vampire : RoleBase
 {
@@ -119,7 +119,6 @@ internal class Vampire : RoleBase
     private static void KillBitten(PlayerControl vampire, PlayerControl target)
     {
         if (target.Data.Disconnected) return;
-        if (target.IsTransformedNeutralApocalypse()) return;
 
         if (target.IsAlive())
         {

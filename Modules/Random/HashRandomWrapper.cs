@@ -1,6 +1,6 @@
 using System;
 
-namespace TOHFE;
+namespace TOHE;
 
 public class HashRandomWrapper : IRandom
 {

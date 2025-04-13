@@ -1,9 +1,8 @@
-using System.Text;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using UnityEngine;
+using Hazel;
+using InnerNet;
+using TOHE.Roles.Core;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Collector : RoleBase
 {
@@ -19,6 +18,8 @@ internal class Collector : RoleBase
     private static OptionItem CollectorCollectAmount;
 
     private static readonly Dictionary<byte, byte> CollectorVoteFor = [];
+    private int CollectVote;
+    //private int NewVote;
 
     private bool calculated = false;
 
@@ -32,20 +33,25 @@ internal class Collector : RoleBase
     {
         calculated = false;
     }
-    public override void Add(byte playerId)
+    private void SendRPC(/*byte playerId*/)
     {
-        playerId.SetAbilityUseLimit(0);
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
+        writer.WriteNetObject(_Player);
+        //writer.Write(playerId);
+        writer.Write(CollectVote);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
+    }
+    public override void ReceiveRPC(MessageReader reader, PlayerControl NaN)
+    {
+        //byte PlayerId = reader.ReadByte();
+        int Num = reader.ReadInt32();
+        CollectVote = Num;
     }
     public override string GetProgressText(byte playerId, bool cooms)
     {
-        var ProgressText = new StringBuilder();
-        Color TextColor = Utils.GetRoleColor(CustomRoles.Collector).ShadeColor(0.25f);
-
-        int VoteAmount = (int)playerId.GetAbilityUseLimit();
+        int VoteAmount = CollectVote;
         int CollectNum = CollectorCollectAmount.GetInt();
-
-        ProgressText.Append(Utils.ColorString(TextColor, $"({VoteAmount}/{CollectNum})"));
-        return ProgressText.ToString();
+        return Utils.ColorString(Utils.GetRoleColor(CustomRoles.Collector).ShadeColor(0.25f), $"({VoteAmount}/{CollectNum})");
     }
     public static void Clear()
     {
@@ -73,11 +79,12 @@ internal class Collector : RoleBase
         }
         return false;
     }
-    private static bool CollectDone(PlayerControl player)
+    private bool CollectDone(PlayerControl player)
     {
         if (player.Is(CustomRoles.Collector))
         {
-            int VoteAmount = (int)player.GetAbilityUseLimit();
+            //var pcid = player.PlayerId;
+            int VoteAmount = CollectVote;
             int CollectNum = CollectorCollectAmount.GetInt();
             if (VoteAmount >= CollectNum) return true;
         }
@@ -96,19 +103,20 @@ internal class Collector : RoleBase
         foreach (var pva in __instance.playerStates)
         {
             if (pva == null) continue;
-            PlayerControl pc = pva.TargetPlayerId.GetPlayer();
+            PlayerControl pc = Utils.GetPlayerById(pva.TargetPlayerId);
             if (pc == null) continue;
             foreach (var data in VotingData)
             {
                 if (CollectorVoteFor.ContainsKey(data.Key) && pc.PlayerId == CollectorVoteFor[data.Key] && pc.Is(CustomRoles.Collector))
                 {
                     VoteAmount = data.Value;
-                    pc.RpcIncreaseAbilityUseLimitBy(VoteAmount);
-                    Logger.Info($"{pc.GetNameWithRole().RemoveHtmlTags()}, collected {VoteAmount} votes from {data.Key.GetPlayer().GetNameWithRole().RemoveHtmlTags()}", "Collected votes");
+                    CollectVote += VoteAmount;
+                    SendRPC(/*pc.PlayerId*/);
+                    Logger.Info($"{pc.GetNameWithRole().RemoveHtmlTags()}, collected {VoteAmount} votes from {Utils.GetPlayerById(data.Key).GetNameWithRole().RemoveHtmlTags()}", "Collected votes");
                 }
             }
+            Logger.Info($"Total amount of votes collected {CollectVote}", "Collector total amount");
         }
-        Logger.Info($"Total amount of votes collected {_Player?.GetAbilityUseLimit()}", "Collector");
         calculated = true;
     }
 }

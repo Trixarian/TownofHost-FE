@@ -1,10 +1,11 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Crewmate;
-using static TOHFE.Translator;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using TOHE.Roles.Crewmate;
+using UnityEngine;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Eraser : RoleBase
 {
@@ -38,14 +39,17 @@ internal class Eraser : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(EraseLimitOpt.GetInt());
+        AbilityLimit = EraseLimitOpt.GetInt();
     }
+    public override string GetProgressText(byte playerId, bool comms)
+        => Utils.ColorString(AbilityLimit >= 1 ? Utils.GetRoleColor(CustomRoles.Eraser) : Color.gray, $"({AbilityLimit})");
+
     public override bool CheckVote(PlayerControl player, PlayerControl target)
     {
         if (!HasEnabled) return true;
         if (player == null || target == null) return true;
         if (target.Is(CustomRoles.Eraser)) return true;
-        if (player.GetAbilityUseLimit() < 1) return true;
+        if (AbilityLimit < 1) return true;
 
         if (didVote.Contains(player.PlayerId)) return true;
         didVote.Add(player.PlayerId);
@@ -66,7 +70,8 @@ internal class Eraser : RoleBase
             return true;
         }
 
-        player.RpcRemoveAbilityUse();
+        AbilityLimit--;
+        SendSkillRPC();
 
         if (!PlayerToErase.Contains(target.PlayerId))
             PlayerToErase.Add(target.PlayerId);
@@ -141,15 +146,15 @@ internal class Eraser : RoleBase
             ? role
             : roleType switch
             {
-                RoleTypes.Crewmate => CustomRoles.CrewmateTOHFE,
-                RoleTypes.Scientist => CustomRoles.ScientistTOHFE,
-                RoleTypes.Tracker => CustomRoles.TrackerTOHFE,
-                RoleTypes.Noisemaker => CustomRoles.NoisemakerTOHFE,
-                RoleTypes.Engineer => CustomRoles.EngineerTOHFE,
-                RoleTypes.Impostor when role.IsCrewmate() => CustomRoles.CrewmateTOHFE,
-                RoleTypes.Impostor => CustomRoles.ImpostorTOHFE,
-                RoleTypes.Shapeshifter => CustomRoles.ShapeshifterTOHFE,
-                RoleTypes.Phantom => CustomRoles.PhantomTOHFE,
+                RoleTypes.Crewmate => CustomRoles.CrewmateTOHE,
+                RoleTypes.Scientist => CustomRoles.ScientistTOHE,
+                RoleTypes.Tracker => CustomRoles.TrackerTOHE,
+                RoleTypes.Noisemaker => CustomRoles.NoisemakerTOHE,
+                RoleTypes.Engineer => CustomRoles.EngineerTOHE,
+                RoleTypes.Impostor when role.IsCrewmate() => CustomRoles.CrewmateTOHE,
+                RoleTypes.Impostor => CustomRoles.ImpostorTOHE,
+                RoleTypes.Shapeshifter => CustomRoles.ShapeshifterTOHE,
+                RoleTypes.Phantom => CustomRoles.PhantomTOHE,
                 _ => role,
             };
     }

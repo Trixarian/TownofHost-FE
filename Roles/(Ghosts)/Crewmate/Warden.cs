@@ -1,11 +1,10 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles._Ghosts_.Crewmate;
+namespace TOHE.Roles._Ghosts_.Crewmate;
 
 internal class Warden : RoleBase
 {
@@ -32,9 +31,9 @@ internal class Warden : RoleBase
         WardenCanAlertNum = IntegerOptionItem.Create(Id + 12, "WardenNotifyLimit", new(1, 20, 1), 2, TabGroup.CrewmateRoles, false).SetParent(CustomRoleSpawnChances[CustomRoles.Warden])
                .SetValueFormat(OptionFormat.Players);
     }
-    public override void Add(byte playerId)
+    public override void Add(byte PlayerId)
     {
-        playerId.SetAbilityUseLimit(WardenCanAlertNum.GetInt());
+        AbilityLimit = WardenCanAlertNum.GetInt();
     }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
     {
@@ -44,7 +43,7 @@ internal class Warden : RoleBase
     public override bool OnCheckProtect(PlayerControl killer, PlayerControl target)
     {
         var getTargetRole = target.GetCustomRole();
-        if (killer.GetAbilityUseLimit() > 0)
+        if (AbilityLimit > 0)
         {
             if (getTargetRole.IsSpeedRole() || target.IsAnySubRole(x => x.IsSpeedRole()) || IsAffected.Contains(target.PlayerId)) goto Notifiers; // Incompactible speed-roles 
 
@@ -65,8 +64,12 @@ internal class Warden : RoleBase
             target.Notify(Utils.ColorString(new Color32(179, 0, 0, byte.MaxValue), GetString("WardenWarn")));
 
             killer.RpcResetAbilityCooldown();
-            killer.RpcRemoveAbilityUse();
+            AbilityLimit--;
+            SendSkillRPC();
         }
         return false;
     }
+    public override string GetProgressText(byte playerId, bool cooms) => Utils.ColorString(AbilityLimit > 0 ? Utils.GetRoleColor(CustomRoles.Warden).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})");
+
+
 }

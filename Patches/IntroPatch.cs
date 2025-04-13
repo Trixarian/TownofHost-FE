@@ -5,15 +5,15 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using TOHFE.Modules;
-using TOHFE.Roles.AddOns.Impostor;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Core.AssignManager;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Roles.AddOns.Impostor;
+using TOHE.Roles.Core;
+using TOHE.Roles.Core.AssignManager;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.CoShowIntro))]
 class CoShowIntroPatch
@@ -86,7 +86,7 @@ class SetUpRoleTextPatch
         {
             // After showing team for non-modded clients update player names.
             IsInIntro = false;
-            Utils.NotifyRoles(ForceLoop: false, NoCache: true);
+            Utils.DoNotifyRoles(ForceLoop: false, NoCache: true);
         }
 
         if (GameStates.IsNormalGame)
@@ -108,7 +108,7 @@ class SetUpRoleTextPatch
             RandomSpawn.SpawnMap spawnMap = mapName switch
             {
                 MapNames.Skeld => new RandomSpawn.SkeldSpawnMap(),
-                MapNames.MiraHQ => new RandomSpawn.MiraHQSpawnMap(),
+                MapNames.Mira => new RandomSpawn.MiraHQSpawnMap(),
                 MapNames.Polus => new RandomSpawn.PolusSpawnMap(),
                 MapNames.Dleks => new RandomSpawn.DleksSpawnMap(),
                 MapNames.Fungle => new RandomSpawn.FungleSpawnMap(),
@@ -121,40 +121,30 @@ class SetUpRoleTextPatch
         {
             PlayerControl localPlayer = PlayerControl.LocalPlayer;
             CustomRoles role = localPlayer.GetCustomRole();
-            Color color;
-            switch (Options.CurrentGameMode)
+            if (Options.CurrentGameMode == CustomGameMode.FFA)
             {
-                case CustomGameMode.FFA:
-                    color = ColorUtility.TryParseHtmlString("#00ffff", out var newColorFFA) ? newColorFFA : new(255, 255, 255, 255);
-                    __instance.YouAreText.transform.gameObject.SetActive(false);
-                    __instance.RoleText.text = "FREE FOR ALL";
-                    __instance.RoleText.color = color;
-                    __instance.RoleBlurbText.color = color;
-                    __instance.RoleBlurbText.text = "KILL EVERYONE TO WIN";
-                    break;
-                case CustomGameMode.SpeedRun:
-                    color = ColorUtility.TryParseHtmlString("#fffb00", out var newColorSpeedRun) ? newColorSpeedRun : new(255, 255, 255, 255);
-                    __instance.YouAreText.transform.gameObject.SetActive(false);
-                    __instance.RoleText.text = GetString("SpeedRun");
-                    __instance.RoleText.color = color;
-                    __instance.RoleBlurbText.color = color;
-                    __instance.RoleBlurbText.text = GetString("RunnerInfo");
-                    break;
-                default:
-                    if (!role.IsVanilla())
-                    {
-                        __instance.YouAreText.color = Utils.GetRoleColor(role);
-                        __instance.RoleText.text = Utils.GetRoleName(role);
-                        __instance.RoleText.color = Utils.GetRoleColor(role);
-                        __instance.RoleBlurbText.color = Utils.GetRoleColor(role);
-                        __instance.RoleBlurbText.text = localPlayer.GetRoleInfo();
-                    }
+                var color = ColorUtility.TryParseHtmlString("#00ffff", out var c) ? c : new(255, 255, 255, 255);
+                __instance.YouAreText.transform.gameObject.SetActive(false);
+                __instance.RoleText.text = "FREE FOR ALL";
+                __instance.RoleText.color = color;
+                __instance.RoleBlurbText.color = color;
+                __instance.RoleBlurbText.text = "KILL EVERYONE TO WIN";
+            }
+            else
+            {
+                if (!role.IsVanilla())
+                {
+                    __instance.YouAreText.color = Utils.GetRoleColor(role);
+                    __instance.RoleText.text = Utils.GetRoleName(role);
+                    __instance.RoleText.color = Utils.GetRoleColor(role);
+                    __instance.RoleBlurbText.color = Utils.GetRoleColor(role);
+                    __instance.RoleBlurbText.text = localPlayer.GetRoleInfo();
+                }
 
-                    foreach (var subRole in Main.PlayerStates[localPlayer.PlayerId].SubRoles.ToArray())
-                        __instance.RoleBlurbText.text += "\n" + Utils.ColorString(Utils.GetRoleColor(subRole), GetString($"{subRole}Info"));
+                foreach (var subRole in Main.PlayerStates[localPlayer.PlayerId].SubRoles.ToArray())
+                    __instance.RoleBlurbText.text += "\n" + Utils.ColorString(Utils.GetRoleColor(subRole), GetString($"{subRole}Info"));
 
-                    __instance.RoleText.text += Utils.GetSubRolesText(localPlayer.PlayerId, false, true);
-                    break;
+                __instance.RoleText.text += Utils.GetSubRolesText(localPlayer.PlayerId, false, true);
             }
         }, 0.0001f, "Override Role Text");
 
@@ -241,7 +231,7 @@ class SetUpRoleTextPatch
             try
             {
                 byte[] logBytes = Encoding.UTF8.GetBytes(logStringBuilder.ToString());
-                byte[] encryptedBytes = EncryptDES(logBytes, $"TOHFE{PlayerControl.LocalPlayer.PlayerId}00000000"[..8]);
+                byte[] encryptedBytes = EncryptDES(logBytes, $"TOHE{PlayerControl.LocalPlayer.PlayerId}00000000"[..8]);
                 string encryptedString = Convert.ToBase64String(encryptedBytes);
                 sb.Append(encryptedString + "\n");
             }
@@ -251,7 +241,7 @@ class SetUpRoleTextPatch
             }
         }
         //https://www.toolhelper.cn/SymmetricEncryption/DES
-        //mode CBC, PKCS7, 64bit, Key = IV= "TOHFE" + playerid + 000/00 "to 8 bits
+        //mode CBC, PKCS7, 64bit, Key = IV= "TOHE" + playerid + 000/00 "to 8 bits
 
         yield return null;
 
@@ -439,15 +429,7 @@ class BeginCrewmatePatch
                 __instance.ImpostorText.text = GetString("SubText.Crewmate");
                 break;
             case Custom_Team.Neutral:
-                if (Options.UniqueNeutralRevealScreen.GetBool())
-                {
-                    __instance.TeamTitle.text = GetString($"{role}");
-                    __instance.TeamTitle.color = __instance.BackgroundBar.material.color = Utils.GetRoleColor(role);
-                    PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Shapeshifter);
-                    __instance.ImpostorText.gameObject.SetActive(true);
-                    __instance.ImpostorText.text = GetString($"{role}Info");
-                }
-                else if (!role.IsNA())
+                if (!role.IsNA())
                 {
                     __instance.TeamTitle.text = GetString("TeamNeutral");
                     __instance.TeamTitle.color = __instance.BackgroundBar.material.color = new Color32(127, 140, 141, byte.MaxValue);
@@ -476,32 +458,32 @@ class BeginCrewmatePatch
         switch (role)
         {
             case CustomRoles.ShapeMaster:
-            case CustomRoles.ShapeshifterTOHFE:
+            case CustomRoles.ShapeshifterTOHE:
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Shapeshifter);
                 break;
             case CustomRoles.CursedSoul:
             case CustomRoles.SoulCatcher:
             case CustomRoles.Specter:
             case CustomRoles.Stalker:
-            case CustomRoles.PhantomTOHFE:
+            case CustomRoles.PhantomTOHE:
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Phantom);
                 break;
             case CustomRoles.Coroner:
-            case CustomRoles.TrackerTOHFE:
+            case CustomRoles.TrackerTOHE:
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Tracker);
                 break;
             case CustomRoles.Celebrity:
             case CustomRoles.Sacrifist:
             case CustomRoles.Poisoner:
-            case CustomRoles.NoisemakerTOHFE:
+            case CustomRoles.NoisemakerTOHE:
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Noisemaker);
                 break;
-            case CustomRoles.EngineerTOHFE:
+            case CustomRoles.EngineerTOHE:
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Engineer);
                 break;
             case CustomRoles.Doctor:
             case CustomRoles.Medic:
-            case CustomRoles.ScientistTOHFE:
+            case CustomRoles.ScientistTOHE:
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Scientist);
                 break;
             case CustomRoles.Observer:
@@ -534,12 +516,6 @@ class BeginCrewmatePatch
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = ShipStatus.Instance.VentEnterSound;
                 break;
 
-            case CustomRoles.Dictator:
-            case CustomRoles.Mayor:
-            case CustomRoles.Swapper:
-                PlayerControl.LocalPlayer.Data.Role.IntroSound = DestroyableSingleton<HudManager>.Instance.Chat.warningSound;
-                break;
-
             case CustomRoles.Saboteur:
             case CustomRoles.Inhibitor:
             case CustomRoles.Mechanic:
@@ -552,12 +528,6 @@ class BeginCrewmatePatch
                 PlayerControl.LocalPlayer.Data.Role.IntroSound = DestroyableSingleton<HnSImpostorScreamSfx>.Instance.HnSOtherImpostorTransformSfx;
                 break;
 
-            case CustomRoles.ChiefOfPolice:
-            case CustomRoles.Deputy:
-            case CustomRoles.Sheriff:
-                PlayerControl.LocalPlayer.Data.Role.IntroSound = DestroyableSingleton<HnSImpostorScreamSfx>.Instance.HnSOtherYeehawSfx;
-                break;
-
             case CustomRoles.GM:
                 __instance.TeamTitle.text = Utils.GetRoleName(role);
                 __instance.TeamTitle.color = Utils.GetRoleColor(role);
@@ -567,6 +537,8 @@ class BeginCrewmatePatch
                 __instance.ImpostorText.text = GetString("SubText.GM");
                 break;
 
+            case CustomRoles.ChiefOfPolice:
+            case CustomRoles.Sheriff:
             case CustomRoles.Veteran:
             case CustomRoles.Knight:
             case CustomRoles.KillingMachine:
@@ -622,38 +594,30 @@ class BeginCrewmatePatch
             __instance.ImpostorText.text = GetString("SubText.Madmate");
         }
 
-        switch (Options.CurrentGameMode)
+        if (Options.CurrentGameMode == CustomGameMode.FFA)
         {
-            case CustomGameMode.FFA:
-                __instance.TeamTitle.text = "FREE FOR ALL";
-                __instance.TeamTitle.color = __instance.BackgroundBar.material.color = new Color32(0, 255, 255, byte.MaxValue);
-                PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Shapeshifter);
-                __instance.ImpostorText.gameObject.SetActive(true);
-                __instance.ImpostorText.text = "KILL EVERYONE TO WIN";
-                break;
-            case CustomGameMode.SpeedRun:
-                __instance.TeamTitle.text = GetString("SpeedRun");
-                __instance.TeamTitle.color = __instance.BackgroundBar.material.color = new Color32(255, 251, 0, byte.MaxValue);
-                PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Crewmate);
-                __instance.ImpostorText.gameObject.SetActive(true);
-                __instance.ImpostorText.text = GetString("RunnerInfo");
-                break;
+            __instance.TeamTitle.text = "FREE FOR ALL";
+            __instance.TeamTitle.color = __instance.BackgroundBar.material.color = new Color32(0, 255, 255, byte.MaxValue);
+            PlayerControl.LocalPlayer.Data.Role.IntroSound = GetIntroSound(RoleTypes.Shapeshifter);
+            __instance.ImpostorText.gameObject.SetActive(true);
+            __instance.ImpostorText.text = "KILL EVERYONE TO WIN";
         }
 
         // I hope no one notices this in code
+        // unfortunately niko noticed while fixing others' shxt
         if (Input.GetKey(KeyCode.RightShift))
         {
             __instance.TeamTitle.text = "Damn!!";
             __instance.ImpostorText.gameObject.SetActive(true);
-            __instance.ImpostorText.text = "You found the Secret Intro";
+            __instance.ImpostorText.text = "You Found The Secret Intro";
             __instance.TeamTitle.color = new Color32(186, 3, 175, byte.MaxValue);
             StartFadeIntro(__instance, Color.yellow, Color.cyan);
         }
         if (Input.GetKey(KeyCode.RightControl))
         {
-            __instance.TeamTitle.text = "Warning!!";
+            __instance.TeamTitle.text = "Warning!";
             __instance.ImpostorText.gameObject.SetActive(true);
-            __instance.ImpostorText.text = "Please stay away from all Impostor based players";
+            __instance.ImpostorText.text = "Please stay away from all impostor based players";
             __instance.TeamTitle.color = new Color32(241, 187, 2, byte.MaxValue);
             StartFadeIntro(__instance, new Color32(241, 187, 2, byte.MaxValue), Color.red);
         }
@@ -884,15 +848,9 @@ class IntroCutsceneDestroyPatch
                 }
             }
 
-            if (Options.CurrentGameMode is CustomGameMode.SpeedRun)
-            {
-                SpeedRun.StartedAt = Utils.GetTimeStamp();
-                SpeedRun.RpcSyncSpeedRunStates();
-            }
-
             foreach (var player in Main.AllPlayerControls)
             {
-                if (player.Is(CustomRoles.GM) && !AntiBlackout.IsCached)
+                if (player.Is(CustomRoles.GM))
                 {
                     player.RpcExile();
                     Main.PlayerStates[player.PlayerId].SetDead();
@@ -917,22 +875,16 @@ class IntroCutsceneDestroyPatch
 
             bool chatVisible = Options.CurrentGameMode switch
             {
-                
-                CustomGameMode.FFA => FFAManager.FFA_ShowChatInGame.GetBool(),
-                CustomGameMode.SpeedRun => SpeedRun.SpeedRun_ShowChatInGame.GetBool(),
-                
+                CustomGameMode.FFA => true,
                 _ => false
             };
             try
             {
-                if (chatVisible)
-                {
-                    Utils.SetChatVisibleForEveryone();
-                }
+                if (chatVisible) Utils.SetChatVisibleForEveryone();
             }
             catch (Exception error)
             {
-                Logger.Error($"Error: {error}", "Gamemode chat visible");
+                Logger.Error($"Error: {error}", "FFA chat visible");
             }
 
             Utils.CheckAndSetVentInteractions();
@@ -943,16 +895,9 @@ class IntroCutsceneDestroyPatch
             }
             else
             {
-                Utils.NotifyRoles();
+                Utils.DoNotifyRoles();
             }
         }
-
-        try
-        {
-            if (!GameStates.IsEnded)
-                DestroyableSingleton<HudManager>.Instance.SetHudActive(true);
-        }
-        catch { }
 
         Logger.Info("OnDestroy", "IntroCutscene");
     }

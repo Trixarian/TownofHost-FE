@@ -2,17 +2,17 @@ using Hazel;
 using System;
 using System.Text;
 using TMPro;
-using TOHFE.Modules;
-using TOHFE.Modules.ChatManager;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Core.AssignManager;
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Modules.ChatManager;
+using TOHE.Roles.Core;
+using TOHE.Roles.Core.AssignManager;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Impostor;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameEnd))]
 class EndGamePatch
@@ -90,9 +90,9 @@ class EndGamePatch
                 if (date == DateTime.MinValue) continue;
                 var killerId = kvp.Value.GetRealKiller();
                 var targetId = kvp.Key;
-                sb.Append($"\n{date:T} {Main.AllPlayerNames[targetId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(targetId, targetId, false, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(targetId, summary: true))}) [{Utils.GetVitalText(kvp.Key)}]");
+                sb.Append($"\n{date:T} {Main.AllPlayerNames[targetId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(targetId, targetId, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(targetId, summary: true))}) [{Utils.GetVitalText(kvp.Key)}]");
                 if (killerId != byte.MaxValue && killerId != targetId)
-                    sb.Append($"\n\t⇐ {Main.AllPlayerNames[killerId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(killerId, killerId, false, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(killerId, summary: true))})");
+                    sb.Append($"\n\t⇐ {Main.AllPlayerNames[killerId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(killerId, killerId, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(killerId, summary: true))})");
             }
         else
         {
@@ -104,9 +104,9 @@ class EndGamePatch
                 var killerId = kvp.Value.GetRealKiller();
                 var targetId = kvp.Key;
 
-                sb.Append($"\n<line-height=85%><size=85%><voffset=-1em><color=#9c9c9c>{date:T}</color> {Main.AllPlayerNames[targetId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(targetId, targetId, false, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(targetId, summary: true))}) 『{Utils.GetVitalText(kvp.Key, true)}』</voffset></size></line-height>");
+                sb.Append($"\n<line-height=85%><size=85%><voffset=-1em><color=#9c9c9c>{date:T}</color> {Main.AllPlayerNames[targetId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(targetId, targetId, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(targetId, summary: true))}) 『{Utils.GetVitalText(kvp.Key, true)}』</voffset></size></line-height>");
                 if (killerId != byte.MaxValue && killerId != targetId)
-                    sb.Append($"<br>\t⇐ {Main.AllPlayerNames[killerId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(killerId, killerId, false, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(killerId, summary: true))})");
+                    sb.Append($"<br>\t⇐ {Main.AllPlayerNames[killerId]}({(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetDisplayRoleAndSubName(killerId, killerId, true))}{(Options.CurrentGameMode == CustomGameMode.FFA ? string.Empty : Utils.GetSubRolesText(killerId, summary: true))})");
             }
 
         }
@@ -118,7 +118,7 @@ class EndGamePatch
         {
             if (Options.CurrentGameMode != CustomGameMode.Standard) break;
             if (kvp.Value.MainRoleLogs.Where(x => !x.Item2.IsVanilla()).ToList().Count <= 1) continue;
-            sb2.Append($"\n[{kvp.Key}] {Main.AllPlayerNames[kvp.Key]} {Utils.GetDisplayRoleAndSubName(kvp.Key, kvp.Key, false, false)}");
+            sb2.Append($"\n[{kvp.Key}] {Main.AllPlayerNames[kvp.Key]} {Utils.GetDisplayRoleAndSubName(kvp.Key, kvp.Key)}");
             foreach (var item in kvp.Value.MainRoleLogs.OrderBy(x => x.Item1.Ticks))
             {
                 if (item.Item2.IsVanilla()) continue;
@@ -208,24 +208,13 @@ class SetEverythingUpPatch
         string AdditionalWinnerText = "";
         string CustomWinnerColor = Utils.GetRoleColorCode(CustomRoles.Crewmate);
 
-        switch (Options.CurrentGameMode)
+        if (Options.CurrentGameMode == CustomGameMode.FFA)
         {
-            case CustomGameMode.FFA:
-                {
-                    var winnerId = CustomWinnerHolder.WinnerIds.FirstOrDefault();
-                    __instance.BackgroundBar.material.color = new Color32(0, 255, 255, 255);
-                    WinnerText.text = Main.AllPlayerNames[winnerId] + " Wins!";
-                    WinnerText.color = Main.PlayerColors[winnerId];
-                    goto EndOfText;
-                }
-            case CustomGameMode.SpeedRun:
-                {
-                    var winnerId = CustomWinnerHolder.WinnerIds.FirstOrDefault();
-                    __instance.BackgroundBar.material.color = new Color32(255, 251, 0, 255);
-                    WinnerText.text = Main.AllPlayerNames[winnerId] + " Wins!";
-                    WinnerText.color = Main.PlayerColors[winnerId];
-                    goto EndOfText;
-                }
+            var winnerId = CustomWinnerHolder.WinnerIds.FirstOrDefault();
+            __instance.BackgroundBar.material.color = new Color32(0, 255, 255, 255);
+            WinnerText.text = Main.AllPlayerNames[winnerId] + " wins!";
+            WinnerText.color = Main.PlayerColors[winnerId];
+            goto EndOfText;
         }
 
         var winnerRole = (CustomRoles)CustomWinnerHolder.WinnerTeam;
@@ -366,12 +355,6 @@ class SetEverythingUpPatch
                     listFFA.Sort();
                     foreach (var id in listFFA.Where(x => EndGamePatch.SummaryText.ContainsKey(x.Item2)))
                         sb.Append($"\n  ").Append(EndGamePatch.SummaryText[id.Item2]);
-                    break;
-                }
-            case CustomGameMode.SpeedRun:
-                {
-                    sb.Clear();
-                    sb.Append(SpeedRun.GetGameState(forGameEnd: true));
                     break;
                 }
             default: // Normal game

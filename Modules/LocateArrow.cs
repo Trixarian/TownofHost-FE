@@ -1,8 +1,8 @@
 using Hazel;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
 
-namespace TOHFE;
+namespace TOHE;
 
 static class LocateArrow
 {

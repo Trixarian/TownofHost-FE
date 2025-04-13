@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 internal class Agitater : RoleBase
 {
     //===========================SETUP================================\\
@@ -100,7 +100,7 @@ internal class Agitater : RoleBase
             if (CurrentBombedPlayer != byte.MaxValue && GameStates.IsInTask)
             {
                 var pc = Utils.GetPlayerById(CurrentBombedPlayer);
-                if (pc != null && pc.IsAlive() && killer != null && !pc.IsTransformedNeutralApocalypse())
+                if (pc != null && pc.IsAlive() && killer != null)
                 {
                     CurrentBombedPlayer.SetDeathReason(PlayerState.DeathReason.Bombed);
                     pc.RpcMurderPlayer(pc);
@@ -156,7 +156,7 @@ internal class Agitater : RoleBase
             {
                 var min = targetDistance.OrderBy(c => c.Value).FirstOrDefault();
                 var target = min.Key.GetPlayer();
-                var KillRange = ExtendedPlayerControl.GetKillDistances();
+                var KillRange = GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)];
                 if (min.Value <= KillRange && !player.inVent && !player.inMovingPlat && !target.inVent && !target.inMovingPlat && player.RpcCheckAndMurder(target, true))
                 {
                     PassBomb(player, target);

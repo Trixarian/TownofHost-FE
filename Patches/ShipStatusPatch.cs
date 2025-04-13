@@ -1,14 +1,13 @@
 using Hazel;
 using System;
-using TOHFE.Patches;
-using TOHFE.Roles.AddOns.Common;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
+using TOHE.Patches;
+using TOHE.Roles.AddOns.Common;
+using TOHE.Roles.Core;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.FixedUpdate))]
 class ShipFixedUpdatePatch
@@ -128,7 +127,7 @@ class UpdateSystemPatch
 
         if (systemType == SystemTypes.Electrical && 0 <= amount && amount <= 4)
         {
-            var SwitchSystem = ShipStatus.Instance.Systems[SystemTypes.Electrical].CastFast<SwitchSystem>();
+            var SwitchSystem = ShipStatus.Instance.Systems[SystemTypes.Electrical].Cast<SwitchSystem>();
             if (SwitchSystem != null && SwitchSystem.IsActive)
             {
                 player.GetRoleClass()?.SwitchSystemUpdate(SwitchSystem, amount, player);
@@ -162,8 +161,7 @@ class ShipStatusCloseDoorsPatch
         Logger.Info($"Trying to close the door in the room: {room}", "CloseDoorsOfType");
 
         bool allow;
-        if (Options.CurrentGameMode == CustomGameMode.FFA || Options.DisableCloseDoor.GetBool()
-                    || Options.CurrentGameMode == CustomGameMode.SpeedRun && !SpeedRun.SpeedRun_AllowCloseDoor.GetBool()) allow = false;
+        if (Options.CurrentGameMode == CustomGameMode.FFA || Options.DisableCloseDoor.GetBool()) allow = false;
         else allow = true;
 
         if (allow)
@@ -221,7 +219,7 @@ class StartPatch
                 if (birthdayDecorationIsActive)
                     __instance.transform.FindChild("BirthdayDecorSkeld")?.gameObject.SetActive(true);
                 break;
-            case MapNames.MiraHQ when Options.HalloweenDecorationsMira.GetBool():
+            case MapNames.Mira when Options.HalloweenDecorationsMira.GetBool():
                 __instance.transform.FindChild("Halloween")?.gameObject.SetActive(true);
                 break;
             case MapNames.Dleks when Options.HalloweenDecorationsDleks.GetBool():
@@ -237,7 +235,7 @@ class StartPatch
                     UnityEngine.Object.Destroy(Decorations.GetComponent<Console>());
                     UnityEngine.Object.Destroy(Decorations.GetComponent<BoxCollider2D>());
                     UnityEngine.Object.Destroy(Decorations.GetComponent<PassiveButton>());
-                    Decorations.GetComponent<SpriteRenderer>().sprite = Utils.LoadSprite("TOHFE.Resources.Images.Dropship-Decorations.png", 100f);
+                    Decorations.GetComponent<SpriteRenderer>().sprite = Utils.LoadSprite("TOHE.Resources.Images.Dropship-Decorations.png", 100f);
                     Decorations.transform.SetSiblingIndex(1);
                     Decorations.transform.localPosition = new(0.0709f, 0.73f);
                 }
@@ -331,8 +329,6 @@ class ShipStatusSerializePatch
 {
     // Patch the global way of Serializing ShipStatus
     // If we are patching any other systemTypes, just add below like Ventilation.
-    public static List<int> ReactorFlashList = [];
-
     public static bool Prefix(ShipStatus __instance, [HarmonyArgument(0)] MessageWriter writer, [HarmonyArgument(1)] bool initialState, ref bool __result)
     {
         __result = false;
@@ -351,17 +347,6 @@ class ShipStatusSerializePatch
                 // Further new systems should skip original methods here and add new patches below.
                 num++;
                 continue;
-            }
-
-            if (ReactorFlashList.Count > 0 && !Saboteur.IsCriticalSabotage())
-            {
-                var sysSkip = Utils.GetCriticalSabotageSystemType();
-
-                if (systemTypes == sysSkip)
-                {
-                    num++;
-                    continue;
-                }
             }
 
             if (__instance.Systems.TryGetValue(systemTypes, out ISystemType systemType) && systemType.IsDirty) // initialState used here in vanilla code. Removed it.
@@ -392,7 +377,7 @@ class ShipStatusSerializePatch
                 }
             }
 
-            var ventilationSystem = __instance.Systems[SystemTypes.Ventilation].CastFast<VentilationSystem>();
+            var ventilationSystem = __instance.Systems[SystemTypes.Ventilation].Cast<VentilationSystem>();
             if (ventilationSystem != null && ventilationSystem.IsDirty)
             {
                 // Logger.Info("customVentilation: " + customVentilation, "ShipStatusSerializePatch");
@@ -424,55 +409,6 @@ class ShipStatusSerializePatch
             }
         }
 
-        // Reactor Flash
-        {
-            var rwriter = MessageWriter.Get(SendOption.Reliable);
-            var reactor = Utils.GetCriticalSabotageSystemType();
-
-            foreach (var player in Main.AllPlayerControls)
-            {
-                if (player.AmOwner) continue;
-
-                rwriter.StartMessage(6);
-                rwriter.Write(AmongUsClient.Instance.GameId);
-                rwriter.WritePacked(player.OwnerId);
-
-                rwriter.StartMessage(1);
-                rwriter.WritePacked(__instance.NetId);
-                rwriter.StartMessage((byte)reactor);
-
-                if (ReactorFlashList.Contains(player.OwnerId) && !player.IsModded())
-                {
-                    switch (reactor)
-                    {
-                        case SystemTypes.Reactor:
-                        case SystemTypes.Laboratory:
-                            rwriter.Write((float)60f);
-                            rwriter.WritePacked(0);
-                            break;
-                        case SystemTypes.HeliSabotage:
-                            rwriter.Write((float)60f);
-                            rwriter.Write((float)60f);
-                            rwriter.WritePacked(0);
-                            rwriter.WritePacked(0);
-                            break;
-                    }
-
-                }
-                else
-                {
-                    __instance.Systems.TryGetValue(reactor, out ISystemType systemType);
-                    systemType.Serialize(rwriter, false);
-                }
-                rwriter.EndMessage();
-                rwriter.EndMessage();
-
-                rwriter.EndMessage();
-            }
-            
-            AmongUsClient.Instance.SendOrDisconnect(rwriter);
-            rwriter.Recycle();
-        }
         return false;
     }
 }

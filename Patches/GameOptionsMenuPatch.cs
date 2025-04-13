@@ -1,12 +1,12 @@
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using System;
 using TMPro;
-using TOHFE.Patches;
+using TOHE.Patches;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 using Object = UnityEngine.Object;
 
-namespace TOHFE;
+namespace TOHE;
 
 // Thanks: https://github.com/Yumenopai/TownOfHost_Y/blob/main/Patches/GameOptionsMenuPatch.cs
 public static class ModGameOptionsMenu
@@ -482,9 +482,6 @@ public static class NumberOptionPatch
             case StringNames.GameNumImpostors:
                 __instance.ValidRange = new(0f, GameOptionsManager.Instance.CurrentGameOptions.MaxPlayers / 2);
                 break;
-            case StringNames.CapacityLabel:
-                __instance.ValidRange = new(4, 127);
-                break;
         }
 
         if (ModGameOptionsMenu.OptionList.TryGetValue(__instance, out var index))
@@ -646,7 +643,7 @@ public static class StringOptionPatch
                 var name = item.GetName();
                 if (Enum.GetValues<CustomRoles>().Find(x => GetString($"{x}") == name.RemoveHtmlTags(), out var role))
                 {
-                    var roleName = role.IsVanilla() ? role + "TOHFE" : role.ToString();
+                    var roleName = role.IsVanilla() ? role + "TOHE" : role.ToString();
                     var str = GetString($"{roleName}InfoLong");
                     int size = str.Length > 500 ? str.Length > 550 ? 65 : 70 : 100;
                     var infoLong = str[(str.IndexOf('\n') + 1)..str.Length];
@@ -675,13 +672,13 @@ public static class StringOptionPatch
 
             if (item is PresetOptionItem || (item is StringOptionItem && item.Name == "GameMode"))
             {
-                if (Options.GameMode.GetInt() == 3 && !GameStates.IsHideNSeek) //Hide And Seek
+                if (Options.GameMode.GetInt() == 2 && !GameStates.IsHideNSeek) //Hide And Seek
                 {
                     Options.GameMode.SetValue(0);
                 }
-                else if (Options.GameMode.GetInt() != 3 && GameStates.IsHideNSeek)
+                else if (Options.GameMode.GetInt() != 2 && GameStates.IsHideNSeek)
                 {
-                    Options.GameMode.SetValue(3);
+                    Options.GameMode.SetValue(2);
                 }
                 GameOptionsMenuPatch.ReOpenSettings(item.Name != "GameMode" ? 1 : 4);
             }

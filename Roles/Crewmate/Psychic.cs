@@ -1,11 +1,11 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Coven;
-using static TOHFE.Options;
-using static TOHFE.Utils;
+using TOHE.Roles.Core;
+using TOHE.Roles.Coven;
+using static TOHE.Options;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Psychic : RoleBase
 {
@@ -83,20 +83,13 @@ internal class Psychic : RoleBase
     public override void OnReportDeadBody(PlayerControl reported, NetworkedPlayerInfo target)
     {
         if (Fresh.GetBool() || RedPlayer == null || RedPlayer.Count < 1)
-        {
-            if (Fresh.GetBool())
-            {
-                RedPlayer.Clear(); // Force generate new red names so its freshed?
-            }
-
             GetRedName();
-        }
     }
     private void GetRedName()
     {
-        if (_Player == null || !_Player.IsAlive() || !AmongUsClient.Instance.AmHost) return;
+        if (!_Player.IsAlive() || !AmongUsClient.Instance.AmHost) return;
 
-        List<PlayerControl> BadListPc = [.. Main.AllAlivePlayerControls.Where(x => Illusionist.IsNonCovIllusioned(x.PlayerId) ||
+        List<PlayerControl> BadListPc = Main.AllAlivePlayerControls.Where(x => Illusionist.IsNonCovIllusioned(x.PlayerId) ||
         (x.Is(Custom_Team.Impostor) && !x.Is(CustomRoles.Trickster) && !x.Is(CustomRoles.Admired)) ||
         x.IsAnySubRole(x => x.IsConverted()) ||
         (x.GetCustomRole().IsCrewKiller() && CkshowEvil.GetBool()) ||
@@ -106,7 +99,7 @@ internal class Psychic : RoleBase
         (x.GetCustomRole().IsNK() && NKshowEvil.GetBool()) ||
         (x.GetCustomRole().IsNA() && NAshowEvil.GetBool()) ||
         (x.GetCustomRole().IsCoven() && CovshowEvil.GetBool())
-        )];
+        ).ToList();
 
         var randomBadPlayer = BadListPc.RandomElement();
         List<byte> AllList = [];

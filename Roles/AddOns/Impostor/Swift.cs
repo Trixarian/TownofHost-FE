@@ -1,7 +1,7 @@
-using TOHFE.Roles.AddOns.Common;
-using static TOHFE.Options;
+using TOHE.Roles.AddOns.Common;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.AddOns.Impostor;
+namespace TOHE.Roles.AddOns.Impostor;
 
 public class Swift : IAddon
 {

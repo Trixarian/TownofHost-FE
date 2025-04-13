@@ -1,14 +1,11 @@
 using Hazel;
 using InnerNet;
-using System.Text;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 internal class Pixie : RoleBase
 {
     //===========================SETUP================================\\
@@ -26,6 +23,7 @@ internal class Pixie : RoleBase
     private static OptionItem PixieSuicideOpt;
 
     private static readonly Dictionary<byte, HashSet<byte>> PixieTargets = [];
+    private static readonly Dictionary<byte, int> PixiePoints = [];
 
     public override void SetupCustomOption()
     {
@@ -41,25 +39,22 @@ internal class Pixie : RoleBase
     public override void Init()
     {
         PixieTargets.Clear();
+        PixiePoints.Clear();
     }
 
     public override void Add(byte playerId)
     {
         PixieTargets[playerId] = [];
-        playerId.SetAbilityUseLimit(0);
+        PixiePoints.Add(playerId, 0);
     }
+
     public override void Remove(byte playerId)
     {
         PixieTargets.Remove(playerId);
+        PixiePoints.Remove(playerId);
     }
-    public override string GetProgressText(byte playerId, bool comms)
-    {
-        var ProgressText = new StringBuilder();
-        Color TextColor = GetRoleColor(CustomRoles.Pixie).ShadeColor(0.25f);
+    public override string GetProgressText(byte playerId, bool comms) => Utils.ColorString(Utils.GetRoleColor(CustomRoles.Pixie).ShadeColor(0.25f), PixiePoints.TryGetValue(playerId, out var x) ? $"({x}/{PixiePointsToWin.GetInt()})" : "Invalid");
 
-        ProgressText.Append(ColorString(TextColor, $"({playerId.GetAbilityUseLimit()}/{PixiePointsToWin.GetInt()})"));
-        return ProgressText.ToString();
-    }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = PixieMarkCD.GetFloat();
     public override bool CanUseKillButton(PlayerControl pc) => true;
     public override bool CanUseSabotage(PlayerControl pc) => false;
@@ -67,7 +62,7 @@ internal class Pixie : RoleBase
 
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
-        hud.KillButton.OverrideText(GetString("PixieButtonText"));
+        HudManager.Instance.KillButton.OverrideText(GetString("PixieButtonText"));
     }
     public override Sprite GetKillButtonSprite(PlayerControl player, bool shapeshifting) => CustomButton.Get("Mark");
 
@@ -77,26 +72,38 @@ internal class Pixie : RoleBase
         if (seer.Is(CustomRoles.Pixie) && PixieTargets[seer.PlayerId].Contains(target.PlayerId)) color = Main.roleColors[CustomRoles.Pixie];
         return color;
     }
-    public void SendRPC(byte pixieId, byte targetId = 255)
+    public void SendRPC(byte pixieId, bool operate, byte targetId = 0xff)
     {
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
         writer.WriteNetObject(_Player); //SetPixieTargets
         writer.Write(pixieId);
-        writer.Write(targetId);
+        writer.Write(operate);
+        if (!operate) // false = 0
+        {
+            writer.Write(targetId);
+        }
+        else // true = 1
+        {
+            writer.Write(PixiePoints[pixieId]);
+        }
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
 
     public override void ReceiveRPC(MessageReader reader, PlayerControl NaN)
     {
         byte pixieId = reader.ReadByte();
-        byte targetId = reader.ReadByte();
-
-        if (targetId != 255)
+        bool operate = reader.ReadBoolean();
+        if (!operate)
         {
+            if (!PixieTargets.ContainsKey(pixieId)) PixieTargets[pixieId] = [];
+            byte targetId = reader.ReadByte();
             PixieTargets[pixieId].Add(targetId);
         }
         else
         {
+            int pts = reader.ReadInt32();
+            if (!PixiePoints.ContainsKey(pixieId)) PixiePoints[pixieId] = 0;
+            PixiePoints[pixieId] = pts;
             PixieTargets[pixieId].Clear();
         }
     }
@@ -106,7 +113,7 @@ internal class Pixie : RoleBase
         if (killer == null || target == null) return false;
         byte targetId = target.PlayerId;
         byte killerId = killer.PlayerId;
-
+        if (!PixieTargets.ContainsKey(killerId)) PixieTargets[killerId] = [];
         if (PixieTargets[killerId].Count >= PixieMaxTargets.GetInt())
         {
             killer.Notify(GetString("PixieMaxTargetReached"));
@@ -118,14 +125,11 @@ internal class Pixie : RoleBase
             killer.Notify(GetString("PixieTargetAlreadySelected"));
             return false;
         }
-
         PixieTargets[killerId].Add(targetId);
-        SendRPC(killerId, targetId);
-
-        NotifyRoles(SpecifySeer: killer, ForceLoop: true);
+        SendRPC(killerId, false, targetId);
+        Utils.NotifyRoles(SpecifySeer: killer, ForceLoop: true);
         if (!DisableShieldAnimations.GetBool()) killer.RpcGuardAndKill(killer);
         SetKillCooldown(killer.PlayerId);
-
         return false;
     }
 
@@ -136,15 +140,16 @@ internal class Pixie : RoleBase
         {
             if (exiled != null)
             {
-                if (PixieTargets[pixieId].Count <= 0) return;
-                if (pixieId.GetAbilityUseLimit() >= PixiePointsToWin.GetInt()) return;
+                if (PixieTargets[pixieId].Count == 0) return;
+                if (!PixiePoints.ContainsKey(pixieId)) PixiePoints[pixieId] = 0;
+                if (PixiePoints[pixieId] >= PixiePointsToWin.GetInt()) return;
 
                 if (PixieTargets[pixieId].Contains(exiled.PlayerId))
                 {
-                    pc.RpcIncreaseAbilityUseLimitBy(1);
+                    PixiePoints[pixieId]++;
                 }
                 else if (PixieSuicideOpt.GetBool()
-                    && PixieTargets[pixieId].Any(eid => eid.GetPlayer()?.IsAlive() == true))
+                    && PixieTargets[pixieId].Any(eid => Utils.GetPlayerById(eid)?.IsAlive() == true))
                 {
                     pc.SetRealKiller(pc);
                     CheckForEndVotingPatch.TryAddAfterMeetingDeathPlayers(PlayerState.DeathReason.Suicide, pixieId);
@@ -152,17 +157,20 @@ internal class Pixie : RoleBase
                 }
             }
             PixieTargets[pixieId].Clear();
-            SendRPC(pixieId);
+            SendRPC(pixieId, true);
         }
     }
+
     public static void PixieWinCondition(PlayerControl pc)
     {
         if (pc == null) return;
-        if (pc.GetAbilityUseLimit() >= PixiePointsToWin.GetInt())
+        if (PixiePoints.TryGetValue(pc.PlayerId, out int totalPts))
         {
-            CustomWinnerHolder.WinnerIds.Add(pc.PlayerId);
-            CustomWinnerHolder.AdditionalWinnerTeams.Add(AdditionalWinners.Pixie);
+            if (totalPts >= PixiePointsToWin.GetInt())
+            {
+                CustomWinnerHolder.WinnerIds.Add(pc.PlayerId);
+                CustomWinnerHolder.AdditionalWinnerTeams.Add(AdditionalWinners.Pixie);
+            }
         }
     }
 }
-

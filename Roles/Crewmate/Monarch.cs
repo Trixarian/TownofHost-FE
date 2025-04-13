@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Double;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using TOHE.Roles.Double;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Monarch : RoleBase
 {
@@ -36,11 +36,11 @@ internal class Monarch : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(KnightMax.GetInt());
+        AbilityLimit = KnightMax.GetInt();
     }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId) => opt.SetVision(false);
-    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = id.GetAbilityUseLimit() > 0 ? KnightCooldown.GetFloat() : 300f;
-    public override bool CanUseKillButton(PlayerControl player) => player.GetAbilityUseLimit() > 0;
+    public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = AbilityLimit > 0 ? KnightCooldown.GetFloat() : 300f;
+    public override bool CanUseKillButton(PlayerControl player) => AbilityLimit > 0;
 
     public override bool OnCheckMurderAsTarget(PlayerControl killer, PlayerControl target)
     {
@@ -48,7 +48,7 @@ internal class Monarch : RoleBase
     }
     public override bool ForcedCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
-        if (killer.GetAbilityUseLimit() <= 0) return false;
+        if (AbilityLimit <= 0) return false;
         if (Mini.Age < 18 && (target.Is(CustomRoles.NiceMini) || target.Is(CustomRoles.EvilMini)))
         {
             killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Cultist), GetString("CantRecruit")));
@@ -56,7 +56,8 @@ internal class Monarch : RoleBase
         }
         if (CanBeKnighted(target))
         {
-            killer.RpcRemoveAbilityUse();
+            AbilityLimit--;
+            SendSkillRPC();
             target.RpcSetCustomRole(CustomRoles.Knighted);
 
             killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Monarch), GetString("MonarchKnightedPlayer")));
@@ -64,15 +65,21 @@ internal class Monarch : RoleBase
 
             killer.ResetKillCooldown();
             killer.SetKillCooldown();
-
+            //      killer.RpcGuardAndKill(target);
             target.RpcGuardAndKill(killer);
             target.SetKillCooldown(forceAnime: true);
 
-            Logger.Info(target?.Data?.PlayerName + " = " + target.GetCustomRole().ToString() + " + " + CustomRoles.Knighted.ToString(), "Assign " + CustomRoles.Knighted.ToString());
+            Logger.Info("设置职业:" + target?.Data?.PlayerName + " = " + target.GetCustomRole().ToString() + " + " + CustomRoles.Knighted.ToString(), "Assign " + CustomRoles.Knighted.ToString());
+            if (AbilityLimit < 0)
+                HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
+            Logger.Info($"{killer.GetNameWithRole()} : 剩余{AbilityLimit}次招募机会", "Monarch");
             return false;
         }
 
+        if (AbilityLimit < 0)
+            HudManager.Instance.KillButton.OverrideText($"{GetString("KillButtonText")}");
         killer.Notify(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Monarch), GetString("MonarchInvalidTarget")));
+        Logger.Info($"{killer.GetNameWithRole()} : 剩余{AbilityLimit}次招募机会", "Monarch");
         return false;
     }
     public override bool OnRoleGuess(bool isUI, PlayerControl target, PlayerControl guesser, CustomRoles role, ref bool guesserSuicide)
@@ -83,6 +90,14 @@ internal class Monarch : RoleBase
             return true;
         }
         return false;
+    }
+    public override string GetProgressText(byte PlayerId, bool comms)
+    {
+        Color color;
+        if (AbilityLimit > 0)
+            color = Utils.GetRoleColor(CustomRoles.Monarch);
+        else color = Color.gray;
+        return (Utils.ColorString(color, $"({AbilityLimit})"));
     }
     private static bool CanBeKnighted(PlayerControl pc)
     {
@@ -103,7 +118,6 @@ internal class Monarch : RoleBase
 
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
-        if (playerId.GetAbilityUseLimit() > 0)
-            hud.KillButton.OverrideText(GetString("MonarchKillButtonText"));
+        hud.KillButton.OverrideText(GetString("MonarchKillButtonText"));
     }
 }

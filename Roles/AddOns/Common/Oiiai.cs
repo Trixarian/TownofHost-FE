@@ -1,11 +1,11 @@
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Impostor;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Impostor;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Oiiai : IAddon
 {
@@ -106,6 +106,7 @@ public class Oiiai : IAddon
             Main.DesyncPlayerList.Remove(killer.PlayerId);
             killer.GetRoleClass().OnAdd(killer.PlayerId);
             killer.RpcSetCustomRole(CustomRoles.Enchanted);
+            killer.AddInSwitchAddons(killer, CustomRoles.Enchanted);
             Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Coven without Necronomicon.", "Oiiai");
         }
         else if (CovenManager.HasNecronomicon(killer))
@@ -121,6 +122,7 @@ public class Oiiai : IAddon
             Main.DesyncPlayerList.Remove(killer.PlayerId);
             killer.GetRoleClass().OnAdd(killer.PlayerId);
             killer.RpcSetCustomRole(CustomRoles.Madmate);
+            killer.AddInSwitchAddons(killer, CustomRoles.Madmate);
             Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Madmates assign.", "Oiiai");
         }
         else if (killer.Is(CustomRoles.Sidekick))
@@ -131,6 +133,7 @@ public class Oiiai : IAddon
             Main.DesyncPlayerList.Remove(killer.PlayerId);
             killer.GetRoleClass().OnAdd(killer.PlayerId);
             killer.RpcSetCustomRole(CustomRoles.Recruit);
+            killer.AddInSwitchAddons(killer, CustomRoles.Recruit);
             Logger.Info($"Oiiai {killer.GetNameWithRole().RemoveHtmlTags()} with Sidekicks assign.", "Oiiai");
         }
         else if (!killerRole.IsNeutral())

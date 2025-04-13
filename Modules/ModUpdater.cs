@@ -6,22 +6,22 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
 using UnityEngine.Networking;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 using IEnumerator = System.Collections.IEnumerator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch]
 public class ModUpdater
 {
     //private static readonly string URL_2018k = "http://api.tohre.dev";
     private static readonly string URL_Github = "https://api.github.com/repos/0xDrMoe/TownofHost-Enhanced";
-    //public static readonly string downloadTest = "https://github.com/Pietrodjaowjao/TOHFEN-Contributions/releases/download/v123123123/TOHFE.dll";
+    //public static readonly string downloadTest = "https://github.com/Pietrodjaowjao/TOHEN-Contributions/releases/download/v123123123/TOHE.dll";
     public static bool hasUpdate = false;
-    private static bool firstNotify = false;
+    private static bool firstNotify = true;
     public static bool forceUpdate = false;
     public static bool isBroken = false;
     public static bool isChecked = false;
@@ -72,8 +72,8 @@ public class ModUpdater
 
     const string RegionConfigPath = "./BepInEx/config/at.duikbo.regioninstall.cfg";
     const string MiniRegionInstallPath = "./BepInEx/plugins/Mini.RegionInstall.dll";
-    const string RegionConfigResource = "TOHFE.Resources.at.duikbo.regioninstall.cfg";
-    const string MiniRegionInstallResource = "TOHFE.Resources.Mini.RegionInstall.dll";
+    const string RegionConfigResource = "TOHE.Resources.at.duikbo.regioninstall.cfg";
+    const string MiniRegionInstallResource = "TOHE.Resources.Mini.RegionInstall.dll";
     private static void CheckCustomRegions()
     {
         var regions = ServerManager.Instance.AvailableRegions;
@@ -93,7 +93,7 @@ public class ModUpdater
         {
             if (region.Name.Contains("Niko233(NA_US)", StringComparison.OrdinalIgnoreCase) || region.Name.Contains("NikoCat233", StringComparison.OrdinalIgnoreCase) || !region.Name.Contains("Niko233(EU)", StringComparison.OrdinalIgnoreCase))
             {
-                forceUpdate = false;
+                forceUpdate = true;
                 break;
             }
         }
@@ -161,7 +161,7 @@ public class ModUpdater
         if (firstNotify && hasUpdate)
         {
             firstNotify = false;
-
+            
             if (!string.IsNullOrEmpty(latestTitleModName))
                 ShowPopupWithTwoButtons(string.Format(GetString("NewUpdateAvailable"), latestTitleModName), GetString("update"), onClickOnFirstButton: () => StartUpdate(downloadUrl));
         }
@@ -223,7 +223,7 @@ public class ModUpdater
             latestVersion = DateTime.TryParse(publishedAt, out DateTime parsedDate) ? parsedDate : DateTime.MinValue;
             latestTitle = $"Day: {latestVersion?.Day} Month: {latestVersion?.Month} Year: {latestVersion?.Year}";
 
-            JArray assets = data["assets"].CastFast<JArray>();
+            JArray assets = data["assets"].TryCast<JArray>();
             for (int i = 0; i < assets.Count; i++)
             {
                 string assetName = assets[i]["name"].ToString();
@@ -273,7 +273,7 @@ public class ModUpdater
         try
         {
             var fileName = Assembly.GetExecutingAssembly().Location;
-            if (Directory.Exists("TOH_DATA") && File.Exists(@"./TOHFE-DATA/BanWords.txt"))
+            if (Directory.Exists("TOH_DATA") && File.Exists(@"./TOHE-DATA/BanWords.txt"))
             {
                 DirectoryInfo di = new("TOH_DATA");
                 di.Delete(true);
@@ -309,7 +309,7 @@ public class ModUpdater
     public static void DeleteOldFiles()
     {
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        string searchPattern = "TOHFE.dll*";
+        string searchPattern = "TOHE.dll*";
         string[] files = Directory.GetFiles(path, searchPattern);
         try
         {
@@ -332,7 +332,7 @@ public class ModUpdater
 
     private static async Task DownloadDLLAsync(string url)
     {
-        var savePath = "BepInEx/plugins/TOHFE.dll.temp";
+        var savePath = "BepInEx/plugins/TOHE.dll.temp";
 
         // Delete the temporary file if it exists
         DeleteOldFiles();
@@ -464,7 +464,7 @@ public class ModUpdater
                 firstButtonGetChild.GetComponent<TMP_Text>().text = firstButtonText;
                 firstButton.GetComponent<PassiveButton>().OnClick = new();
                 if (onClickOnFirstButton != null)
-                    firstButton.GetComponent<PassiveButton>().OnClick.AddListener((UnityEngine.Events.UnityAction)(() => { onClickOnFirstButton(); InfoPopupV2.Close(); }));
+                    firstButton.GetComponent<PassiveButton>().OnClick.AddListener((UnityEngine.Events.UnityAction)(() => { onClickOnFirstButton(); InfoPopupV2.Close();}));
                 else firstButton.GetComponent<PassiveButton>().OnClick.AddListener((UnityEngine.Events.UnityAction)(() => InfoPopupV2.Close()));
             }
             if (secondButton != null)

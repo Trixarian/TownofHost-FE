@@ -1,11 +1,11 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class Medusa : CovenManager
 {
@@ -55,7 +55,6 @@ internal class Medusa : CovenManager
     {
         StonedPlayers[playerId] = [];
         isStoning = false;
-        GetPlayerById(playerId)?.AddDoubleTrigger();
     }
 
     public void SendRPC(PlayerControl player, PlayerControl target)
@@ -94,28 +93,27 @@ internal class Medusa : CovenManager
     public override bool OnCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
         if (killer == null || target == null) return false;
-        if (killer.CheckDoubleTrigger(target, () => { SetStoned(killer, target); }))
+        if (HasNecronomicon(killer))
         {
-            if (HasNecronomicon(killer) && !target.GetCustomRole().IsCovenTeam())
+            if (target.GetCustomRole().IsCovenTeam())
             {
-                killer.RpcMurderPlayer(target);
-                killer.ResetKillCooldown();
-                killer.SetKillCooldown();
-                Main.UnreportableBodies.Add(target.PlayerId);
+                killer.Notify(GetString("CovenDontKillOtherCoven"));
                 return false;
             }
-            killer.Notify(GetString("CovenDontKillOtherCoven"));
+            killer.RpcMurderPlayer(target);
+            killer.ResetKillCooldown();
+            killer.SetKillCooldown();
+            Main.UnreportableBodies.Add(target.PlayerId);
+            return false;
         }
-        return false;
-    }
-    private void SetStoned(PlayerControl killer, PlayerControl target)
-    {
-        if (killer == null || target == null) return;
-        StonedPlayers[killer.PlayerId].Add(target.PlayerId);
-        SendRPC(killer, target);
-        killer.ResetKillCooldown();
-        killer.SetKillCooldown();
-        killer.Notify(string.Format(GetString("MedusaStonedPlayer"), target.GetRealName()));
+        else
+        {
+            StonedPlayers[killer.PlayerId].Add(target.PlayerId);
+            killer.ResetKillCooldown();
+            killer.SetKillCooldown();
+            killer.Notify(string.Format(GetString("MedusaStonedPlayer"), target.GetRealName()));
+            return false;
+        }
     }
     public override void UnShapeShiftButton(PlayerControl dusa)
     {
@@ -154,7 +152,7 @@ internal class Medusa : CovenManager
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
     {
         if (_Player == null) return string.Empty;
-        if (IsStoned(seer.PlayerId, target.PlayerId) && ((seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId) || !seer.IsAlive()))
+        if (IsStoned(seer.PlayerId, target.PlayerId) && seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId)
         {
             return ColorString(GetRoleColor(CustomRoles.Medusa), "♻");
         }

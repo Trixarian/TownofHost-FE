@@ -1,7 +1,7 @@
-using TOHFE.Roles.Core;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 internal class Revenant : RoleBase
 {
     //===========================SETUP================================\\
@@ -24,7 +24,6 @@ internal class Revenant : RoleBase
     public override bool OnCheckMurderAsTarget(PlayerControl killer, PlayerControl target)
     {
         CustomRoles role = killer.GetCustomRole();
-        if (role.IsTNA()) return false;
 
         killer.RpcMurderPlayer(killer);
         killer.SetRealKiller(target);

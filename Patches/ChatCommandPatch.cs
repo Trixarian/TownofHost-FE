@@ -4,27 +4,27 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using TOHFE.Modules;
-using TOHFE.Modules.ChatManager;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Core.AssignManager;
-using TOHFE.Roles.Coven;
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Impostor;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Modules.ChatManager;
+using TOHE.Roles.Core;
+using TOHE.Roles.Core.AssignManager;
+using TOHE.Roles.Coven;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Impostor;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(ChatController), nameof(ChatController.SendChat))]
 internal class ChatCommands
 {
-    private static readonly string modLogFiles = @"./TOHFE-DATA/ModLogs.txt";
-    private static readonly string modTagsFiles = @"./TOHFE-DATA/Tags/MOD_TAGS";
-    private static readonly string sponsorTagsFiles = @"./TOHFE-DATA/Tags/SPONSOR_TAGS";
-    private static readonly string vipTagsFiles = @"./TOHFE-DATA/Tags/VIP_TAGS";
+    private static readonly string modLogFiles = @"./TOHE-DATA/ModLogs.txt";
+    private static readonly string modTagsFiles = @"./TOHE-DATA/Tags/MOD_TAGS";
+    private static readonly string sponsorTagsFiles = @"./TOHE-DATA/Tags/SPONSOR_TAGS";
+    private static readonly string vipTagsFiles = @"./TOHE-DATA/Tags/VIP_TAGS";
 
     private static readonly Dictionary<char, int> Pollvotes = [];
     private static readonly Dictionary<char, string> PollQuestions = [];
@@ -60,7 +60,7 @@ internal class ChatCommands
         if (text.Length >= 4) if (text[..3] == "/up") args[0] = "/up";
 
         if (GuessManager.GuesserMsg(PlayerControl.LocalPlayer, text)) goto Canceled;
-        if (Judge.TrialMsg(PlayerControl.LocalPlayer, text)) goto Canceled;
+        if (PlayerControl.LocalPlayer.GetRoleClass() is Judge jd && jd.TrialMsg(PlayerControl.LocalPlayer, text)) goto Canceled;
         if (President.EndMsg(PlayerControl.LocalPlayer, text)) goto Canceled;
         if (Inspector.InspectCheckMsg(PlayerControl.LocalPlayer, text)) goto Canceled;
         if (Pirate.DuelCheckMsg(PlayerControl.LocalPlayer, text)) goto Canceled;
@@ -322,7 +322,7 @@ internal class ChatCommands
                         case "船员":
                             GameManager.Instance.enabled = false;
                             Utils.NotifyGameEnding();
-                            GameManager.Instance.RpcEndGame(GameOverReason.CrewmateDisconnect, false);
+                            GameManager.Instance.RpcEndGame(GameOverReason.HumansDisconnect, false);
                             break;
 
                         case "imp":
@@ -387,7 +387,7 @@ internal class ChatCommands
                 //    {
                 //        break;
                 //    }
-                //    PlayerControl.LocalPlayer.RpcChangeRoleBasis(CustomRoles.PhantomTOHFE);
+                //    PlayerControl.LocalPlayer.RpcChangeRoleBasis(CustomRoles.PhantomTOHE);
                 //    break;
 
                 case "/setplayers":
@@ -459,41 +459,26 @@ internal class ChatCommands
                         Utils.SendMessage(GetString("DisableUseCommand"), PlayerControl.LocalPlayer.PlayerId);
                         break;
                     }
+                    var allAlivePlayers = Main.AllAlivePlayerControls;
+                    int impnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Impostor));
+                    int madnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsMadmate() || pc.Is(CustomRoles.Madmate));
+                    int neutralnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsNK());
+                    int apocnum = allAlivePlayers.Count(pc => pc.IsNeutralApocalypse() || pc.IsTransformedNeutralApocalypse());
+                    int covnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Coven));
 
                     var sub = new StringBuilder();
+                    sub.Append(string.Format(GetString("Remaining.ImpostorCount"), impnum));
 
-                    switch (Options.CurrentGameMode)
-                    {
-                        case CustomGameMode.Standard:
-                            var allAlivePlayers = Main.AllAlivePlayerControls;
-                            int impnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Impostor));
-                            int madnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsMadmate() || pc.Is(CustomRoles.Madmate));
-                            int neutralnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsNK());
-                            int apocnum = allAlivePlayers.Count(pc => pc.IsNeutralApocalypse() || pc.IsTransformedNeutralApocalypse());
-                            int covnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Coven));
+                    if (Options.ShowMadmatesInLeftCommand.GetBool())
+                        sub.Append(string.Format("\n\r" + GetString("Remaining.MadmateCount"), madnum));
 
-                            sub.Append(string.Format(GetString("Remaining.ImpostorCount"), impnum));
+                    if (Options.ShowApocalypseInLeftCommand.GetBool())
+                        sub.Append(string.Format("\n\r" + GetString("Remaining.ApocalypseCount"), apocnum));
 
-                            if (Options.ShowMadmatesInLeftCommand.GetBool())
-                                sub.Append(string.Format("\n\r" + GetString("Remaining.MadmateCount"), madnum));
+                    if (Options.ShowCovenInLeftCommand.GetBool())
+                        sub.Append(string.Format("\n\r" + GetString("Remaining.CovenCount"), covnum));
 
-                            if (Options.ShowApocalypseInLeftCommand.GetBool())
-                                sub.Append(string.Format("\n\r" + GetString("Remaining.ApocalypseCount"), apocnum));
-
-                            if (Options.ShowCovenInLeftCommand.GetBool())
-                                sub.Append(string.Format("\n\r" + GetString("Remaining.CovenCount"), covnum));
-
-                            sub.Append(string.Format("\n\r" + GetString("Remaining.NeutralCount"), neutralnum));
-                            break;
-
-                        case CustomGameMode.FFA:
-                            FFAManager.AppendFFAKcount(sub);
-                            break;
-
-                        case CustomGameMode.SpeedRun:
-                            SpeedRun.AppendSpeedRunKcount(sub);
-                            break;
-                    }
+                    sub.Append(string.Format("\n\r" + GetString("Remaining.NeutralCount"), neutralnum));
 
                     Utils.SendMessage(sub.ToString(), PlayerControl.LocalPlayer.PlayerId);
                     break;
@@ -1160,10 +1145,7 @@ internal class ChatCommands
                     canceled = true;
                     if (GameStates.IsMeeting)
                     {
-                        if (MeetingHud.Instance)
-                        {
-                            MeetingHud.Instance.RpcClose();
-                        }
+                        MeetingHud.Instance.RpcClose();
                     }
                     else
                     {
@@ -1655,12 +1637,12 @@ internal class ChatCommands
             "GM(遊戲大師)" or "管理员" or "管理" or "gm" or "GM" => GetString("GM"),
             
             // 原版职业
-            "船員" or "船员" or "白板" or "天选之子" => GetString("CrewmateTOHFE"),
-            "工程師" or "工程师" => GetString("EngineerTOHFE"),
-            "科學家" or "科学家" => GetString("ScientistTOHFE"),
-            "守護天使" or "守护天使" => GetString("GuardianAngelTOHFE"),
-            "偽裝者" or "内鬼" => GetString("ImpostorTOHFE"),
-            "變形者" or "变形者" => GetString("ShapeshifterTOHFE"),
+            "船員" or "船员" or "白板" or "天选之子" => GetString("CrewmateTOHE"),
+            "工程師" or "工程师" => GetString("EngineerTOHE"),
+            "科學家" or "科学家" => GetString("ScientistTOHE"),
+            "守護天使" or "守护天使" => GetString("GuardianAngelTOHE"),
+            "偽裝者" or "内鬼" => GetString("ImpostorTOHE"),
+            "變形者" or "变形者" => GetString("ShapeshifterTOHE"),
 
             // 隱藏職業 and 隐藏职业
             "陽光開朗大男孩" or "阳光开朗大男孩" => GetString("Sunnyboy"),
@@ -2033,18 +2015,10 @@ internal class ChatCommands
     }
     public static void SendRolesInfo(string role, byte playerId, bool isDev = false, bool isUp = false)
     {
-        switch (Options.CurrentGameMode)
+        if (Options.CurrentGameMode == CustomGameMode.FFA)
         {
-            case CustomGameMode.FFA:
-                {
-                    Utils.SendMessage(GetString("ModeDescribe.FFA"), playerId);
-                    return;
-                }
-            case CustomGameMode.SpeedRun:
-                {
-                    Utils.SendMessage(GetString("ModeDescribe.SpeedRun"), playerId);
-                    return;
-                }
+            Utils.SendMessage(GetString("ModeDescribe.FFA"), playerId);
+            return;
         }
         role = role.Trim().ToLower();
         if (role.StartsWith("/r")) _ = role.Replace("/r", string.Empty);
@@ -2130,8 +2104,8 @@ internal class ChatCommands
             {
                 CustomRoles setrole = result.GetCustomRoleTeam() switch
                 {
-                    Custom_Team.Impostor => CustomRoles.ImpostorTOHFE,
-                    _ => CustomRoles.CrewmateTOHFE
+                    Custom_Team.Impostor => CustomRoles.ImpostorTOHE,
+                    _ => CustomRoles.CrewmateTOHE
 
                 };
                 RoleAssign.SetRoles[pid] = setrole;
@@ -2180,7 +2154,7 @@ internal class ChatCommands
         //if (text.Length >= 3) if (text[..2] == "/r" && text[..3] != "/rn") args[0] = "/r";
         //   if (SpamManager.CheckSpam(player, text)) return;
         if (GuessManager.GuesserMsg(player, text)) { canceled = true; Logger.Info($"Is Guesser command", "OnReceiveChat"); return; }
-        if (Judge.TrialMsg(player, text)) { canceled = true; Logger.Info($"Is Judge command", "OnReceiveChat"); return; }
+        if (player.GetRoleClass() is Judge jd && jd.TrialMsg(player, text)) { canceled = true; Logger.Info($"Is Judge command", "OnReceiveChat"); return; }
         if (President.EndMsg(player, text)) { canceled = true; Logger.Info($"Is President command", "OnReceiveChat"); return; }
         if (Inspector.InspectCheckMsg(player, text)) { canceled = true; Logger.Info($"Is Inspector command", "OnReceiveChat"); return; }
         if (Pirate.DuelCheckMsg(player, text)) { canceled = true; Logger.Info($"Is Pirate command", "OnReceiveChat"); return; }
@@ -2499,39 +2473,26 @@ internal class ChatCommands
                     break;
                 }
 
+                var allAlivePlayers = Main.AllAlivePlayerControls;
+                int impnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Impostor));
+                int madnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsMadmate() || pc.Is(CustomRoles.Madmate));
+                int apocnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsNA());
+                int neutralnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsNK());
+                int covnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Coven));
+
                 var sub = new StringBuilder();
-                switch (Options.CurrentGameMode)
-                {
-                    case CustomGameMode.Standard:
-                        var allAlivePlayers = Main.AllAlivePlayerControls;
-                        int impnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Impostor));
-                        int madnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsMadmate() || pc.Is(CustomRoles.Madmate));
-                        int apocnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsNA());
-                        int neutralnum = allAlivePlayers.Count(pc => pc.GetCustomRole().IsNK());
-                        int covnum = allAlivePlayers.Count(pc => pc.Is(Custom_Team.Coven));
+                sub.Append(string.Format(GetString("Remaining.ImpostorCount"), impnum));
 
-                        sub.Append(string.Format(GetString("Remaining.ImpostorCount"), impnum));
+                if (Options.ShowMadmatesInLeftCommand.GetBool())
+                    sub.Append(string.Format("\n\r" + GetString("Remaining.MadmateCount"), madnum));
 
-                        if (Options.ShowMadmatesInLeftCommand.GetBool())
-                            sub.Append(string.Format("\n\r" + GetString("Remaining.MadmateCount"), madnum));
+                if (Options.ShowApocalypseInLeftCommand.GetBool())
+                    sub.Append(string.Format("\n\r" + GetString("Remaining.ApocalypseCount"), apocnum));
 
-                        if (Options.ShowApocalypseInLeftCommand.GetBool())
-                            sub.Append(string.Format("\n\r" + GetString("Remaining.ApocalypseCount"), apocnum));
+                if (Options.ShowCovenInLeftCommand.GetBool())
+                    sub.Append(string.Format("\n\r" + GetString("Remaining.CovenCount"), covnum));
 
-                        if (Options.ShowCovenInLeftCommand.GetBool())
-                            sub.Append(string.Format("\n\r" + GetString("Remaining.CovenCount"), covnum));
-
-                        sub.Append(string.Format("\n\r" + GetString("Remaining.NeutralCount"), neutralnum));
-                        break;
-
-                    case CustomGameMode.FFA:
-                        FFAManager.AppendFFAKcount(sub);
-                        break;
-
-                    case CustomGameMode.SpeedRun:
-                        SpeedRun.AppendSpeedRunKcount(sub);
-                        break;
-                }
+                sub.Append(string.Format("\n\r" + GetString("Remaining.NeutralCount"), neutralnum));
 
                 Utils.SendMessage(sub.ToString(), player.PlayerId);
                 break;
@@ -2649,8 +2610,7 @@ internal class ChatCommands
             case "/айди":
             case "/编号":
             case "/玩家编号":
-                if (TagManager.ReadPermission(player.FriendCode) < 2) break;
-                else if (TagManager.ReadPermission(player.FriendCode) < 2 && (Options.ApplyModeratorList.GetValue() == 0 || !Utils.IsPlayerModerator(player.FriendCode))
+                if ((Options.ApplyModeratorList.GetValue() == 0 || (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 2))
                     && !Options.EnableVoteCommand.GetBool()) break;
 
                 string msgText = GetString("PlayerIdList");
@@ -2667,17 +2627,16 @@ internal class ChatCommands
             case "/玩家信息":
             case "/玩家编号列表":
                 //canceled = true;
-                var tagCanUse = TagManager.ReadPermission(player.FriendCode) >= 2;           
                 //checking if modlist on or not
-                //checking if player is has necessary privellege or not
-                if (!tagCanUse && !Utils.IsPlayerModerator(player.FriendCode))
-                {
-                    Utils.SendMessage(GetString("midCommandNoAccess"), player.PlayerId);
-                    break;
-                }
-                if (!tagCanUse && Options.ApplyModeratorList.GetValue() == 0)
+                if (Options.ApplyModeratorList.GetValue() == 0)
                 {
                     Utils.SendMessage(GetString("midCommandDisabled"), player.PlayerId);
+                    break;
+                }
+                //checking if player is has necessary privellege or not
+                if (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 2)
+                {
+                    Utils.SendMessage(GetString("midCommandNoAccess"), player.PlayerId);
                     break;
                 }
                 string msgText1 = GetString("PlayerIdList");
@@ -2695,16 +2654,15 @@ internal class ChatCommands
             case "/забанить":
             case "/封禁":
                 //canceled = true;
-                var tagCanBan = TagManager.ReadPermission(player.FriendCode) >= 5;
                 // Check if the ban command is enabled in the settings
-                if (!tagCanBan && Options.ApplyModeratorList.GetValue() == 0)
+                if (Options.ApplyModeratorList.GetValue() == 0)
                 {
                     Utils.SendMessage(GetString("BanCommandDisabled"), player.PlayerId);
                     break;
                 }
 
                 // Check if the player has the necessary privileges to use the command
-                if (!tagCanBan && !Utils.IsPlayerModerator(player.FriendCode))
+                if (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 5)
                 {
                     Utils.SendMessage(GetString("BanCommandNoAccess"), player.PlayerId);
                     break;
@@ -2740,8 +2698,8 @@ internal class ChatCommands
                     break;
                 }
 
-                // Prevent moderators from banning other moderators
-                if (Utils.IsPlayerModerator(bannedPlayer.FriendCode) || TagManager.ReadPermission(bannedPlayer.FriendCode) >= 5)
+                // Prevent moderators from baning other moderators
+                if (Utils.IsPlayerModerator(bannedPlayer.FriendCode) || TagManager.ReadPermission(bannedPlayer.FriendCode) >= 2)
                 {
                     Utils.SendMessage(GetString("BanCommandBanMod"), player.PlayerId);
                     break;
@@ -2776,13 +2734,12 @@ internal class ChatCommands
             case "/предупредить":
             case "/警告":
             case "/提醒":
-                var tagCanWarn = TagManager.ReadPermission(player.FriendCode) >= 2;
-                if (!tagCanWarn && Options.ApplyModeratorList.GetValue() == 0)
+                if (Options.ApplyModeratorList.GetValue() == 0)
                 {
                     Utils.SendMessage(GetString("WarnCommandDisabled"), player.PlayerId);
                     break;
                 }
-                if (!tagCanWarn && !Utils.IsPlayerModerator(player.FriendCode))
+                if (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 2)
                 {
                     Utils.SendMessage(GetString("WarnCommandNoAccess"), player.PlayerId);
                     break;
@@ -2844,16 +2801,15 @@ internal class ChatCommands
             case "/выгнать":
             case "/踢出":
             case "/踢":
-                var tagCanKick = TagManager.ReadPermission(player.FriendCode) >= 4;
                 // Check if the kick command is enabled in the settings
-                if (!tagCanKick && Options.ApplyModeratorList.GetValue() == 0)
+                if (Options.ApplyModeratorList.GetValue() == 0)
                 {
                     Utils.SendMessage(GetString("KickCommandDisabled"), player.PlayerId);
                     break;
                 }
 
                 // Check if the player has the necessary privileges to use the command
-                if (!tagCanKick && !Utils.IsPlayerModerator(player.FriendCode))
+                if (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 4)
                 {
                     Utils.SendMessage(GetString("KickCommandNoAccess"), player.PlayerId);
                     break;
@@ -3163,9 +3119,14 @@ internal class ChatCommands
                     if (args.Length > 1)
                         Utils.SendMessage(args.Skip(1).Join(delimiter: " "), title: $"<color={Main.ModColor}>{GetString("MessageFromDev")} ~ <size=1.25>{player.GetRealName(clientData: true)}</size></color>");
                 }
+                else if (player.FriendCode.IsDevUser() && !dbConnect.IsBooster(player.FriendCode))
+                {
+                    if (args.Length > 1)
+                        Utils.SendMessage(args.Skip(1).Join(delimiter: " "), title: $"<color=#4bc9b0>{GetString("MessageFromSponsor")} ~ <size=1.25>{player.GetRealName(clientData: true)}</size></color>");
+                }
                 else if (Utils.IsPlayerModerator(player.FriendCode) || TagManager.CanUseSayCommand(player.FriendCode))
                 {
-                    if (!TagManager.CanUseSayCommand(player.FriendCode) && (Options.ApplyModeratorList.GetValue() == 0 || Options.AllowSayCommand.GetBool() == false))
+                    if (Options.ApplyModeratorList.GetValue() == 0 || Options.AllowSayCommand.GetBool() == false)
                     {
                         Utils.SendMessage(GetString("SayCommandDisabled"), player.PlayerId);
                         break;
@@ -3426,8 +3387,7 @@ internal class ChatCommands
                 }
                 else
                 {
-                    var tagCanMe = TagManager.ReadPermission(player.FriendCode) >= 2;
-                    if ((Options.ApplyModeratorList.GetValue() == 0 || !Utils.IsPlayerModerator(player.FriendCode)) && !tagCanMe)
+                    if (Options.ApplyModeratorList.GetValue() == 0 || (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 2))
                     {
                         Utils.SendMessage(GetString("Message.MeCommandNoPermission"), player.PlayerId);
                         break;
@@ -3469,13 +3429,15 @@ internal class ChatCommands
                     Utils.SendMessage(GetString("Message.OnlyCanUseInLobby"), player.PlayerId);
                     break;
                 }
-                var tagCanStart = TagManager.ReadPermission(player.FriendCode) >= 3;
-                if (!tagCanStart && !Utils.IsPlayerModerator(player.FriendCode))
+
+                if (!Utils.IsPlayerModerator(player.FriendCode) && TagManager.ReadPermission(player.FriendCode) < 3)
                 {
                     Utils.SendMessage(GetString("StartCommandNoAccess"), player.PlayerId);
+
                     break;
+
                 }
-                if (!tagCanStart && (Options.ApplyModeratorList.GetValue() == 0 || Options.AllowStartCommand.GetBool() == false))
+                if (Options.ApplyModeratorList.GetValue() == 0 || Options.AllowStartCommand.GetBool() == false)
                 {
                     Utils.SendMessage(GetString("StartCommandDisabled"), player.PlayerId);
                     break;
@@ -3571,7 +3533,7 @@ class ChatUpdatePatch
 
         if (Main.DarkTheme.Value)
         {
-            var chatBubble = __instance.chatBubblePool.Prefab.CastFast<ChatBubble>();
+            var chatBubble = __instance.chatBubblePool.Prefab.Cast<ChatBubble>();
             chatBubble.TextArea.overrideColorTags = false;
             chatBubble.TextArea.color = Color.white;
             chatBubble.Background.color = Color.black;
@@ -3654,7 +3616,7 @@ internal class UpdateCharCountPatch
     public static void Postfix(FreeChatInputField __instance)
     {
         int length = __instance.textArea.text.Length;
-        __instance.charCountText.SetText(length <= 0 ? GetString("ThankYouForUsingTOHFE") : $"{length}/{__instance.textArea.characterLimit}");
+        __instance.charCountText.SetText(length <= 0 ? GetString("ThankYouForUsingTOHE") : $"{length}/{__instance.textArea.characterLimit}");
         __instance.charCountText.enableWordWrapping = false;
         if (length < (AmongUsClient.Instance.AmHost ? 888 : 444))
             __instance.charCountText.color = Color.black;

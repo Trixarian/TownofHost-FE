@@ -1,8 +1,8 @@
 using AmongUs.Data;
-using TOHFE.Modules;
-using TOHFE.Roles.Impostor;
+using TOHE.Modules;
+using TOHE.Roles.Impostor;
 
-namespace TOHFE;
+namespace TOHE;
 
 static class PlayerOutfitExtension
 {
@@ -162,7 +162,7 @@ public static class Camouflage
             }
             else
             {
-                Utils.NotifyRoles();
+                Utils.DoNotifyRoles();
             }
         }
     }

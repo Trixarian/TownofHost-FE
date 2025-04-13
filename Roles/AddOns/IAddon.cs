@@ -1,6 +1,6 @@
 //Thanks EHR for https://github.com/Gurge44/EndlessHostRoles/blob/main/Roles/AddOns/IAddon.cs and everything related ;)
 
-namespace TOHFE.Roles.AddOns
+namespace TOHE.Roles.AddOns
 {
     [Obfuscation(Exclude = true)]
     public enum AddonTypes

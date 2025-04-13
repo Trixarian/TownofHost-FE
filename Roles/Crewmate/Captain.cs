@@ -1,9 +1,9 @@
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Captain : RoleBase
 {
@@ -72,9 +72,10 @@ internal class Captain : RoleBase
                                                            (CaptainCanTargetNB.GetBool() && x.GetCustomRole().IsNB()) ||
                                                            (CaptainCanTargetNE.GetBool() && x.GetCustomRole().IsNE()) ||
                                                            (CaptainCanTargetNC.GetBool() && x.GetCustomRole().IsNC()) ||
-                                                           (CaptainCanTargetNK.GetBool() && x.GetCustomRole().IsNeutralKillerTeam()) ||
-                                                           (CaptainCanTargetNA.GetBool() && x.GetCustomRole().IsNA()) ||
-                                                           (CaptainCanTargetCoven.GetBool() && x.GetCustomRole().IsCovenTeam()))).ToList();
+                                                           (CaptainCanTargetNK.GetBool() && x.GetCustomRole().IsNeutralKillerTeam())
+                              || (CaptainCanTargetNA.GetBool() && x.GetCustomRole().IsNA()) ||
+                                                           (CaptainCanTargetCoven.GetBool() && x.GetCustomRole().IsCovenTeam())
+                              )).ToList();
 
         Logger.Info($"Total Number of Potential Target {allTargets.Count}", "Total Captain Target");
         if (allTargets.Count == 0) return true;
@@ -175,3 +176,4 @@ internal class Captain : RoleBase
         }
     }
 }
+

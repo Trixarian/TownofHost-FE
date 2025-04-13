@@ -1,10 +1,10 @@
 using System;
-using TOHFE.Modules;
-using TOHFE.Roles.AddOns.Common;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Modules;
+using TOHE.Roles.AddOns.Common;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Randomizer : RoleBase
 {

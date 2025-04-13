@@ -1,12 +1,11 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Double;
+using TOHE.Roles.Core;
+using TOHE.Roles.Double;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Anonymous : RoleBase
 {
@@ -38,7 +37,7 @@ internal class Anonymous : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(HackLimitOpt.GetInt());
+        AbilityLimit = HackLimitOpt.GetInt();
     }
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = KillCooldown.GetFloat();
     public override void ApplyGameOptions(IGameOptions opt, byte playerId)
@@ -46,16 +45,16 @@ internal class Anonymous : RoleBase
         AURoleOptions.ShapeshifterCooldown = 1f;
         AURoleOptions.ShapeshifterDuration = 1f;
     }
+    public override string GetProgressText(byte playerId, bool coomsd) => Utils.ColorString((AbilityLimit > 0) ? Utils.GetRoleColor(CustomRoles.Anonymous).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})");
     public override void SetAbilityButtonText(HudManager hud, byte playerId)
     {
         hud.ReportButton.OverrideText(GetString("ReportButtonText"));
 
-        var abilityUse = playerId.GetAbilityUseLimit();
-        if (abilityUse > 0)
+        if (AbilityLimit > 0)
         {
             hud.AbilityButton.OverrideText(GetString("AnonymousShapeshiftText"));
+            hud.AbilityButton.SetUsesRemaining((int)AbilityLimit);
         }
-        hud.AbilityButton.SetUsesRemaining((int)abilityUse);
     }
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target) => DeadBodyList.Clear();
     public override void OnMurderPlayerAsKiller(PlayerControl killer, PlayerControl target, bool inMeeting, bool isSuicide)
@@ -67,9 +66,9 @@ internal class Anonymous : RoleBase
     }
     public override void OnShapeshift(PlayerControl shapeshifter, PlayerControl ssTarget, bool IsAnimate, bool shapeshifting)
     {
-        if (!shapeshifting || shapeshifter.GetAbilityUseLimit() <= 0 || ssTarget == null || ssTarget.Is(CustomRoles.LazyGuy) || ssTarget.Is(CustomRoles.Lazy) || ssTarget.Is(CustomRoles.NiceMini) && Mini.Age < 18) return;
-
-        shapeshifter.RpcRemoveAbilityUse();
+        if (!shapeshifting || AbilityLimit <= 0 || ssTarget == null || ssTarget.Is(CustomRoles.LazyGuy) || ssTarget.Is(CustomRoles.Lazy) || ssTarget.Is(CustomRoles.NiceMini) && Mini.Age < 18) return;
+        AbilityLimit--;
+        SendSkillRPC();
 
         var targetId = byte.MaxValue;
 

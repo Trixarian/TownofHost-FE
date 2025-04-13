@@ -1,7 +1,7 @@
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Aware : IAddon
 {

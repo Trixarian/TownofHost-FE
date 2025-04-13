@@ -1,7 +1,7 @@
-using TOHFE.Modules;
-using static TOHFE.Options;
+using TOHE.Modules;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Youtuber : IAddon
 {

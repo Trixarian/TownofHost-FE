@@ -1,8 +1,8 @@
 using System;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
 
-namespace TOHFE;
+namespace TOHE;
 
 public abstract class OptionItem
 {
@@ -29,7 +29,6 @@ public abstract class OptionItem
     public CustomGameMode GameMode { get; protected set; }
     public CustomGameMode HideOptionInFFA { get; protected set; }
     public CustomGameMode HideOptionInHnS { get; protected set; }
-    public CustomGameMode HideOptionInSpeedRun { get; protected set; }
     public bool IsHeader { get; protected set; }
     public bool IsHidden { get; protected set; }
     public bool IsText { get; protected set; }
@@ -78,7 +77,6 @@ public abstract class OptionItem
         GameMode = CustomGameMode.All;
         HideOptionInFFA = CustomGameMode.All;
         HideOptionInHnS = CustomGameMode.All;
-        HideOptionInSpeedRun = CustomGameMode.All;
         IsHeader = false;
         IsHidden = false;
         IsText = false;
@@ -132,22 +130,17 @@ public abstract class OptionItem
     public OptionItem SetHidden(bool value) => Do(i => i.IsHidden = value);
     public OptionItem SetText(bool value) => Do(i => i.IsText = value);
     public OptionItem HideInFFA(CustomGameMode value = CustomGameMode.FFA) => Do(i => i.HideOptionInFFA = value);
-    public OptionItem HideInHnS(CustomGameMode value = CustomGameMode.HidenSeekTOHFE) => Do(i => i.HideOptionInHnS = value);
-    public OptionItem HideInSpeedRun(CustomGameMode value = CustomGameMode.SpeedRun) => Do(i => i.HideOptionInSpeedRun = value);
+    public OptionItem HideInHnS(CustomGameMode value = CustomGameMode.HidenSeekTOHE) => Do(i => i.HideOptionInHnS = value);
 
-    public OptionItem SetParent(OptionItem parent, bool OverrideRoleName = true) => Do(i =>
+    public OptionItem SetParent(OptionItem parent) => Do(i =>
     {
-        if (OverrideRoleName)
+        foreach (var role in Options.CustomRoleSpawnChances.Where(x => x.Value.Name == parent.Name).ToArray())
         {
-            foreach (var role in Options.CustomRoleSpawnChances.Where(x => x.Value.Name == parent.Name).ToArray())
-            {
-                var roleName = Translator.GetString(Enum.GetName(typeof(CustomRoles), role.Key));
-                ReplacementDictionary ??= [];
-                ReplacementDictionary.TryAdd(roleName, Utils.ColorString(Utils.GetRoleColor(role.Key), roleName));
-                break;
-            }
+            var roleName = Translator.GetString(Enum.GetName(typeof(CustomRoles), role.Key));
+            ReplacementDictionary ??= [];
+            ReplacementDictionary.TryAdd(roleName, Utils.ColorString(Utils.GetRoleColor(role.Key), roleName));
+            break;
         }
-
         i.Parent = parent;
         parent.SetChild(i);
     });
@@ -188,7 +181,7 @@ public abstract class OptionItem
     // Deprecated IsHidden function
     public virtual bool IsHiddenOn(CustomGameMode mode)
     {
-        return IsHidden || this.Parent?.IsHiddenOn(Options.CurrentGameMode) == true || (HideOptionInFFA != CustomGameMode.All && HideOptionInFFA == mode) || (HideOptionInHnS != CustomGameMode.All && HideOptionInHnS == mode) || (HideOptionInSpeedRun != CustomGameMode.All && HideOptionInSpeedRun == mode) || (GameMode != CustomGameMode.All && GameMode != mode);
+        return IsHidden || this.Parent?.IsHiddenOn(Options.CurrentGameMode) == true || (HideOptionInFFA != CustomGameMode.All && HideOptionInFFA == mode) || (HideOptionInHnS != CustomGameMode.All && HideOptionInHnS == mode) || (GameMode != CustomGameMode.All && GameMode != mode);
     }
     public string ApplyFormat(string value)
     {
@@ -244,7 +237,7 @@ public abstract class OptionItem
     {
         AllValues = values;
     }
-    // This Code For Reset All TOHFE Setting To Default
+    // This Code For Reset All TOHE Setting To Default
     public virtual void SetValueNoRpc(int value)
     {
         int beforeValue = CurrentValue;

@@ -1,7 +1,7 @@
 using Hazel;
 using System;
 
-namespace TOHFE.Patches;
+namespace TOHE.Patches;
 
 // Patches here is also activated from ShipStatus.Serialize and IntroCutScene 
 // through Utils.SetAllVentInteractions
@@ -63,7 +63,7 @@ static class VentSystemDeterioratePatch
             }
 
             if (needUpdate)
-                ShipStatus.Instance.Systems[SystemTypes.Ventilation].CastFast<VentilationSystem>().IsDirty = true;
+                ShipStatus.Instance.Systems[SystemTypes.Ventilation].Cast<VentilationSystem>().IsDirty = true;
         }
     }
     /// <summary>

@@ -1,9 +1,9 @@
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Modules;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Options;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Butcher : RoleBase
 {

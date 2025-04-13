@@ -1,7 +1,7 @@
 using Hazel;
 using System.Text;
 
-namespace TOHFE.Roles.Core.AssignManager;
+namespace TOHE.Roles.Core.AssignManager;
 
 public static class GhostRoleAssign
 {
@@ -20,7 +20,7 @@ public static class GhostRoleAssign
     public static void GhostAssignPatch(PlayerControl player)
     {
         if (GameStates.IsHideNSeek
-            || Options.CurrentGameMode != CustomGameMode.Standard
+            || Options.CurrentGameMode == CustomGameMode.FFA
             || player == null
             || player.Data == null
             || player.Data.Disconnected

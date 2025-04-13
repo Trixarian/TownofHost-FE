@@ -1,8 +1,8 @@
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Enigma : RoleBase
 {
@@ -453,7 +453,7 @@ internal class Enigma : RoleBase
                     if (role.IsCoven()) return GetString("EnigmaClueRole5");
                     return GetString("EnigmaClueRole3");
                 case 2:
-                    if (showStageClue) return string.Format(GetString("EnigmaClueRole4"), killer.GetDisplayRoleAndSubName(killer, false, false));
+                    if (showStageClue) return string.Format(GetString("EnigmaClueRole4"), killer.GetDisplayRoleAndSubName(killer, false));
                     if (role.IsImpostor()) return GetString("EnigmaClueRole1");
                     if (role.IsNeutral()) return GetString("EnigmaClueRole2");
                     if (role.IsCoven()) return GetString("EnigmaClueRole5");

@@ -1,10 +1,10 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Roles.Core;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Double;
+namespace TOHE.Roles.Double;
 
 internal class Mini : RoleBase
 {
@@ -28,7 +28,7 @@ internal class Mini : RoleBase
 
 
     public static int Age = new();
-    private static bool IsEvilMini = false;
+    public static bool IsEvilMini = false;
     private static int GrowUpTime = new();
     //private static int GrowUp = new();
     private static long LastFixedUpdate = new();
@@ -72,7 +72,7 @@ internal class Mini : RoleBase
             SendRPC();
         }
     }
-    private void SendRPC()
+    public void SendRPC()
     {
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
         writer.WriteNetObject(_Player);
@@ -97,12 +97,13 @@ internal class Mini : RoleBase
         }
         return true;
     }
-    public void OnFixedUpdates(PlayerControl player, long nowTime)
+    public void OnFixedUpdates(PlayerControl player)
     {
+        if (!GameStates.IsInGame) return;
         if (Age >= 18) return;
 
         //Check if nice mini is dead
-        if (player.Is(CustomRoles.NiceMini) && !player.IsAlive())
+        if (!player.IsAlive() && player.Is(CustomRoles.NiceMini))
         {
             if (CustomWinnerHolder.WinnerTeam == CustomWinner.Default && !CustomWinnerHolder.CheckForConvertedWinner(player.PlayerId))
             {
@@ -114,15 +115,15 @@ internal class Mini : RoleBase
 
         if (GameStates.IsMeeting && !CountMeetingTime.GetBool()) return;
 
-        if (LastFixedUpdate == nowTime) return;
-        LastFixedUpdate = nowTime;
+        if (LastFixedUpdate == GetTimeStamp()) return;
+        LastFixedUpdate = GetTimeStamp();
         GrowUpTime++;
 
         if (GrowUpTime >= GrowUpDuration.GetInt() / 18)
         {
             Age += 1;
             GrowUpTime = 0;
-            Logger.Info("Mini grow up by 1", "Mini");
+            Logger.Info($"Mini grow up by 1", "Mini");
             if (player.Is(CustomRoles.EvilMini))
             {
                 player.ResetKillCooldown();
@@ -199,7 +200,7 @@ internal class Mini : RoleBase
             {
                 if (isMeetingHud)
                 {
-                    name = string.Format(GetString("ExiledNiceMini"), Main.LastVotedPlayer, GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, false, true));
+                    name = string.Format(GetString("ExiledNiceMini"), Main.LastVotedPlayer, GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, true));
                 }
                 else
                 {
@@ -218,7 +219,5 @@ internal class Mini : RoleBase
     //    => (target.Is(CustomRoles.NiceMini) || target.Is(CustomRoles.EvilMini)) && EveryoneCanKnowMini.GetBool() ? Main.roleColors[CustomRoles.Mini] : string.Empty;
 
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target = null, bool isForMeeting = false)
-        => EveryoneCanKnowMini.GetBool() && (target.Is(CustomRoles.NiceMini) || target.Is(CustomRoles.EvilMini))
-            ? CustomRoles.Mini.GetColoredTextByRole(Age != 18 && UpDateAge.GetBool() ? Age.ToString() : string.Empty)
-            : string.Empty;
+            => EveryoneCanKnowMini.GetBool() && (target.Is(CustomRoles.NiceMini) || target.Is(CustomRoles.EvilMini)) ? ColorString(GetRoleColor(CustomRoles.Mini), Age != 18 && UpDateAge.GetBool() ? $"({Age})" : string.Empty) : string.Empty;
 }

@@ -1,11 +1,11 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Modules;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class VoodooMaster : CovenManager
 {
@@ -41,7 +41,7 @@ internal class VoodooMaster : CovenManager
     public override void Add(byte PlayerId)
     {
         Dolls[PlayerId] = [];
-        PlayerId.SetAbilityUseLimit(VoodoosPerRound.GetInt());
+        AbilityLimit = VoodoosPerRound.GetInt();
         GetPlayerById(PlayerId)?.AddDoubleTrigger();
     }
 
@@ -50,6 +50,7 @@ internal class VoodooMaster : CovenManager
         MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
         writer.WriteNetObject(_Player);
         writer.Write(player.PlayerId);
+        writer.Write(AbilityLimit);
         writer.Write(target.PlayerId);
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
@@ -57,7 +58,6 @@ internal class VoodooMaster : CovenManager
     {
         byte VMId = reader.ReadByte();
         byte DollId = reader.ReadByte();
-
         Dolls[VMId].Add(DollId);
     }
     public override bool CanUseKillButton(PlayerControl pc) => true;
@@ -65,18 +65,19 @@ internal class VoodooMaster : CovenManager
     public override void SetAbilityButtonText(HudManager hud, byte playerId) =>
         hud.KillButton.OverrideText(GetString("ShamanButtonText"));
     public override string GetMark(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
-        => IsDoll(seer.PlayerId, seen.PlayerId) ? ColorString(GetRoleColor(CustomRoles.VoodooMaster), "✂") : string.Empty;
+    => IsDoll(seer.PlayerId, seen.PlayerId) ? ColorString(GetRoleColor(CustomRoles.VoodooMaster), "✂") : string.Empty;
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
     {
         if (_Player == null) return string.Empty;
-        if (IsDoll(_Player.PlayerId, target.PlayerId) && ((seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId) || !seer.IsAlive()))
+        if (IsDoll(_Player.PlayerId, target.PlayerId) && seer.GetCustomRole().IsCovenTeam() && seer.PlayerId != _Player.PlayerId)
         {
             return ColorString(GetRoleColor(CustomRoles.VoodooMaster), "✂");
         }
         return string.Empty;
     }
     public static bool IsDoll(byte pc, byte target) => Dolls.TryGetValue(pc, out var dollList) && dollList.Contains(target);
-
+    public override string GetProgressText(byte playerId, bool comms)
+        => ColorString(AbilityLimit >= 1 ? GetRoleColor(CustomRoles.VoodooMaster).ShadeColor(0.25f) : Color.gray, $"({AbilityLimit})");
     public override bool ForcedCheckMurderAsKiller(PlayerControl killer, PlayerControl target)
     {
         if (!HasNecronomicon(killer))
@@ -101,12 +102,11 @@ internal class VoodooMaster : CovenManager
     private void SetDoll(PlayerControl killer, PlayerControl target)
     {
         if (IsDoll(killer.PlayerId, target.PlayerId)) return;
-        if (killer.GetAbilityUseLimit() > 0 && (!target.GetCustomRole().IsCovenTeam() || (target.GetCustomRole().IsCovenTeam() && CanDollCoven.GetBool())))
+        if (AbilityLimit > 0 && (!target.GetCustomRole().IsCovenTeam() || (target.GetCustomRole().IsCovenTeam() && CanDollCoven.GetBool())))
         {
             Dolls[killer.PlayerId].Add(target.PlayerId);
-            killer.RpcRemoveAbilityUse();
+            AbilityLimit--;
             SendRPC(killer, target);
-
             killer.RpcGuardAndKill(target);
             killer.Notify(string.Format(GetString("VoodooMasterDolledSomeone"), target.GetRealName()));
             killer.ResetKillCooldown();
@@ -123,7 +123,7 @@ internal class VoodooMaster : CovenManager
 
         PlayerControl ChoosenTarget = GetPlayerById(Dolls[target.PlayerId].Where(x => GetPlayerById(x).IsAlive()).ToList().RandomElement());
 
-        if (killer.CheckForInvalidMurdering(ChoosenTarget) && killer.RpcCheckAndMurder(ChoosenTarget, check: true) && !ChoosenTarget.IsTransformedNeutralApocalypse())
+        if (killer.CheckForInvalidMurdering(ChoosenTarget) && killer.RpcCheckAndMurder(ChoosenTarget, check: true))
         {
             killer.RpcMurderPlayer(ChoosenTarget);
             ChoosenTarget.SetRealKiller(_Player);
@@ -137,10 +137,8 @@ internal class VoodooMaster : CovenManager
     }
     public override void AfterMeetingTasks()
     {
-        if (_Player == null) return;
-
         Dolls[_Player.PlayerId].Clear();
-        _Player.SetAbilityUseLimit(VoodoosPerRound.GetInt());
+        AbilityLimit = VoodoosPerRound.GetInt();
     }
     public override bool CheckMurderOnOthersTarget(PlayerControl killer, PlayerControl target)
     {

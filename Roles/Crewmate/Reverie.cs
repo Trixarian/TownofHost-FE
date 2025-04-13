@@ -1,8 +1,8 @@
 using AmongUs.GameOptions;
 using System;
-using static TOHFE.Options;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Reverie : RoleBase
 {

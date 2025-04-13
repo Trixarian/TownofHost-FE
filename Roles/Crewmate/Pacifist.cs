@@ -1,12 +1,15 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Impostor;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using System;
+using System.Text;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using TOHE.Roles.Impostor;
+using UnityEngine;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Pacifist : RoleBase
 {
@@ -21,6 +24,7 @@ internal class Pacifist : RoleBase
 
     private static OptionItem PacifistCooldown;
     private static OptionItem PacifistMaxOfUseage;
+    private static OptionItem PacifistAbilityUseGainWithEachTaskCompleted;
 
     public override void SetupCustomOption()
     {
@@ -34,25 +38,17 @@ internal class Pacifist : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(PacifistMaxOfUseage.GetInt());
-    }
-    public override void ApplyGameOptions(IGameOptions opt, byte playerId)
-    {
-        AURoleOptions.EngineerCooldown = PacifistCooldown.GetFloat();
-        AURoleOptions.EngineerInVentMaxTime = 1;
+        AbilityLimit = PacifistMaxOfUseage.GetInt();
     }
     public override void OnEnterVent(PlayerControl pc, Vent vent)
     {
-        var abilityUse = pc.GetAbilityUseLimit();
-        if (abilityUse < 1)
+        if (AbilityLimit < 1)
         {
             pc.Notify(GetString("OutOfAbilityUsesDoMoreTasks"));
         }
         else
         {
-            pc.RpcRemoveAbilityUse();
-            abilityUse--;
-
+            AbilityLimit -= 1;
             if (!DisableShieldAnimations.GetBool()) pc.RpcGuardAndKill(pc);
 
             Main.AllAlivePlayerControls.Where(x =>
@@ -71,12 +67,41 @@ internal class Pacifist : RoleBase
                 x.Notify(ColorString(GetRoleColor(CustomRoles.Pacifist), GetString("PacifistSkillNotify")));
             });
             pc.RPCPlayCustomSound("Dove");
-            pc.Notify(string.Format(GetString("PacifistOnGuard"), abilityUse));
+            pc.Notify(string.Format(GetString("PacifistOnGuard"), AbilityLimit));
         }
     }
     public override bool CheckBootFromVent(PlayerPhysics physics, int ventId)
-        => physics.myPlayer.GetAbilityUseLimit() < 1;
+        => AbilityLimit < 1;
 
+    public override bool OnTaskComplete(PlayerControl player, int completedTaskCount, int totalTaskCount)
+    {
+        if (player.IsAlive())
+            AbilityLimit += PacifistAbilityUseGainWithEachTaskCompleted.GetFloat();
+
+        return true;
+    }
+    public override void ApplyGameOptions(IGameOptions opt, byte playerId)
+    {
+        AURoleOptions.EngineerCooldown = PacifistCooldown.GetFloat();
+        AURoleOptions.EngineerInVentMaxTime = 1;
+    }
+    public override string GetProgressText(byte playerId, bool comms)
+    {
+        var ProgressText = new StringBuilder();
+        var taskState5 = Main.PlayerStates?[playerId].TaskState;
+        Color TextColor5;
+        var TaskCompleteColor5 = Color.green;
+        var NonCompleteColor5 = Color.yellow;
+        var NormalColor5 = taskState5.IsTaskFinished ? TaskCompleteColor5 : NonCompleteColor5;
+        TextColor5 = comms ? Color.gray : NormalColor5;
+        string Completed5 = comms ? "?" : $"{taskState5.CompletedTasksCount}";
+        Color TextColor51;
+        if (AbilityLimit < 1) TextColor51 = Color.red;
+        else TextColor51 = Color.white;
+        ProgressText.Append(ColorString(TextColor5, $"({Completed5}/{taskState5.AllTasksCount})"));
+        ProgressText.Append(ColorString(TextColor51, $" <color=#ffffff>-</color> {Math.Round(AbilityLimit, 1)}"));
+        return ProgressText.ToString();
+    }
     public override void SetAbilityButtonText(HudManager hud, byte id)
     {
         hud.ReportButton.OverrideText(GetString("ReportButtonText"));

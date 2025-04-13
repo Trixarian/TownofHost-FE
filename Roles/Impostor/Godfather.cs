@@ -1,8 +1,8 @@
-using TOHFE.Roles.Core;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using TOHE.Roles.Core;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Godfather : RoleBase
 {

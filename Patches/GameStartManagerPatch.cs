@@ -3,12 +3,12 @@ using AmongUs.GameOptions;
 using InnerNet;
 using System;
 using TMPro;
-using TOHFE.Patches;
+using TOHE.Patches;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 using Object = UnityEngine.Object;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.Update))]
 public static class GameStartManagerMinPlayersPatch
@@ -105,7 +105,7 @@ public class GameStartManagerPatch
                 if (Main.NormalOptions.KillCooldown == 0f)
                     Main.NormalOptions.KillCooldown = Main.LastKillCooldown.Value;
 
-                AURoleOptions.SetOpt(Main.NormalOptions.CastFast<IGameOptions>());
+                AURoleOptions.SetOpt(Main.NormalOptions.Cast<IGameOptions>());
                 if (AURoleOptions.ShapeshifterCooldown == 0f)
                     AURoleOptions.ShapeshifterCooldown = Main.LastShapeshifterCooldown.Value;
 
@@ -292,6 +292,14 @@ public class GameStartManagerPatch
                 && version.tag == $"{ThisAssembly.Git.Commit}({ThisAssembly.Git.Branch})";
         }
     }
+    [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.SetText))]
+    public static class HiddenTextPatch
+    {
+        private static void Postfix(TextBoxTMP __instance)
+        {
+            if (__instance.name == "GameIdText") __instance.outputText.text = new string('*', __instance.text.Length);
+        }
+    }
 }
 [HarmonyPatch(typeof(GameStartManager), nameof(GameStartManager.BeginGame))]
 public class GameStartManagerBeginGamePatch
@@ -352,8 +360,8 @@ public class GameStartManagerBeginGamePatch
         //}
 
         IGameOptions opt = GameStates.IsNormalGame
-            ? Main.NormalOptions.CastFast<IGameOptions>()
-            : Main.HideNSeekOptions.CastFast<IGameOptions>();
+            ? Main.NormalOptions.Cast<IGameOptions>()
+            : Main.HideNSeekOptions.Cast<IGameOptions>();
 
         if (GameStates.IsNormalGame)
         {
@@ -370,8 +378,7 @@ public class GameStartManagerBeginGamePatch
             AURoleOptions.GuardianAngelCooldown = 0f;
         }
 
-        GameManager.Instance.LogicOptions.SetDirty();
-        OptionItem.SyncAllOptions();
+        PlayerControl.LocalPlayer.RpcSyncSettings(GameOptionsManager.Instance.gameOptionsFactory.ToBytes(opt, AprilFoolsMode.IsAprilFoolsModeToggledOn));
         RPC.RpcVersionCheck();
     }
     private static byte SelectRandomMap()
@@ -445,8 +452,7 @@ class ResetStartStatePatch
             if (GameStates.IsNormalGame)
                 Main.NormalOptions.KillCooldown = Options.DefaultKillCooldown;
 
-            GameManager.Instance.LogicOptions.SetDirty();
-            OptionItem.SyncAllOptions();
+            PlayerControl.LocalPlayer.RpcSyncSettings(GameOptionsManager.Instance.gameOptionsFactory.ToBytes(GameOptionsManager.Instance.CurrentGameOptions, AprilFoolsMode.IsAprilFoolsModeToggledOn));
         }
     }
 }

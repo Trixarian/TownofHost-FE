@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Modules;
+using TOHE.Roles.Core;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Pursuer : RoleBase
 {
@@ -37,32 +37,33 @@ internal class Pursuer : RoleBase
     }
     public override void Add(byte playerId)
     {
-        playerId.SetAbilityUseLimit(PursuerSkillLimitTimes.GetInt());
+        AbilityLimit = PursuerSkillLimitTimes.GetInt();
     }
     public override bool CanUseKillButton(PlayerControl pc) => CanUseKillButton(pc.PlayerId);
-    private static bool CanUseKillButton(byte playerId) => !Main.PlayerStates[playerId].IsDead && playerId.GetAbilityUseLimit() > 0;
 
+    public bool CanUseKillButton(byte playerId)
+        => !Main.PlayerStates[playerId].IsDead
+        && AbilityLimit >= 1;
+    public override string GetProgressText(byte playerId, bool cooms) => Utils.ColorString(CanUseKillButton(playerId) ? Utils.GetRoleColor(CustomRoles.Pursuer) : Color.gray, $"({AbilityLimit})");
     public override void SetKillCooldown(byte id) => Main.AllPlayerKillCooldown[id] = CanUseKillButton(id) ? PursuerSkillCooldown.GetFloat() : 300f;
+    public bool IsClient(byte playerId)
+    {
+        return clientList.Contains(playerId);
+    }
     public override void ApplyGameOptions(IGameOptions opt, byte playerId) => opt.SetVision(true);
-    private bool IsClient(byte playerId) => clientList.Contains(playerId);
-    private bool CanBeClient(PlayerControl pc) => pc != null && pc.IsAlive() && !GameStates.IsMeeting && !IsClient(pc.PlayerId);
-    private bool CanSeel() => _Player?.PlayerId.GetAbilityUseLimit() > 0;
+    public bool CanBeClient(PlayerControl pc) => pc != null && pc.IsAlive() && !GameStates.IsMeeting && !IsClient(pc.PlayerId);
+    public bool CanSeel() => AbilityLimit > 0;
     public override bool OnCheckMurderAsKiller(PlayerControl pc, PlayerControl target)
     {
         if (pc == null || target == null || !pc.Is(CustomRoles.Pursuer)) return false;
-        if (target.Is(CustomRoles.SerialKiller)) return false;
+        if (target.Is(CustomRoles.Pestilence) || target.Is(CustomRoles.SerialKiller)) return false;
         if (!(CanBeClient(target) && CanSeel())) return false;
 
-        pc.RpcRemoveAbilityUse();
-
+        AbilityLimit--;
+        SendSkillRPC();
         if (target.Is(CustomRoles.KillingMachine))
         {
             Logger.Info("target is Killing Machine, ability used count reduced, but target will not die", "Purser");
-            return false;
-        }
-        if (target.IsTransformedNeutralApocalypse())
-        {
-            Logger.Info("target is Transformed Neutral Apocalypse, ability used count reduced, but target will not die", "Deceiver");
             return false;
         }
 

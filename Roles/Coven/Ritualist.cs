@@ -1,18 +1,18 @@
 using Hazel;
 using System;
 using System.Text.RegularExpressions;
-using TOHFE.Modules.ChatManager;
-using TOHFE.Roles.AddOns.Crewmate;
-using TOHFE.Roles.AddOns.Impostor;
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Double;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules.ChatManager;
+using TOHE.Roles.AddOns.Crewmate;
+using TOHE.Roles.AddOns.Impostor;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Double;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Coven;
+namespace TOHE.Roles.Coven;
 
 internal class Ritualist : CovenManager
 {

@@ -3,10 +3,10 @@ using System;
 using System.IO;
 using System.Text.Json;
 using UnityEngine.Networking;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 using IEnumerator = System.Collections.IEnumerator;
 
-namespace TOHFE;
+namespace TOHE;
 
 public class dbConnect
 {
@@ -126,7 +126,7 @@ public class dbConnect
         Assembly assembly = Assembly.GetExecutingAssembly();
 
         // Specify the full name of the embedded resource
-        string resourceName = "TOHFE.token.env";
+        string resourceName = "TOHE.token.env";
         /*
          make a token.env file in the root folder and add `API_TOKEN=your_api_token_here`
         for example :- API_TOKEN=1234567890

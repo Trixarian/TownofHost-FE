@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
 using Hazel;
-using TOHFE.Modules;
+using TOHE.Modules;
 using UnityEngine;
-using static TOHFE.Translator;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Fireworker : RoleBase
 {
@@ -144,7 +144,6 @@ internal class Fireworker : RoleBase
                     {
                         var dis = Utils.GetDistance(pos, player.transform.position);
                         if (dis > fireworkerRadius) continue;
-                        if (player.IsTransformedNeutralApocalypse()) continue;
 
                         if (player == shapeshifter)
                         {

@@ -4,7 +4,7 @@ using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using InnerNet;
 using System;
 
-namespace TOHFE;
+namespace TOHE;
 
 public class CustomRpcSender
 {
@@ -164,7 +164,7 @@ public class CustomRpcSender
 
         return this;
     }
-    public void SendMessage(bool dispose = false)
+    public void SendMessage()
     {
         if (currentState == State.InRootMessage) this.EndMessage();
         if (currentState != State.Ready)
@@ -176,17 +176,12 @@ public class CustomRpcSender
                 throw new InvalidOperationException(errorMsg);
         }
 
-        if (!dispose)
-        {
-            AmongUsClient.Instance.SendOrDisconnect(stream);
-            onSendDelegate();
-        }
+        AmongUsClient.Instance.SendOrDisconnect(stream);
+        onSendDelegate();
         currentState = State.Finished;
-        Logger.Info($"\"{name}\" is " + (dispose ? "disposed" : "finished"), "CustomRpcSender");
+        Logger.Info($"\"{name}\" is finished", "CustomRpcSender");
         stream.Recycle();
     }
-
-    public int Length => stream.Length;
 
     // Write
     #region PublicWriteMethods
@@ -240,14 +235,6 @@ public static class CustomRpcSenderExtensions
         sender.AutoStartRpc(player.NetId, (byte)RpcCalls.SetRole, targetClientId)
             .Write((ushort)role)
             .Write(true) // canOverride
-            .EndRpc();
-    }
-
-    public static void RpcSetCustomRole(this CustomRpcSender sender, byte playerId, CustomRoles role, int targetClientId = -1)
-    {
-        sender.AutoStartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetCustomRole, targetClientId)
-            .Write(playerId)
-            .WritePacked((int)role)
             .EndRpc();
     }
 }

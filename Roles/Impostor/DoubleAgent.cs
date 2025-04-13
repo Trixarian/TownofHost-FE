@@ -1,16 +1,16 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Coven;
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using TOHE.Roles.Coven;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 internal class DoubleAgent : RoleBase
 {
     //===========================SETUP================================\\
@@ -46,7 +46,7 @@ internal class DoubleAgent : RoleBase
     [
         0, // NoChange
         0, // Random
-        CustomRoles.ImpostorTOHFE, // Team Crewmate
+        CustomRoles.ImpostorTOHE, // Team Crewmate
         CustomRoles.Traitor, // Team Neutral
         CustomRoles.Trickster, // Team Impostor as Crewmate
     ];
@@ -106,10 +106,9 @@ internal class DoubleAgent : RoleBase
                 return;
             }
 
-            var bastion = Main.AllPlayerControls.FirstOrDefault(p => pc.Is(CustomRoles.Bastion));
-            if (bastion.GetRoleClass() is Bastion bastionClass && bastionClass.BombedVents.Contains(vent.Id))
+            if (Bastion.BombedVents.Contains(vent.Id))
             {
-                bastionClass.BombedVents.Remove(vent.Id);
+                Bastion.BombedVents.Remove(vent.Id);
                 _ = new LateTask(() =>
                 {
                     if (pc.inVent) pc.MyPhysics.RpcBootFromVent(vent.Id);
@@ -229,8 +228,8 @@ internal class DoubleAgent : RoleBase
                         }
                     }
                 }
-                // If Role is ImpostorTOHFE aka Admired Impostor opt give Admired Addon if player dose not already have it.
-                if (Role == CustomRoles.ImpostorTOHFE && !player.GetCustomSubRoles().Contains(CustomRoles.Admired))
+                // If Role is ImpostorTOHE aka Admired Impostor opt give Admired Addon if player dose not already have it.
+                if (Role == CustomRoles.ImpostorTOHE && !player.GetCustomSubRoles().Contains(CustomRoles.Admired))
                     player.GetCustomSubRoles()?.Add(CustomRoles.Admired);
 
                 Init();
@@ -241,8 +240,8 @@ internal class DoubleAgent : RoleBase
                 player.MarkDirtySettings();
 
                 string RoleName = ColorString(GetRoleColor(player.GetCustomRole()), GetRoleName(player.GetCustomRole()));
-                if (Role == CustomRoles.ImpostorTOHFE)
-                    RoleName = ColorString(GetRoleColor(CustomRoles.Admired), $"{GetString("Admired")} {GetString("ImpostorTOHFE")}");
+                if (Role == CustomRoles.ImpostorTOHE)
+                    RoleName = ColorString(GetRoleColor(CustomRoles.Admired), $"{GetString("Admired")} {GetString("ImpostorTOHE")}");
                 player.Notify(ColorString(GetRoleColor(player.GetCustomRole()), GetString("DoubleAgentRoleChange") + RoleName));
             }
         }
@@ -255,7 +254,7 @@ internal class DoubleAgent : RoleBase
 
         foreach (PlayerControl target in Main.AllAlivePlayerControls) // Get players in radius of bomb that are not in a vent.
         {
-            if (GetDistance(player.GetCustomPosition(), target.GetCustomPosition()) <= ExplosionRadius.GetFloat() && !(player.IsTransformedNeutralApocalypse() || target.IsTransformedNeutralApocalypse()))
+            if (GetDistance(player.GetCustomPosition(), target.GetCustomPosition()) <= ExplosionRadius.GetFloat())
             {
                 if (player.inVent) continue;
                 Main.PlayerStates[target.PlayerId].deathReason = PlayerState.DeathReason.Bombed;

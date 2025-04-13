@@ -1,4 +1,4 @@
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Tiebreaker : IAddon
 {

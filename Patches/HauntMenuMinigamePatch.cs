@@ -1,7 +1,7 @@
-using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Impostor;
+using TOHE.Roles.Crewmate;
+using TOHE.Roles.Impostor;
 
-namespace TOHFE.Patches;
+namespace TOHE.Patches;
 
 [HarmonyPatch(typeof(HauntMenuMinigame), nameof(HauntMenuMinigame.SetFilterText))]
 public static class HauntMenuMinigameSetFilterTextPatch
@@ -11,7 +11,7 @@ public static class HauntMenuMinigameSetFilterTextPatch
         if (__instance.HauntTarget != null && DeadKnowRole(PlayerControl.LocalPlayer) && GameStates.IsNormalGame)
         {
             // Override job title display with custom role name
-            __instance.FilterText.text = Utils.GetDisplayRoleAndSubName(PlayerControl.LocalPlayer.PlayerId, __instance.HauntTarget.PlayerId, false, false);
+            __instance.FilterText.text = Utils.GetDisplayRoleAndSubName(PlayerControl.LocalPlayer.PlayerId, __instance.HauntTarget.PlayerId, false);
             return false;
         }
         return true;

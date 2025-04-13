@@ -1,7 +1,7 @@
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
+using TOHE.Roles.Core;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.AddOns.Common;
+namespace TOHE.Roles.AddOns.Common;
 
 public class Prohibited : IAddon
 {
@@ -55,7 +55,7 @@ public class Prohibited : IAddon
         return Utils.GetActiveMapName() switch
         {
             MapNames.Skeld => CountBlockedVentsInSkeld.GetInt(),
-            MapNames.MiraHQ => CountBlockedVentsInMira.GetInt(),
+            MapNames.Mira => CountBlockedVentsInMira.GetInt(),
             MapNames.Polus => CountBlockedVentsInPolus.GetInt(),
             MapNames.Dleks => CountBlockedVentsInDleks.GetInt(),
             MapNames.Airship => CountBlockedVentsInAirship.GetInt(),

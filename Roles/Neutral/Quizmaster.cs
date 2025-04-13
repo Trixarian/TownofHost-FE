@@ -2,13 +2,13 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using System;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Quizmaster : RoleBase
 {
@@ -246,8 +246,8 @@ internal class Quizmaster : RoleBase
                 new SetAnswersQuestion { Stage = 4, Question = "QuizmasterCooldown", Answer = "15", PossibleAnswers = { "15", "30", "0", "999", AURoleOptions.KillCooldown.ToString() }, QuizmasterQuestionType = QuizmasterQuestionType.QuizmasterCooldownQuestion }, // this is a level 4 because the only way to know this would be to look at the code for Quizmaster
                 new SetAnswersQuestion { Stage = 4, Question = "WhoCoded", Answer = "Multiple People", PossibleAnswers = { "Furo", "Drakos", "Moe", "Marg", "Multiple People", "TommyXL", "Niko", "Pyro", "KARPED1EM", "Ryuk" }, QuizmasterQuestionType = QuizmasterQuestionType.WhoCoded },
 
-                new SetAnswersQuestion { Stage = 5, Question = "TOHFEPartners", Answer = "Modded Among Us Lobbies", PossibleAnswers = { "Innersloth", "Modded Among Us Lobbies", "Purple Among Us", "Modded Among Us Lobbies & Purple Among Us", "Steam", "Twitter", "Town Of Us: Reactivated", "Moe Corporation", "Digital Bandidos" }, QuizmasterQuestionType = QuizmasterQuestionType.TOHFEPartners },
-                new SetAnswersQuestion { Stage = 5, Question = "TOHFEEventCoordinator", Answer = "Sarha", PossibleAnswers = { "Moe", "Sarha", "Lauryn", "Jackler", "Matt", "Tasha", "Pyro", "Fish" }, QuizmasterQuestionType = QuizmasterQuestionType.TOHFEEventCoordinator },
+                new SetAnswersQuestion { Stage = 5, Question = "TOHEPartners", Answer = "Modded Among Us Lobbies", PossibleAnswers = { "Innersloth", "Modded Among Us Lobbies", "Purple Among Us", "Modded Among Us Lobbies & Purple Among Us", "Steam", "Twitter", "Town Of Us: Reactivated", "Moe Corporation", "Digital Bandidos" }, QuizmasterQuestionType = QuizmasterQuestionType.TOHEPartners },
+                new SetAnswersQuestion { Stage = 5, Question = "TOHEEventCoordinator", Answer = "Sarha", PossibleAnswers = { "Moe", "Sarha", "Lauryn", "Jackler", "Matt", "Tasha", "Pyro", "Fish" }, QuizmasterQuestionType = QuizmasterQuestionType.TOHEEventCoordinator },
                 new SetAnswersQuestion { Stage = 5, Question = "HowManyCats", Answer = "3", PossibleAnswers = { "0", "1", "2", "3", "4", "5", "6" }, QuizmasterQuestionType = QuizmasterQuestionType.HowManyCats }, // Copycat, Schrodinger's Cat, OIIAI (I want to count Jinx because of its origin in TOS2, but I won't)
                 new SetAnswersQuestion { Stage = 5, Question = "GuessingCommand", Answer = "Bet", PossibleAnswers = { "Nothing, it's just /bt", "Bet", "Bloodthirst", "Betray Them", "Bomb Tag", "Bad Thing" }, QuizmasterQuestionType = QuizmasterQuestionType.GuessingCommand },
                 new SetAnswersQuestion { Stage = 5, Question = "NotFromTOS2", Answer = "Moon Dancer", PossibleAnswers = { "Coven Leader", "Jinx", "Marshall", "Doomsayer", "Baker", "Moon Dancer", "Pirate", "Mayor", "Veteran", "Psychic" }, QuizmasterQuestionType = QuizmasterQuestionType.NotFromTOS2 },
@@ -325,11 +325,11 @@ internal class Quizmaster : RoleBase
             => hud.KillButton.OverrideText(GetString(allowedKilling ? "KillButtonText" : "QuizmasterKillButtonText"));
 
     public override string GetMark(PlayerControl seer, PlayerControl target = null, bool isForMeeting = false)
-        => (!isForMeeting && seer.PlayerId != target.PlayerId && MarkedPlayer == target.PlayerId) ? Utils.ColorString(Utils.GetRoleColor(CustomRoles.Quizmaster), " ？！") : string.Empty;
+        => (!isForMeeting && seer.PlayerId != target.PlayerId && MarkedPlayer == target.PlayerId) ? Utils.ColorString(Utils.GetRoleColor(CustomRoles.Quizmaster), " ?!") : string.Empty;
 
 
     public override string GetMarkOthers(PlayerControl seer, PlayerControl target, bool isForMeeting = false)
-            => (isForMeeting && MarkedPlayer == target.PlayerId) ? Utils.ColorString(Utils.GetRoleColor(CustomRoles.Quizmaster), " ？！") : string.Empty;
+            => (isForMeeting && MarkedPlayer == target.PlayerId) ? Utils.ColorString(Utils.GetRoleColor(CustomRoles.Quizmaster), " ?!") : string.Empty;
 
 
     public static void OnSabotageCall(SystemTypes systemType)
@@ -372,7 +372,6 @@ internal class Quizmaster : RoleBase
 
     private static void KillPlayer(PlayerControl plrToKill)
     {
-        if (!plrToKill.IsAlive() || plrToKill.IsTransformedNeutralApocalypse()) return;
         plrToKill.SetDeathReason(PlayerState.DeathReason.WrongAnswer);
         Main.PlayerStates[plrToKill.PlayerId].SetDead();
         plrToKill.Data.IsDead = true;
@@ -704,7 +703,7 @@ class SabotageQuestion : QuizQuestionBase
         {
             MapNames.Skeld => SkeldSabotages.ConvertAll(f => f.ToString()),
             MapNames.Dleks => SkeldSabotages.ConvertAll(f => f.ToString()),
-            MapNames.MiraHQ => MiraSabotages.ConvertAll(f => f.ToString()),
+            MapNames.Mira => MiraSabotages.ConvertAll(f => f.ToString()),
             MapNames.Polus => PolusSabotages.ConvertAll(f => f.ToString()),
             MapNames.Airship => AirshitSabotages.ConvertAll(f => f.ToString()),
             MapNames.Fungle => FungleSabotages.ConvertAll(f => f.ToString()),
@@ -767,8 +766,8 @@ public enum QuizmasterQuestionType
     QuizmasterCooldownQuestion,
     WhoCoded,
     WhoOwns,
-    TOHFEPartners,
-    TOHFEEventCoordinator,
+    TOHEPartners,
+    TOHEEventCoordinator,
     HowManyCats,
     GuessingCommand,
     NotFromTOS2,

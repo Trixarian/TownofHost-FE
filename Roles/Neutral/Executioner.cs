@@ -1,9 +1,9 @@
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
+using TOHE.Roles.Core;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Executioner : RoleBase
 {
@@ -53,7 +53,7 @@ internal class Executioner : RoleBase
     [
         CustomRoles.Amnesiac,
         CustomRoles.Maverick,
-        CustomRoles.CrewmateTOHFE,
+        CustomRoles.CrewmateTOHE,
         CustomRoles.Celebrity,
         CustomRoles.Bodyguard,
         CustomRoles.Dictator,
@@ -63,7 +63,7 @@ internal class Executioner : RoleBase
         CustomRoles.Opportunist,
         CustomRoles.Pursuer,
         CustomRoles.Refugee,
-        CustomRoles.TrackerTOHFE,
+        CustomRoles.TrackerTOHE,
         CustomRoles.Sheriff,
         CustomRoles.Deputy,
         CustomRoles.Medic,
@@ -261,7 +261,7 @@ internal class Executioner : RoleBase
         {
             if (RevealExeTargetUponEjection.GetBool())
             {
-                name = string.Format(Translator.GetString("ExiledExeTarget"), Main.LastVotedPlayer, Utils.GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, false, true));
+                name = string.Format(Translator.GetString("ExiledExeTarget"), Main.LastVotedPlayer, Utils.GetDisplayRoleAndSubName(exiled.PlayerId, exiled.PlayerId, true));
                 DecidedWinner = true;
             }
         }

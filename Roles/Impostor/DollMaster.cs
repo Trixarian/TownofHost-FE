@@ -1,12 +1,12 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Neutral;
+using TOHE.Modules;
+using TOHE.Roles.Core;
+using TOHE.Roles.Neutral;
 using UnityEngine;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using static TOHE.Options;
+using static TOHE.Translator;
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class DollMaster : RoleBase
 {

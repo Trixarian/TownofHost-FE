@@ -1,8 +1,7 @@
 using AmongUs.GameOptions;
-using TOHFE.Modules;
-using TOHFE.Roles.Core;
+using TOHE.Roles.Core;
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 // 来源：https://github.com/Yumenopai/TownOfHost_Y
 internal class Stalker : RoleBase
@@ -54,8 +53,6 @@ internal class Stalker : RoleBase
     public override void OnMurderPlayerAsKiller(PlayerControl killer, PlayerControl target, bool inMeeting, bool isSuicide)
     {
         if (Utils.IsActive(SystemTypes.Electrical) || inMeeting || isSuicide) return;
-
-        CustomSoundsManager.RPCPlayCustomSoundAll("FlashBang");
 
         // Code from AU: SabotageSystemType.UpdateSystem switch SystemTypes.Electrical
         byte switchId = 4;

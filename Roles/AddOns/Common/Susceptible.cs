@@ -1,4 +1,6 @@
-namespace TOHFE.Roles.AddOns.Common;
+using System;
+
+namespace TOHE.Roles.AddOns.Common;
 
 public class Susceptible : IAddon
 {

@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
-using static TOHFE.Utils;
+using static TOHE.Utils;
 
-namespace TOHFE;
+namespace TOHE;
 
 //ÕÅé×ÇâÕàâ : https://github.com/ykundesu/SuperNewRoles/blob/master/SuperNewRoles/Mode/SuperHostRoles/BlockTool.cs
 class DisableDevice
@@ -34,7 +34,7 @@ class DisableDevice
         return Map switch
         {
             MapNames.Skeld => 1.8f,
-            MapNames.MiraHQ => 2.4f,
+            MapNames.Mira => 2.4f,
             MapNames.Polus => 1.8f,
             MapNames.Dleks => 1.5f,
             MapNames.Airship => 1.8f,

@@ -1,10 +1,10 @@
 using Hazel;
-using TOHFE.Modules;
-using TOHFE.Roles.Neutral;
-using static TOHFE.Options;
+using TOHE.Modules;
+using TOHE.Roles.Neutral;
+using static TOHE.Options;
 
 
-namespace TOHFE.Roles.Impostor;
+namespace TOHE.Roles.Impostor;
 
 internal class Lightning : RoleBase
 {
@@ -72,7 +72,6 @@ internal class Lightning : RoleBase
     {
         if (killer == null || target == null || !killer.Is(CustomRoles.Lightning)) return false;
         if (IsGhost(target)) return false;
-        if (target.IsTransformedNeutralApocalypse()) return false;
 
         killer.RpcGuardAndKill();
         target.RpcGuardAndKill();

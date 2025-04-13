@@ -1,10 +1,11 @@
 using AmongUs.GameOptions;
 using Hazel;
-using TOHFE.Roles.AddOns.Common;
-using TOHFE.Roles.Core;
-using TOHFE.Roles.Impostor;
+using TOHE.Roles.AddOns.Common;
+using TOHE.Roles.Core;
+using TOHE.Roles.Impostor;
+using TOHE.Roles.Neutral;
 
-namespace TOHFE;
+namespace TOHE;
 
 //ÕÅé×Çâ
 //https://github.com/Koke1024/Town-Of-Moss/blob/main/TownOfMoss/Patches/MeltDownBoost.cs
@@ -348,8 +349,9 @@ public class SabotageSystemPatch
                     return false;
             }
 
-            if (Options.CurrentGameMode is CustomGameMode.SpeedRun)
+            if (player.GetRoleClass() is Glitch gc)
             {
+                gc.Mimic(player);
                 return false;
             }
 

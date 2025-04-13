@@ -1,4 +1,4 @@
-namespace TOHFE;
+namespace TOHE;
 
 // https://github.com/tukasa0001/TownOfHost/pull/1274/commits/164d1463e46f0ec453e136c7a2f28a8039cd7fc4
 
@@ -15,7 +15,7 @@ public static class MovingPlatformBehaviourPatch
         if (isDisabled)
         {
             __instance.transform.localPosition = __instance.DisabledPosition;
-            ShipStatus.Instance.CastFast<AirshipStatus>().outOfOrderPlat.SetActive(true);
+            ShipStatus.Instance.Cast<AirshipStatus>().outOfOrderPlat.SetActive(true);
         }
     }
     [HarmonyPatch(nameof(MovingPlatformBehaviour.IsDirty), MethodType.Getter), HarmonyPrefix]

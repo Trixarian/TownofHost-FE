@@ -1,12 +1,12 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
-using TOHFE.Roles.Core;
-using static TOHFE.Options;
-using static TOHFE.Translator;
+using TOHE.Roles.Core;
+using static TOHE.Options;
+using static TOHE.Translator;
 
 
-namespace TOHFE.Roles.Neutral;
+namespace TOHE.Roles.Neutral;
 
 internal class Lawyer : RoleBase
 {
@@ -55,7 +55,7 @@ internal class Lawyer : RoleBase
     }
     public static readonly CustomRoles[] CRoleChangeRoles =
     [
-        CustomRoles.CrewmateTOHFE,
+        CustomRoles.CrewmateTOHE,
         CustomRoles.Amnesiac,
         CustomRoles.Jester,
         CustomRoles.Opportunist,
@@ -66,7 +66,7 @@ internal class Lawyer : RoleBase
         CustomRoles.Doctor,
         CustomRoles.Maverick,
         CustomRoles.Follower,
-        CustomRoles.TrackerTOHFE,
+        CustomRoles.TrackerTOHE,
         CustomRoles.Mechanic,
         CustomRoles.Refugee,
         CustomRoles.Sheriff,

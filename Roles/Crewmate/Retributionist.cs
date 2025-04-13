@@ -1,13 +1,13 @@
 using Hazel;
-using TOHFE.Modules;
-using TOHFE.Roles.Double;
+using TOHE.Modules;
+using TOHE.Roles.Double;
 using UnityEngine;
-using static TOHFE.MeetingHudStartPatch;
-using static TOHFE.Options;
-using static TOHFE.Translator;
-using static TOHFE.Utils;
+using static TOHE.MeetingHudStartPatch;
+using static TOHE.Options;
+using static TOHE.Translator;
+using static TOHE.Utils;
 
-namespace TOHFE.Roles.Crewmate;
+namespace TOHE.Roles.Crewmate;
 
 internal class Retributionist : RoleBase
 {
@@ -105,7 +105,7 @@ internal class Retributionist : RoleBase
             bool canSeeRoles = PreventSeeRolesBeforeSkillUsedUp.GetBool();
             string text = GetString("PlayerIdList");
             foreach (var npc in Main.AllAlivePlayerControls)
-                text += $"\n{npc.PlayerId} → " + (canSeeRoles ? $"({npc.GetDisplayRoleAndSubName(npc, false, false)}) " : string.Empty) + npc.GetRealName();
+                text += $"\n{npc.PlayerId} → " + (canSeeRoles ? $"({npc.GetDisplayRoleAndSubName(npc, false)}) " : string.Empty) + npc.GetRealName();
             SendMessage(text, pc.PlayerId);
             return true;
         }

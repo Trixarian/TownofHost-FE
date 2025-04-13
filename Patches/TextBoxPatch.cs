@@ -1,7 +1,6 @@
-using AmongUs.Data;
 using System;
 
-namespace TOHFE.Patches;
+namespace TOHE.Patches;
 
 // Originally code by Gurge44. Reference: https://github.com/Gurge44/EndlessHostRoles/blob/main/Patches/TextBoxPatch.cs
 
@@ -11,11 +10,6 @@ class TextBoxTMPSetTextPatch
     // The only characters to treat specially are \r, \n and \b, allow all other characters to be written
     public static bool Prefix(TextBoxTMP __instance, [HarmonyArgument(0)] string input, [HarmonyArgument(1)] string inputCompo = "")
     {
-        if (__instance.name == "EnterCodeField")
-        {
-            __instance.Hidden = DataManager.Settings.Gameplay.StreamerMode;
-        }
-
         bool flag = false;
         char ch = ' ';
         __instance.AdjustCaretPosition(input.Length - __instance.text.Length);
@@ -77,12 +71,6 @@ class TextBoxTMPSetTextPatch
             __instance.outputText.ForceMeshUpdate(true, true);
             if (__instance.keyboard != null) __instance.keyboard.text = __instance.text;
             __instance.OnChange.Invoke();
-
-            if (__instance.tempTxt.Length == __instance.characterLimit && __instance.SendOnFullChars)
-            {
-                __instance.OnEnter.Invoke();
-                __instance.LoseFocus();
-            }
         }
 
         if (flag) __instance.OnEnter.Invoke();

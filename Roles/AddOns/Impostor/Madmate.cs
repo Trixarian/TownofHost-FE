@@ -1,10 +1,10 @@
 using AmongUs.GameOptions;
-using TOHFE.Roles.AddOns.Crewmate;
-using TOHFE.Roles.Double;
-using TOHFE.Roles.Impostor;
-using static TOHFE.Options;
+using TOHE.Roles.AddOns.Crewmate;
+using TOHE.Roles.Double;
+using TOHE.Roles.Impostor;
+using static TOHE.Options;
 
-namespace TOHFE.Roles.AddOns.Impostor;
+namespace TOHE.Roles.AddOns.Impostor;
 
 public static class Madmate
 {
@@ -112,8 +112,7 @@ public static class Madmate
             pc.Is(CustomRoles.Paranoia) ||
             pc.Is(CustomRoles.Vigilante) ||
             (pc.Is(CustomRoles.NiceMini) && Mini.Age >= 18) ||
-            (pc.Is(CustomRoles.Hurried) && !Hurried.CanBeOnMadMate.GetBool()) ||
-            (CovenManager.HasNecronomicon(pc.PlayerId) && pc.Is(CustomRoles.CovenLeader))
+            (pc.Is(CustomRoles.Hurried) && !Hurried.CanBeOnMadMate.GetBool())
             );
     }
     public static bool CheckCanBeMadmate(this PlayerControl pc, bool forGangster = false)

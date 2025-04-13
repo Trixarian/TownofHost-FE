@@ -4,13 +4,13 @@ using Hazel;
 using InnerNet;
 using System;
 using System.Text.RegularExpressions;
-using TOHFE.Modules;
-using TOHFE.Patches;
-using TOHFE.Roles.Core.AssignManager;
-using TOHFE.Roles.Crewmate;
-using static TOHFE.Translator;
+using TOHE.Modules;
+using TOHE.Patches;
+using TOHE.Roles.Core.AssignManager;
+using TOHE.Roles.Crewmate;
+using static TOHE.Translator;
 
-namespace TOHFE;
+namespace TOHE;
 
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
 class OnGameJoinedPatch
@@ -34,9 +34,8 @@ class OnGameJoinedPatch
         ErrorText.Instance.Clear();
         EAC.Init();
         Main.AllClientRealNames.Clear();
-        FixedUpdateInNormalGamePatch.RoleTextCache.Clear();
 
-        if (AmongUsClient.Instance.AmHost) // Execute the following only on the Host
+        if (AmongUsClient.Instance.AmHost) // Execute the following only on the host
         {
             EndGameManagerPatch.IsRestarting = false;
             if (!RehostManager.IsAutoRehostDone)
@@ -69,7 +68,7 @@ class OnGameJoinedPatch
                     if (Main.NormalOptions.KillCooldown == 0f)
                         Main.NormalOptions.KillCooldown = Main.LastKillCooldown.Value;
 
-                    AURoleOptions.SetOpt(Main.NormalOptions.CastFast<IGameOptions>());
+                    AURoleOptions.SetOpt(Main.NormalOptions.Cast<IGameOptions>());
 
                     if (AURoleOptions.ShapeshifterCooldown == 0f)
                         AURoleOptions.ShapeshifterCooldown = Main.LastShapeshifterCooldown.Value;
@@ -77,10 +76,10 @@ class OnGameJoinedPatch
                     if (AURoleOptions.GuardianAngelCooldown == 0f)
                         AURoleOptions.GuardianAngelCooldown = Main.LastGuardianAngelCooldown.Value;
 
-                    // If custom Gamemode is HideNSeekTOHFE in normal game, set Standard
-                    if (Options.CurrentGameMode == CustomGameMode.HidenSeekTOHFE)
+                    // if custom game mode is HideNSeekTOHE in normal game, set standart
+                    if (Options.CurrentGameMode == CustomGameMode.HidenSeekTOHE)
                     {
-                        // Select Standard
+                        // Select standart
                         Options.GameMode.SetValue(0);
                     }
                     break;
@@ -89,10 +88,10 @@ class OnGameJoinedPatch
                 case GameModes.HideNSeek:
                     Logger.Info(" Is Hide & Seek", "Game Mode");
 
-                    // If custom Gamemode is Standard/FFA/Speedrun in H&S game, set HideNSeekTOHFE
-                    if (Options.CurrentGameMode != CustomGameMode.HidenSeekTOHFE)
+                    // if custom game mode is Standard/FFA in H&S game, set HideNSeekTOHE
+                    if (Options.CurrentGameMode is CustomGameMode.Standard or CustomGameMode.FFA)
                     {
-                        // Select HideNSeekTOHFE
+                        // Select HideNSeekTOHE
                         Options.GameMode.SetValue(2);
                     }
                     break;
@@ -145,8 +144,7 @@ class OnGameJoinedPatch
                         Logger.Info($"{client.PlayerName.RemoveHtmlTags()}(ClientID:{client.Id}/FriendCode:{client.FriendCode}/HashPuid:{client.GetHashedPuid()}/Platform:{client.PlatformData.Platform}) finished join room", "Session: OnGameJoined Retry");
                         Logger.Info($"{host.PlayerName.RemoveHtmlTags()}(ClientID:{host.Id}/FriendCode:{host.FriendCode}/HashPuid:{host.GetHashedPuid()}/Platform:{host.PlatformData.Platform}) is the host", "Session: OnGameJoined Retry");
                     }
-                    catch { }
-                    ;
+                    catch { };
                 }, 1.5f, "Retry Log Local Client");
             }
         }, 0.7f, "OnGameJoinedPatch");
@@ -177,7 +175,7 @@ public static class OnPlayerJoinedPatch
             }
         }
         return false;
-        // When a client disconnects, it is removed from allClients in method amongusclient.removeplayer
+        //When a client disconnects, it is removed from allClients in method amongusclient.removeplayer
     }
     public static bool HasInvalidFriendCode(string friendcode)
     {
@@ -218,7 +216,7 @@ public static class OnPlayerJoinedPatch
                 {
                     Logger.SendInGame(GetString("Error.InvalidColor") + $" {client.Id}/{client.PlayerName}");
                     AmongUsClient.Instance.KickPlayer(client.Id, false);
-                    Logger.Info($"Kicked client {client.Id}/{client.PlayerName} because PlayerControl is not spawned in time.", "OnPlayerJoinedPatchPostfix");
+                    Logger.Info($"Kicked client {client.Id}/{client.PlayerName} bcz PlayerControl is not spawned in time.", "OnPlayerJoinedPatchPostfix");
                     return;
                 }
 
@@ -229,7 +227,7 @@ public static class OnPlayerJoinedPatch
                 }
             }
             catch { }
-        }, 4.5f, "Green Bean Kick LateTask", false);
+        }, 4.5f, "green bean kick late task", false);
 
 
         if (AmongUsClient.Instance.AmHost && HasInvalidFriendCode(client.FriendCode) && Options.KickPlayerFriendCodeInvalid.GetBool() && !GameStates.IsLocalGame)
@@ -349,7 +347,7 @@ class OnPlayerLeftPatch
                 }
             }
 
-            // This LateTask is to make sure that the player control is completely despawned for everyone so nobody gonna disconnect itself
+            // This latetask is to make sure that the player control is completely despawned for everyone so nobody gonna disconnect itself
             var netid = data.Character.NetId;
             _ = new LateTask(() =>
             {
@@ -385,7 +383,7 @@ class OnPlayerLeftPatch
                 state.Disconnected = true;
                 state.SetDead();
 
-                // If the player left while he had a Notice message, clear it
+                // if the player left while he had a Notice message, clear it
                 if (NameNotifyManager.Notifying(data.Character))
                 {
                     NameNotifyManager.Notice.Remove(data.Character.PlayerId);
@@ -429,7 +427,7 @@ class OnPlayerLeftPatch
                 DestroyableSingleton<HudManager>.Instance.Chat.AddChat(player, msg);
                 player.SetName(name);
 
-                // On become Host is called before OnPlayerLeft, so this is safe to use
+                //On Become Host is called before OnPlayerLeft, so this is safe to use
                 if (AmongUsClient.Instance.AmHost)
                 {
                     var writer = CustomRpcSender.Create("MessagesToSend", SendOption.None);
@@ -449,7 +447,7 @@ class OnPlayerLeftPatch
                     writer.SendMessage();
                 }
                 Main.HostClientId = AmongUsClient.Instance.HostId;
-                // We won't notify vanilla players for Host's quit because Niko doesn't know how to prevent message spamming
+                //We won;t notify vanilla players for host's quit bcz niko dont know how to prevent message spamming
                 _ = new LateTask(() =>
                 {
                     if (!GameStates.IsOnlineGame) return;
@@ -520,7 +518,7 @@ class OnPlayerLeftPatch
                         if (Main.PlayerQuitTimes[data?.GetHashedPuid()] >= Options.QuitTimesTillTempBan.GetInt())
                         {
                             BanManager.TempBanWhiteList.Add(data?.GetHashedPuid());
-                            // Should ban on player's next join game
+                            //should ban on player's next join game
                         }
                     }
                 }
@@ -680,7 +678,7 @@ class InnerNetClientSpawnPatch
                         if (!AmongUsClient.Instance.IsGameStarted && client.Character != null)
                         {
                             Main.isChatCommand = true;
-                            //Utils.SendMessage($"{GetString("Message.YTPlanNotice")} {PlayerControl.LocalPlayer.FriendCode.GetDevUser().UpName}", client.Character.PlayerId);
+                            //     Utils.SendMessage($"{GetString("Message.YTPlanNotice")} {PlayerControl.LocalPlayer.FriendCode.GetDevUser().UpName}", client.Character.PlayerId);
                         }
                     }, 3.3f, "DisplayUpWarnning");
                 }
