@@ -29,7 +29,7 @@
 <br>
 
 **Credit to these mods and their developers for the code and help:**
-### :star: [TOHE]([https://github.com/0xDrMoe/TownofHost-Enhanced](https://github.com/EnhancedNetwork/TownofHost-Enhanced) 
+### :star: [TOHE](https://github.com/EnhancedNetwork/TownofHost-Enhanced) 
 > 
 > - Town of Host: Frens Edition was forked from Town of Host: Enhanced.
 >
