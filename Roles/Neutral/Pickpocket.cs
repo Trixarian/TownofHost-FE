@@ -1,4 +1,5 @@
 using AmongUs.GameOptions;
+using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using static TOHFE.Options;
 using static TOHFE.Translator;
@@ -64,8 +65,11 @@ internal class Pickpocket : RoleBase
     {
         if (isSuicide || inMeeting) return;
 
-        killer.Notify(string.Format(GetString("PickpocketGetVote"),
-            ((Main.AllPlayerControls.Count(x => x.GetRealKiller()?.PlayerId == killer.PlayerId)) * VotesPerKill.GetFloat() + 1f)
-            .ToString("0.0#####")));
+        _ = new LateTask(() =>
+        {
+            killer.Notify(string.Format(GetString("PickpocketGetVote"),
+                ((Main.AllPlayerControls.Count(x => x.GetRealKiller()?.PlayerId == killer.PlayerId)) * VotesPerKill.GetFloat() + 1f)
+                .ToString("0.0#####")));
+        }, target.Is(CustomRoles.Burst) ? Burst.BurstKillDelay.GetFloat() : 0f, "BurstKillCheck");
     }
 }

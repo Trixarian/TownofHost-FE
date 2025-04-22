@@ -1,3 +1,4 @@
+using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Crewmate;
 using static TOHFE.Options;
 using static TOHFE.Translator;
@@ -156,7 +157,11 @@ internal class Mastermind : RoleBase
         var mastermind = GetPlayerById(_playerIdList.First());
         mastermind?.Notify(string.Format(GetString("ManipulatedKilled"), killer.GetRealName()), 4f);
         mastermind?.SetKillCooldown(time: KillCooldown.GetFloat());
-        killer.Notify(GetString("SurvivedManipulation"));
+        _ = new LateTask(() =>
+        {
+            killer.Notify(GetString("SurvivedManipulation"));
+        }, target.Is(CustomRoles.Burst) ? Burst.BurstKillDelay.GetFloat() : 0f, "BurstKillCheck");
+
 
         if (target.Is(CustomRoles.Pestilence) || target.Is(CustomRoles.Mastermind))
         {

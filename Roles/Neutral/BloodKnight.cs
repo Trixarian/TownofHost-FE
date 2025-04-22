@@ -2,6 +2,7 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using System.Text;
+using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using static TOHFE.Options;
 using static TOHFE.Translator;
@@ -76,7 +77,10 @@ internal class BloodKnight : RoleBase
 
         TimeStamp = Utils.GetTimeStamp() + (long)ProtectDuration.GetFloat();
         SendRPC();
-        killer.Notify(GetString("BKInProtect"));
+        _ = new LateTask(() =>
+        {
+            killer.Notify(GetString("BKInProtect"));
+        }, target.Is(CustomRoles.Burst) ? Burst.BurstKillDelay.GetFloat() : 0f, "BurstKillCheck");
     }
 
     public override bool CanUseImpostorVentButton(PlayerControl pc) => CanVent.GetBool();

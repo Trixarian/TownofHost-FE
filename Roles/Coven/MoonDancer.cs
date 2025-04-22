@@ -2,6 +2,7 @@ using Hazel;
 using InnerNet;
 using TOHFE.Modules;
 using TOHFE.Roles.AddOns;
+using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Double;
 using TOHFE.Roles.Impostor;
@@ -183,7 +184,10 @@ internal class MoonDancer : CovenManager
             }
             else
             {
-                killer.Notify(GetString("MoonDancerNormalKill"));
+                _ = new LateTask(() =>
+                {
+                    killer.Notify(GetString("MoonDancerNormalKill"));
+                }, target.Is(CustomRoles.Burst) ? Burst.BurstKillDelay.GetFloat() : 0f, "BurstKillCheck");
                 return true;
             }
         }

@@ -1,5 +1,4 @@
 using TOHFE.Roles.Core;
-using TOHFE.Roles.Impostor;
 
 namespace TOHFE.Roles.AddOns.Impostor;
 
