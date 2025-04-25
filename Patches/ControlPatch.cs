@@ -66,7 +66,7 @@ internal class ControllerManagerUpdatePatch
                     sb.Append(GetString(role.ToString()) + Utils.GetRoleMode(role) + lp.GetRoleInfo(true));
                     //if (Options.CustomRoleSpawnChances.TryGetValue(role, out var opt))
                     //Utils.ShowChildrenSettings(Options.CustomRoleSpawnChances[role], ref sb, command: true);
-                    HudManager.Instance.ShowPopUp(sb.ToString() + "<size=0%>tohe</size>");
+                    HudManager.Instance.ShowPopUp(sb.ToString() + "<size=0%>tohfe</size>");
                 }
                 catch (Exception ex)
                 {
@@ -90,7 +90,7 @@ internal class ControllerManagerUpdatePatch
 
                     addonInfoIndex++;
                     if (addonInfoIndex >= addDes.Count) addonInfoIndex = 0;
-                    HudManager.Instance.ShowPopUp(addDes[addonInfoIndex] + "<size=0%>tohe</size>");
+                    HudManager.Instance.ShowPopUp(addDes[addonInfoIndex] + "<size=0%>tohfe</size>");
                 }
                 catch (Exception ex)
                 {
@@ -134,7 +134,7 @@ internal class ControllerManagerUpdatePatch
 
                     addonSettingsIndex++;
                     if (addonSettingsIndex >= addSett.Count) addonSettingsIndex = 0;
-                    HudManager.Instance.ShowPopUp(addSett[addonSettingsIndex] + "<size=0%>tohe</size>");
+                    HudManager.Instance.ShowPopUp(addSett[addonSettingsIndex] + "<size=0%>tohfe</size>");
                 }
                 catch (Exception ex)
                 {

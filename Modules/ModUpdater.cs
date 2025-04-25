@@ -227,7 +227,7 @@ public class ModUpdater
             for (int i = 0; i < assets.Count; i++)
             {
                 string assetName = assets[i]["name"].ToString();
-                if (assetName.ToLower() == "tohe.dll")
+                if (assetName.ToLower() == "tohfe.dll")
                 {
                     downloadUrl = assets[i]["browser_download_url"].ToString();
                     Logger.Info($"Github downloadUrl is set to {downloadUrl}", "CheckRelease");

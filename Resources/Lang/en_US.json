@@ -1570,6 +1570,8 @@
   "ReverieResetCooldownMeeting": "Reset Kill Cooldown after meeting",
   "ConvertedReverieKillAll": "Converted Reverie can kill anyone without repercussions",
 
+  "ConvertedVigilanteCanVent": "Converted Vigilante can Vent",
+  "CanSabotageAsRecruit": "Can Sabotage as <color=#00b4eb>Recruit</color>",
   "VigilanteNotify": "You have become the very thing you swore to destroy",
 
   "DictatorChangeCommandToExpel": "<color=#df9b00>Dictator</color> use Command to expell instead of vote",
@@ -3677,7 +3679,7 @@
   "Sponsor": "Sponsor",
   "Booster": "Server Booster",
   "Translator": "Translator",
-  "NoAccess": "Unauthorized Access!\n\n Please open up a ticket in the discord server to know more (discord.gg/tohe)",
+  "NoAccess": "Unauthorized Access!\n\n Please open up a ticket in the discord server to know more (discord.gg/tohfe)",
   "DCNotify.Hacking": "You were <color=#ff1919>banned</color> for hacking.\n\nPlease stop.",
   "DCNotify.Banned": "You were <color=#ff1919>banned</color> from this lobby.\n\nContact the Host if this was a mistake.",
   "DCNotify.Kicked": "You were <color=#ffff00>kicked</color> from this lobby.\n\nYou may still rejoin.",
