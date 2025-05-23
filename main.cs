@@ -52,8 +52,8 @@ public class Main : BasePlugin
     public static ConfigEntry<string> DebugKeyInput { get; private set; }
 
     public const string PluginGuid = "com.trixarian.tohfe";
-    public const string PluginVersion = "2025.0422.230.00080"; // YEAR.MMDD.VERSION.CANARYDEV
-    public const string PluginDisplayVersion = "2.3.1";
+    public const string PluginVersion = "2025.0509.230.00090"; // YEAR.MMDD.VERSION.CANARYDEV
+    public const string PluginDisplayVersion = "2.3.2";
     public static readonly List<(int year, int month, int day, int revision)> SupportedVersionAU =
         [
             (2024, 8, 11, 0) // 2025.3.25 & 16.0.0
@@ -731,6 +731,7 @@ public enum CustomRoles
     EvilHacker,
     EvilMini,
     EvilTracker,
+    Exorcist,
     Fireworker,
     Gangster,
     Godfather,
@@ -841,6 +842,7 @@ public enum CustomRoles
     Reverie,
     Sheriff,
     Snitch,
+    Socialite,
     SpeedBooster,
     Spiritualist,
     Spy,
@@ -1008,6 +1010,7 @@ public enum CustomRoles
     Rebirth,
     Mimic,
     Mundane,
+    Narc,
     Necroview,
     Nimble,
     Oblivious,

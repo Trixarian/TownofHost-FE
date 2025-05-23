@@ -1,6 +1,7 @@
 using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -281,7 +282,7 @@ class CheckMurderPatch
         }
 
         // Impostors can kill Madmate
-        if (killer.Is(Custom_Team.Impostor) && !Madmate.ImpCanKillMadmate.GetBool() && target.Is(CustomRoles.Madmate))
+        if (killer.CheckImpCanSeeAllies(CheckAsSeer: true) && !Madmate.ImpCanKillMadmate.GetBool() && target.Is(CustomRoles.Madmate))
             return false;
 
         Logger.Info($"Start", "OnCheckMurderAsTargetOnOthers");
@@ -1240,7 +1241,7 @@ class FixedUpdateInNormalGamePatch
                     if (playerAmOwner)
                     {
                         //Kill target override processing
-                        if (!player.Is(Custom_Team.Impostor) && player.CanUseKillButton() && !playerData.IsDead)
+                        if (player.CanUseKillButton() && !playerData.IsDead)
                         {
                             var players = player.GetPlayersInAbilityRangeSorted();
                             PlayerControl closest = !players.Any() ? null : players.First();
@@ -1316,16 +1317,20 @@ class FixedUpdateInNormalGamePatch
                 {
                     var blankRT = new StringBuilder();
                     var result = new StringBuilder(roleText.text);
-                    if (player.Is(CustomRoles.Trickster) || Illusionist.IsCovIllusioned(playerId))
+                    if ((player.Is(CustomRoles.Trickster) && (!player.Is(CustomRoles.Narc) || localPlayer.Is(CustomRoles.Madmate))) || Illusionist.IsCovIllusioned(playerId))
                     {
-                        roleText.enabled = true; //have to make it return true otherwise modded Overseer won't be able to reveal Trickster's role,same for Illusionist's targets
                         blankRT.Clear().Append(Overseer.GetRandomRole(localPlayerId)); // random role for revealed trickster
                         blankRT.Append(TaskState.GetTaskState()); // random task count for revealed trickster
                         result.Clear().Append($"<size=1.3>{blankRT}</size>");
                     }
+                    if (player.Is(CustomRoles.Narc) && !localPlayer.Is(CustomRoles.Madmate))
+                    {
+                        blankRT.Clear().Append(CustomRoles.Sheriff.ToColoredString());
+                        if (Sheriff.ShowShotLimit.GetBool()) blankRT.Append(Utils.ColorString(Utils.GetRoleColor(CustomRoles.Sheriff).ShadeColor(0.25f), $" ({Sheriff.ShotLimitOpt.GetInt()})"));
+                        result.Clear().Append($"<size=1.3>{blankRT}</size>");
+                    }
                     if (Illusionist.IsNonCovIllusioned(playerId))
                     {
-                        roleText.enabled = true;
                         var randomRole = CustomRolesHelper.AllRoles.Where(role => role.IsEnable() && !role.IsAdditionRole() && role.IsCoven()).ToList().RandomElement();
                         blankRT.Clear().Append(randomRole.GetColoredTextByRole(GetString(randomRole.ToString())));
                         if (randomRole is CustomRoles.CovenLeader or CustomRoles.Jinx or CustomRoles.Illusionist or CustomRoles.VoodooMaster) // Roles with Ability Uses
@@ -1587,6 +1592,8 @@ class CoEnterVentPatch
             return true;
         }
 
+        
+
         if (KillTimerManager.AllKillTimers.TryGetValue(__instance.myPlayer.PlayerId, out var timer))
         {
             KillTimerManager.AllKillTimers[__instance.myPlayer.PlayerId] = timer + 0.5f;
@@ -1615,7 +1622,18 @@ class CoEnterVentPatch
             return true;
         }
 
+
         playerRoleClass?.OnCoEnterVent(__instance, id);
+        if (Options.DisableVenting1v1.GetBool() && Main.AllAlivePlayerControls.Length <= 2)
+        {
+            var pc = __instance?.myPlayer;
+            _ = new LateTask(() =>
+            {
+                pc?.Notify(GetString("FFA-NoVentingBecauseTwoPlayers"), 7f);
+                pc?.MyPhysics?.RpcBootFromVent(id);
+            }, 0.5f, "Player No Venting Because Two Players");
+            return true;
+        }
 
         if (playerRoleClass?.BlockMoveInVent(__instance.myPlayer) ?? false)
         {

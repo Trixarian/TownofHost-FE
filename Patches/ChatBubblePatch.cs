@@ -42,7 +42,7 @@ class ChatBubbleSetNamePatch
         var seerRoleClass = seer.GetRoleClass();
 
         // if based role is Shapeshifter and is Desync Shapeshifter
-        if (seerRoleClass?.ThisRoleBase.GetRoleTypes() == RoleTypes.Shapeshifter && seer.HasDesyncRole())
+        if (seerRoleClass?.ThisRoleBase.GetRoleTypes() is RoleTypes.Shapeshifter or RoleTypes.Phantom && seer.HasDesyncRole())
         {
             __instance.NameText.color = Color.white;
         }

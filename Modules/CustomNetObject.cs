@@ -170,6 +170,7 @@ namespace TOHFE.Modules
                 playerControl.PlayerId = 255;
                 playerControl.isNew = false;
                 playerControl.notRealPlayer = true;
+                playerControl.NetTransform.SnapTo(new(-200, -200));
 
                 MessageWriter msg = MessageWriter.Get();
                 msg.StartMessage(5);
@@ -177,6 +178,7 @@ namespace TOHFE.Modules
                 AmongUsClient.Instance.WriteSpawnMessage(playerControl, -2, SpawnFlags.None, msg);
                 msg.EndMessage();
 
+                /*
                 // This makes innersloth dog shit server think PlayerControl and PlayerNetTransform is a LobbyBehavoir,
                 // so it will disable checks regarding it
                 if (GameStates.IsVanillaServer)
@@ -198,7 +200,7 @@ namespace TOHFE.Modules
                     msg.StartMessage(4);
                     msg.WritePacked(2U);
                     msg.WritePacked(-2);
-                    msg.Write((byte)SpawnFlags.None);
+
                     msg.WritePacked(1);
                     msg.WritePacked(playerControl.NetTransform.NetId);
                     msg.StartMessage(1);
@@ -217,6 +219,7 @@ namespace TOHFE.Modules
 
                     msg.EndMessage();
                 }
+                */
 
                 AmongUsClient.Instance.SendOrDisconnect(msg);
                 msg.Recycle();
@@ -350,17 +353,19 @@ namespace TOHFE.Modules
             playerControl.PlayerId = 255;
             playerControl.isNew = false;
             playerControl.notRealPlayer = true;
+            playerControl.NetTransform.SnapTo(new(-200, -200));
 
-            MessageWriter msg = MessageWriter.Get();
+            MessageWriter msg = MessageWriter.Get(SendOption.Reliable);
             msg.StartMessage(5);
             msg.Write(AmongUsClient.Instance.GameId);
             AmongUsClient.Instance.WriteSpawnMessage(playerControl, -2, SpawnFlags.None, msg);
             msg.EndMessage();
 
-            // This makes innersloth dog shit server think PlayerControl and PlayerNetTransform is a LobbyBehavoir,
-            // so it will disable checks regarding it
-            if (GameStates.IsVanillaServer)
-            {
+            /*
+
+
+
+
                 msg.StartMessage(6);
                 msg.Write(AmongUsClient.Instance.GameId);
                 msg.WritePacked(int.MaxValue);
@@ -397,6 +402,7 @@ namespace TOHFE.Modules
 
                 msg.EndMessage();
             }
+            */
 
             AmongUsClient.Instance.SendOrDisconnect(msg);
             msg.Recycle();
