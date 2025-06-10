@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using TOHFE.Patches.Crowded;
 using TOHFE.Roles.AddOns;
 using TOHFE.Roles.Core;
@@ -53,16 +54,16 @@ public class Main : BasePlugin
 
     public const string PluginGuid = "com.trixarian.tohfe";
     public const string PluginVersion = "2025.0509.230.00090"; // YEAR.MMDD.VERSION.CANARYDEV
-    public const string PluginDisplayVersion = "2.3.2";
+    public const string PluginDisplayVersion = "2.3.3";
     public static readonly List<(int year, int month, int day, int revision)> SupportedVersionAU =
         [
-            (2024, 8, 11, 0) // 2025.3.25 & 16.0.0
+            (2025, 4, 15, 0) // 2025.3.25 & 16.0.0
         ];
 
     /******************* Change one of the three variables to true before making a release. *******************/
     public static readonly bool devRelease = false; // Latest: V2.3.0 Alpha 2 Hotfix 2
     public static readonly bool canaryRelease = false; // Latest: V2.2.0 Beta 4
-    public static readonly bool fullRelease = true; // Latest: V2.3.1
+    public static readonly bool fullRelease = true; // Latest: V2.3.3
 
     public static bool hasAccess = true;
 
@@ -182,7 +183,6 @@ public class Main : BasePlugin
     public static readonly Dictionary<byte, byte> ShapeshiftTarget = [];
     public static readonly HashSet<byte> UnShapeShifter = [];
     public static readonly HashSet<byte> DeadPassedMeetingPlayers = [];
-    public static readonly Dictionary<byte, bool> LowLoadUpdateName = [];
 
     public static bool GameIsLoaded { get; set; } = false;
 
@@ -272,7 +272,7 @@ public class Main : BasePlugin
 
     public static StringNames[] how2playN = [StringNames.HowToPlayText1, StringNames.HowToPlayText2, StringNames.HowToPlayText41, StringNames.HowToPlayText42, StringNames.HowToPlayText43, StringNames.HowToPlayText44, StringNames.HowToPlayText5, StringNames.HowToPlayText6, StringNames.HowToPlayText7, StringNames.HowToPlayText81, StringNames.HowToPlayText82];
     public static StringNames[] how2playHnS = [StringNames.HideSeekHowToPlayCaptionOne, StringNames.HideSeekHowToPlayCaptionTwo, StringNames.HideSeekHowToPlayCaptionThree, StringNames.HideSeekHowToPlayPageOne, StringNames.HideSeekHowToPlaySubtextOne, StringNames.HideSeekHowToPlayCrewmateInfoOne, StringNames.HideSeekHowToPlayCrewmateInfoTwo, StringNames.HideSeekHowToPlayFlashlightConsoles, StringNames.HideSeekHowToPlayImpostorInfoOne, StringNames.HideSeekHowToPlayFinalHide, StringNames.HideSeekHowToPlayFlashlightDefault];
-    public static StringNames[] how2playEzHacked = [StringNames.ErrorAuthNonceFailure, StringNames.ErrorBanned, StringNames.ErrorBannedNoCode, StringNames.ErrorClientTimeout, StringNames.ErrorClientTimeoutConsole, StringNames.ErrorCommunications, StringNames.ErrorCrossPlatformCommunication, StringNames.ErrorDuplicateConnection, StringNames.ErrorFullGame, StringNames.ErrorHacking, StringNames.ErrorInactivity, StringNames.ErrorIntentionalLeaving, StringNames.ErrorInvalidName, StringNames.ErrorKicked, StringNames.ErrorKickedNoCode, StringNames.ErrorLobbyFailedGettingBlockedUsers];
+    public static StringNames[] how2playEzHacked = [StringNames.ErrorAuthNonceFailure, StringNames.ErrorBanned, StringNames.ErrorClientTimeout, StringNames.ErrorClientTimeoutConsole, StringNames.ErrorCommunications, StringNames.ErrorCrossPlatformCommunication, StringNames.ErrorDuplicateConnection, StringNames.ErrorFullGame, StringNames.ErrorHacking, StringNames.ErrorInactivity, StringNames.ErrorIntentionalLeaving, StringNames.ErrorInvalidName, StringNames.ErrorKicked];
     public static string Get_TName_Snacks => TranslationController.Instance.currentLanguage.languageID is SupportedLangs.SChinese or SupportedLangs.TChinese
         ? TName_Snacks_CN.RandomElement()
         : TName_Snacks_EN.RandomElement();
@@ -576,7 +576,7 @@ public class Main : BasePlugin
         //TOHFE.Logger.Disable("NotifyRoles");
         TOHFE.Logger.Disable("SwitchSystem");
         TOHFE.Logger.Disable("ModNews");
-        TOHFE.Logger.Disable("RpcSetNamePrivate");
+        // TOHFE.Logger.Disable("RpcSetNamePrivate");
         TOHFE.Logger.Disable("KnowRoleTarget");
         if (!DebugModeManager.AmDebugger)
         {
@@ -648,6 +648,12 @@ public class Main : BasePlugin
         handler.Info($"{nameof(ThisAssembly.Git.Sha)}: {ThisAssembly.Git.Sha}");
         handler.Info($"{nameof(ThisAssembly.Git.Tag)}: {ThisAssembly.Git.Tag}");
 
+        // Injecting BaseModdedRpc has a very high chance for the game to crash on load!!!
+        // And you need to inject it for all the modded rpc to work!!!
+        // Works after injected. No idea how to resolve this problem.
+        ClassInjector.RegisterTypeInIl2Cpp<BaseModdedRpc>();
+        ClassInjector.RegisterTypeInIl2Cpp<CustomModdedData>();
+
         ClassInjector.RegisterTypeInIl2Cpp<ErrorText>();
         ClassInjector.RegisterTypeInIl2Cpp<OptionShower>();
         ClassInjector.RegisterTypeInIl2Cpp<MeetingHudPagingBehaviour>();
@@ -661,10 +667,11 @@ public class Main : BasePlugin
 
         Harmony.PatchAll();
 
-        ConsoleManager.DetachConsole();
+        // ConsoleManager.DetachConsole();
         if (DebugModeManager.AmDebugger) ConsoleManager.CreateConsole();
 
-        InitializeFileHash();
+        // InitializeFileHash();
+        FileHash = "niko_is_testing_shit_for_2025_04_15";
         TOHFE.Logger.Msg("========= TOHFE loaded! =========", "Plugin Load");
     }
 }

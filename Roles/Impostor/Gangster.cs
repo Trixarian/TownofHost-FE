@@ -1,11 +1,8 @@
 using TOHFE.Modules;
 using TOHFE.Roles.AddOns.Crewmate;
-using TOHFE.Roles.AddOns.Impostor;
 using TOHFE.Roles.Core;
-using TOHFE.Roles.Coven;
 using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Double;
-using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Translator;
 

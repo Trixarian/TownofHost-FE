@@ -1,9 +1,9 @@
 using Hazel;
-using InnerNet;
 using System.Text;
 using System.Text.RegularExpressions;
 using TOHFE.Modules;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Double;
 using UnityEngine;
@@ -79,10 +79,9 @@ internal class Pirate : RoleBase
 
     private void SendRPC(byte target = byte.MaxValue)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
-        writer.WriteNetObject(_Player);
+        var writer = MessageWriter.Get(SendOption.Reliable);
         writer.Write(target);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        RpcUtils.LateBroadcastReliableMessage(new RpcSyncRoleSkill(PlayerControl.LocalPlayer.NetId, _Player.NetId, writer));
     }
     public override void ReceiveRPC(MessageReader reader, PlayerControl NaN)
     {

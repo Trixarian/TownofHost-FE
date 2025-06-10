@@ -2,11 +2,7 @@ using Hazel;
 using System;
 using System.Text.RegularExpressions;
 using TOHFE.Modules.ChatManager;
-using TOHFE.Roles.AddOns.Crewmate;
-using TOHFE.Roles.AddOns.Impostor;
 using TOHFE.Roles.Crewmate;
-using TOHFE.Roles.Double;
-using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
@@ -217,7 +213,7 @@ internal class Ritualist : CovenManager
                 Admirer.AdmiredList[killer.PlayerId].Add(target.PlayerId);
                 Admirer.SendRPC(killer.PlayerId, target.PlayerId);
             }
-        } 
+        }
     }
     private static bool MsgToPlayerAndRole(string msg, out byte id, out CustomRoles role, out string error)
     {

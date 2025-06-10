@@ -180,9 +180,9 @@ class VersionShowerStartPatch
 
         VersionChecker.Check();
 
-        if (SpecialEventText == null && MainMenuManagerStartPatch.TohfeLogo != null)
+        if (SpecialEventText == null && MainMenuManagerStartPatch.TOHFELogo != null)
         {
-            SpecialEventText = Object.Instantiate(__instance.text, MainMenuManagerStartPatch.TohfeLogo.transform);
+            SpecialEventText = Object.Instantiate(__instance.text, MainMenuManagerStartPatch.TOHFELogo.transform);
             SpecialEventText.name = "SpecialEventText";
             SpecialEventText.text = "";
             SpecialEventText.color = Color.white;

@@ -1,6 +1,6 @@
 using Hazel;
-using InnerNet;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
@@ -49,11 +49,10 @@ internal class Socialite : RoleBase
     public override string GetMark(PlayerControl seer, PlayerControl seen, bool isForMeeting = false) => PartiedPlayers.Contains(seen.PlayerId) ? CustomRoles.Socialite.GetColoredTextByRole("♪") : string.Empty;
     public void SendRPC(PlayerControl player, PlayerControl target)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncRoleSkill, SendOption.Reliable, -1);
-        writer.WriteNetObject(_Player);
+        var writer = MessageWriter.Get(SendOption.Reliable);
         writer.Write(player.PlayerId);
         writer.Write(target.PlayerId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        RpcUtils.LateBroadcastReliableMessage(new RpcSyncRoleSkill(PlayerControl.LocalPlayer.NetId, _Player.NetId, writer));
     }
     public override void ReceiveRPC(MessageReader reader, PlayerControl NaN)
     {

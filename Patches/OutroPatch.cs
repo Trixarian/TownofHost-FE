@@ -4,6 +4,7 @@ using System.Text;
 using TMPro;
 using TOHFE.Modules;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Core.AssignManager;
 using TOHFE.Roles.Crewmate;
@@ -42,18 +43,13 @@ class EndGamePatch
 
                         Main.PlayerStates[pvc].MainRole = prevrole;
 
-
-                        // PlayerControl is already destoryed here. bruh wtf
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncPlayerSetting, SendOption.Reliable, -1);
-                        writer.Write(pvc);
-                        writer.WritePacked((int)prevrole);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        var message = new RpcSyncPlayerSetting(PlayerControl.LocalPlayer.NetId, pvc, prevrole);
+                        RpcUtils.LateBroadcastReliableMessage(message);
                     }
 
                     if (GhostRoleAssign.GhostGetPreviousRole.Any()) Logger.Info(string.Join(", ", GhostRoleAssign.GhostGetPreviousRole.Select(x => $"{Utils.GetPlayerInfoById(x.Key).PlayerName}/{x.Value}")), "OutroPatch.GhostGetPreviousRole");
                 }
             }
-
         }
         catch (Exception e)
         {

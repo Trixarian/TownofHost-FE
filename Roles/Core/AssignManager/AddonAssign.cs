@@ -1,5 +1,4 @@
 using System;
-using AmongUs.GameOptions;
 using TOHFE.Roles.AddOns.Impostor;
 
 namespace TOHFE.Roles.Core.AssignManager;
