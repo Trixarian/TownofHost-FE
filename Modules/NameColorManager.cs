@@ -1,4 +1,5 @@
 using Hazel;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.AddOns.Impostor;
 using TOHFE.Roles.Core;
@@ -6,6 +7,7 @@ using TOHFE.Roles.Coven;
 using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Impostor;
 using TOHFE.Roles.Neutral;
+using static Il2CppMono.Security.X509.X520;
 
 namespace TOHFE;
 
@@ -177,12 +179,8 @@ public static class NameColorManager
     private static void SendRPC(byte seerId, byte targetId = byte.MaxValue, string colorCode = "")
     {
         if (!AmongUsClient.Instance.AmHost) return;
-
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetNameColorData, SendOption.Reliable, -1);
-        writer.Write(seerId);
-        writer.Write(targetId);
-        writer.Write(colorCode);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSetNameColorData(PlayerControl.LocalPlayer.NetId, seerId, targetId, colorCode);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveRPC(MessageReader reader)
     {

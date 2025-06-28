@@ -1,6 +1,7 @@
 using Hazel;
 using System;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using UnityEngine;
 using static TOHFE.Options;
@@ -132,9 +133,8 @@ internal class Dictator : RoleBase
 
     private void SendDictatorRPC(byte playerId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.DictatorRPC, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcDictator(PlayerControl.LocalPlayer.NetId, playerId);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
 
     public static void OnReceiveDictatorRPC(MessageReader reader, PlayerControl pc)

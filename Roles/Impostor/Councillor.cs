@@ -3,12 +3,14 @@ using System;
 using System.Text.RegularExpressions;
 using TOHFE.Modules;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Coven;
 using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Double;
 using UnityEngine;
 using static TOHFE.Translator;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Impostor;
 
@@ -337,9 +339,8 @@ internal class Councillor : RoleBase
 
     private static void SendRPC(byte playerId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CouncillorJudge, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcCouncillorJudge(PlayerControl.LocalPlayer.NetId, playerId);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveRPC_Custom(MessageReader reader, PlayerControl pc)
     {

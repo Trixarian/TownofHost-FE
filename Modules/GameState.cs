@@ -2,6 +2,7 @@ using AmongUs.GameOptions;
 using Hazel;
 using System;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.AddOns.Impostor;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Impostor;
@@ -268,11 +269,9 @@ public class PlayerState(byte playerId)
         }
 
         if (!AmongUsClient.Instance.AmHost) return;
+        var msg = new RpcRemoveSubRole(PlayerControl.LocalPlayer.NetId, playerId, addOn);
+        RpcUtils.LateBroadcastReliableMessage(msg);
 
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.RemoveSubRole, SendOption.Reliable);
-        writer.Write(PlayerId);
-        writer.WritePacked((int)addOn);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
 
     public void SetDead()

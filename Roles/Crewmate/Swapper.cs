@@ -3,6 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using TOHFE.Modules;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Coven;
 using UnityEngine;
@@ -343,9 +344,8 @@ internal class Swapper : RoleBase
     }
     private static void SendSwapRPC(byte playerId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetSwapperVotes, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSetSwapperVotes(PlayerControl.LocalPlayer.NetId, playerId);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveSwapRPC(MessageReader reader, PlayerControl pc)
     {

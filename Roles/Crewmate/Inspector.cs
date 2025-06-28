@@ -2,13 +2,16 @@ using Hazel;
 using System;
 using TOHFE.Modules;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Coven;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Crewmate;
 internal class Inspector : RoleBase
@@ -66,10 +69,8 @@ internal class Inspector : RoleBase
     }
     public static void SendRPC(byte playerId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetInspectorLimit, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        writer.WritePacked(RoundCheckLimit[playerId]);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSetInspectorLimit(PlayerControl.LocalPlayer.NetId, playerId, RoundCheckLimit[playerId]);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveRPC(MessageReader reader)
     {

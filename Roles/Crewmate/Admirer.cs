@@ -1,5 +1,6 @@
 using Hazel;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Double;
 using static TOHFE.Options;
@@ -48,10 +49,9 @@ internal class Admirer : RoleBase
     }
     public static void SendRPC(byte playerId, byte targetId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncAdmiredList, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        writer.Write(targetId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSyncAdmiredList(PlayerControl.LocalPlayer.NetId, playerId, targetId);
+        RpcUtils.LateBroadcastReliableMessage(msg);
+
     }
     public static void ReceiveRPC(MessageReader reader)
     {

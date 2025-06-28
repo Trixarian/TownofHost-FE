@@ -12,7 +12,7 @@ public class MainMenuManagerStartPatch
 {
     public static GameObject amongUsLogo;
     public static GameObject Ambience;
-    public static SpriteRenderer TOHFELogo { get; private set; }
+    public static SpriteRenderer TohfeLogo { get; private set; }
 
     private static void Postfix(MainMenuManager __instance)
     {
@@ -22,7 +22,7 @@ public class MainMenuManagerStartPatch
         var logoObject = new GameObject("titleLogo_TOHFE");
         var logoTransform = logoObject.transform;
 
-        TOHFELogo = logoObject.AddComponent<SpriteRenderer>();
+        TohfeLogo = logoObject.AddComponent<SpriteRenderer>();
         logoTransform.parent = rightpanel;
         logoTransform.localPosition = new(-0.16f, 0f, 1f);
         logoTransform.localScale *= 1.2f;
@@ -286,7 +286,7 @@ public static class MainMenuManagerPatch
 
     public static PassiveButton CreateButton(string name, Vector3 localPosition, Color32 normalColor, Color32 hoverColor, UnityEngine.Events.UnityAction action, string label, Vector2? scale = null)
     {
-        var button = Object.Instantiate(template, MainMenuManagerStartPatch.TOHFELogo.transform);
+        var button = Object.Instantiate(template, MainMenuManagerStartPatch.TohfeLogo.transform);
         button.name = name;
         Object.Destroy(button.GetComponent<AspectPosition>());
         button.transform.localPosition = localPosition;
@@ -357,11 +357,11 @@ public static class MainMenuManagerPatch
     [HarmonyPostfix]
     public static void OpenMenu_Postfix()
     {
-        if (MainMenuManagerStartPatch.TOHFELogo != null) MainMenuManagerStartPatch.TOHFELogo.gameObject.SetActive(false);
+        if (MainMenuManagerStartPatch.TohfeLogo != null) MainMenuManagerStartPatch.TohfeLogo.gameObject.SetActive(false);
     }
     [HarmonyPatch(nameof(MainMenuManager.ResetScreen)), HarmonyPostfix]
     public static void ResetScreen_Postfix()
     {
-        if (MainMenuManagerStartPatch.TOHFELogo != null) MainMenuManagerStartPatch.TOHFELogo.gameObject.SetActive(true);
+        if (MainMenuManagerStartPatch.TohfeLogo != null) MainMenuManagerStartPatch.TohfeLogo.gameObject.SetActive(true);
     }
 }

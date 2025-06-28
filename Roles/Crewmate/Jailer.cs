@@ -1,10 +1,13 @@
 using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
+using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Crewmate;
 
@@ -75,12 +78,8 @@ internal class Jailer : RoleBase
 
     public static void SendRPC(byte jailerId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncJailerData, SendOption.Reliable, -1);
-        writer.Write(jailerId);
-        writer.WritePacked(JailerTarget[jailerId]);
-        writer.Write(JailerHasExe[jailerId]);
-        writer.Write(JailerDidVote[jailerId]);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSyncJailerData(PlayerControl.LocalPlayer.NetId, jailerId, JailerTarget[jailerId], JailerHasExe[jailerId], JailerDidVote[jailerId]);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
 
     public static void ReceiveRPC(MessageReader reader)

@@ -1,5 +1,6 @@
 using Hazel;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Double;
 using TOHFE.Roles.Neutral;
@@ -51,11 +52,8 @@ internal class Puppeteer : RoleBase
 
     private static void SendRPC(byte puppetId, byte targetId, byte typeId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncPuppet, SendOption.Reliable, -1);
-        writer.Write(typeId);
-        writer.Write(puppetId);
-        writer.Write(targetId);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSyncPuppet(PlayerControl.LocalPlayer.NetId, typeId, puppetId, targetId);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveRPC(MessageReader reader)
     {

@@ -1,7 +1,10 @@
 using Hazel;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
+using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Neutral;
 using static TOHFE.Options;
+using static UnityEngine.GraphicsBuffer;
 
 
 namespace TOHFE.Roles.Impostor;
@@ -38,10 +41,9 @@ internal class Lightning : RoleBase
     }
     private static void SendRPC(byte playerId)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.LightningSetGhostPlayer, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        writer.Write(IsGhost(playerId));
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcLightningSetGhostPlayer(PlayerControl.LocalPlayer.NetId, playerId, IsGhost(playerId));
+        RpcUtils.LateBroadcastReliableMessage(msg);
+
     }
     public static void ReceiveRPC(MessageReader reader)
     {

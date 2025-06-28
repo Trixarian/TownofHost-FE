@@ -2,11 +2,13 @@ using AmongUs.GameOptions;
 using Hazel;
 using System.Text;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Crewmate;
 
@@ -141,11 +143,8 @@ internal class Alchemist : RoleBase
     private static void SendRPC(PlayerControl pc)
     {
         if (!pc.IsNonHostModdedClient()) return;
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetAlchemistTimer, ExtendedPlayerControl.RpcSendOption, pc.GetClientId());
-        writer.Write(FixNextSabo);
-        writer.Write(PotionID);
-        writer.Write((InvisTime.TryGetValue(pc.PlayerId, out var x) ? x : -1).ToString());
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcSetAlchemistTimer(PlayerControl.LocalPlayer.NetId, FixNextSabo, PotionID, (InvisTime.TryGetValue(pc.PlayerId, out var x) ? x : -1).ToString());
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveRPC(MessageReader reader)
     {

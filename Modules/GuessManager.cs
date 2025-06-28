@@ -3,6 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using TMPro;
 using TOHFE.Modules;
+using TOHFE.Modules.Rpc;
 using TOHFE.Modules.ChatManager;
 using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
@@ -491,10 +492,9 @@ public static class GuessManager
             {
                 meetingHud.CheckForEndVoting();
             }
-            _ = new LateTask(() => hudManager.SetHudActive(false), 0.3f, "SetHudActive in GuesserMurderPlayer", shoudLog: false);
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.GuessKill, SendOption.Reliable, -1);
-            writer.Write(pc.PlayerId);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            _ = new LateTask(() => hudManager.SetHudActive(false), 0.3f, "SetHudActive in GuesserMurderPlayer", shoudLog: false);                   
+            var msg = new RpcGuessKill(pc.NetId, pc.PlayerId);
+            RpcUtils.LateBroadcastReliableMessage(msg);
 
             GameEndCheckerForNormal.ShouldNotCheck = false;
         }
@@ -1134,12 +1134,10 @@ public static class GuessManager
     }
 
     // Modded non-host client guess role/add-on
-    private static void SendRPC(int playerId, CustomRoles role)
+    private static void SendRPC(byte playerId, CustomRoles role)
     {
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (int)CustomRPC.Guess, SendOption.Reliable, -1);
-        writer.Write(playerId);
-        writer.Write((int)role);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
+        var msg = new RpcGuess(PlayerControl.LocalPlayer.NetId, playerId, role);
+        RpcUtils.LateBroadcastReliableMessage(msg);
     }
     public static void ReceiveRPC(MessageReader reader, PlayerControl pc)
     {
