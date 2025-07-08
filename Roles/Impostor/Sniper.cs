@@ -4,9 +4,7 @@ using System.Text;
 using TOHFE.Modules;
 using TOHFE.Modules.Rpc;
 using UnityEngine;
-using UnityEngine.Rendering;
 using static TOHFE.Translator;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Impostor;
 

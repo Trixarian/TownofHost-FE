@@ -4,7 +4,6 @@ using TOHFE.Modules.Rpc;
 using TOHFE.Roles.AddOns.Impostor;
 using UnityEngine;
 using static TOHFE.Options;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Impostor;
 

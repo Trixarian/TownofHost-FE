@@ -1,7 +1,6 @@
 using Hazel;
 using TOHFE.Modules;
 using TOHFE.Modules.Rpc;
-using TOHFE.Roles.Crewmate;
 using static TOHFE.Options;
 
 namespace TOHFE.Roles.Impostor;

@@ -3,8 +3,8 @@ using System;
 using System.Text.RegularExpressions;
 using TMPro;
 using TOHFE.Modules;
-using TOHFE.Modules.Rpc;
 using TOHFE.Modules.ChatManager;
+using TOHFE.Modules.Rpc;
 using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Coven;
@@ -492,7 +492,7 @@ public static class GuessManager
             {
                 meetingHud.CheckForEndVoting();
             }
-            _ = new LateTask(() => hudManager.SetHudActive(false), 0.3f, "SetHudActive in GuesserMurderPlayer", shoudLog: false);                   
+            _ = new LateTask(() => hudManager.SetHudActive(false), 0.3f, "SetHudActive in GuesserMurderPlayer", shoudLog: false);
             var msg = new RpcGuessKill(pc.NetId, pc.PlayerId);
             RpcUtils.LateBroadcastReliableMessage(msg);
 

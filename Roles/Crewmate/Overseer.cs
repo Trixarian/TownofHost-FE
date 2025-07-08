@@ -8,7 +8,6 @@ using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Crewmate;
 

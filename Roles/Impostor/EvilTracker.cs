@@ -2,7 +2,6 @@ using AmongUs.GameOptions;
 using Hazel;
 using System.Text;
 using TOHFE.Modules.Rpc;
-using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;

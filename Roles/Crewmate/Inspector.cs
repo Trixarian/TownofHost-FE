@@ -6,12 +6,10 @@ using TOHFE.Modules.Rpc;
 using TOHFE.Roles.AddOns.Common;
 using TOHFE.Roles.Core;
 using TOHFE.Roles.Coven;
-using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Crewmate;
 internal class Inspector : RoleBase

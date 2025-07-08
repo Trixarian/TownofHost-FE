@@ -53,7 +53,7 @@ public class Main : BasePlugin
     public static ConfigEntry<string> DebugKeyInput { get; private set; }
 
     public const string PluginGuid = "com.trixarian.tohfe";
-    public const string PluginVersion = "2025.0620.230.00500"; // YEAR.MMDD.VERSION.CANARYDEV
+    public const string PluginVersion = "2025.0630.230.00600"; // YEAR.MMDD.VERSION.CANARYDEV
     public const string PluginDisplayVersion = "2.3.4";
     public static readonly List<(int year, int month, int day, int revision)> SupportedVersionAU =
         [

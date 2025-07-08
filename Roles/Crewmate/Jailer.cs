@@ -2,12 +2,10 @@ using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Modules;
 using TOHFE.Modules.Rpc;
-using TOHFE.Roles.Neutral;
 using UnityEngine;
 using static TOHFE.Options;
 using static TOHFE.Translator;
 using static TOHFE.Utils;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Crewmate;
 

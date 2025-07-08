@@ -1,9 +1,7 @@
 using AmongUs.GameOptions;
 using Hazel;
 using TOHFE.Modules.Rpc;
-using TOHFE.Roles.Crewmate;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Impostor;
 

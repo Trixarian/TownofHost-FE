@@ -10,7 +10,6 @@ using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Double;
 using UnityEngine;
 using static TOHFE.Translator;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TOHFE.Roles.Impostor;
 

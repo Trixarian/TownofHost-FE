@@ -26,7 +26,6 @@ using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Impostor;
 using TOHFE.Roles.Neutral;
 using UnityEngine;
-using static Il2CppMono.Security.X509.X520;
 using static TOHFE.Translator;
 
 namespace TOHFE;

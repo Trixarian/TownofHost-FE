@@ -7,7 +7,6 @@ using TOHFE.Roles.Coven;
 using TOHFE.Roles.Crewmate;
 using TOHFE.Roles.Impostor;
 using TOHFE.Roles.Neutral;
-using static Il2CppMono.Security.X509.X520;
 
 namespace TOHFE;
 
